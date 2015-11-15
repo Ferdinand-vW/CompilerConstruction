@@ -11,7 +11,7 @@ import Control.Applicative  (Applicative (pure))
 -------------------Syntax-----------------
 
 {
-data Ty = Prog | Interp | Comp | PlatF | Runnable | Framework | Top deriving (Eq, Show)
+data Ty = Prog Ident | Interp Ident Ident | Comp Ident Ident Ident | PlatF Ident | Runnable | Framework | Top deriving (Eq, Show)
 
 instance Tree Ty where
     fromTree Prog = App "Prog" []
@@ -33,8 +33,8 @@ instance Tree Ty where
 
 
 match :: Ty -> Ty -> Bool
-match _ Top = True
-match Top _ = True
+match _ Top = False
+match Top _ = False
 match Runnable Prog = True
 match Runnable Interp = True
 match Runnable Comp = True
@@ -46,6 +46,7 @@ match Framework PlatF = True
 match Interp Framework = True
 match PlatF Framework = True
 match ty1 ty2 = ty1 == ty2
+
 
 typeOfExecute :: Ty -> Ty -> Ty
 typeOfExecute ty1 ty2
