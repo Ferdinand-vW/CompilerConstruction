@@ -1,109 +1,48 @@
 -------------------Syntax-----------------
 
 {
-data Ty = Prog {source :: Ident} 
-        | Interp {source :: Ident, platform :: Ident}
-        | Comp {source :: Ident, target :: Ident, platform :: Ident} 
-        | PlatF {platform :: Ident} 
-        | Err 
-        | CompileTy {source :: Ident, platform :: Ident} 
-        | ExecInter {source :: Ident, platform :: Ident} 
-        | ExecPlat {platform :: Ident}
+data Ty = Prog
+        | Interp
+        | Comp
+        | PlatF
+        | Runnable
+        | Framework
          deriving (Eq, Show)
 
-data TyCons = ProgCons | InterpCons | CompCons | PLatFCons | RunnableCons | ErrCons | FrameworkCons | CompileTyCons | ExecInterCons | ExecPlatCons deriving (Eq, Show)
-
 instance Tree Ty where
-    fromTree Prog x = App "Prog" [x]
-    fromTree Interp x y = App "Interp" [x,y]
-    fromTree Comp x y z = App "Comp" [x,y,z]
-    fromTree PlatF x = App "PlatF" [x]
+    fromTree Prog = App "Prog" []
+    fromTree Interp = App "Interp" []
+    fromTree Comp = App "Comp" []
+    fromTree PlatF = App "PlatF" []
     fromTree Runnable = App "Runnable" []
     fromTree Framework = App "Framework" []
-    fromTree Err = App "Err" []
-    fromTree CompileTy x y = App "CompileTy" [x,y]
-    fromTree ExecInter x y = App "ExecInter" [x, y]
-    fromTree ExecPlat x = App "ExecPlat" [x]
 
-    toTree = parseTree [ app "Prog" (Prog <$> arg),
-                         app "Interp" (Interp <$> arg <*> arg),
-                         app "Comp" (Comp <$> arg <*> arg <*> arg),
-                         app "PlatF" (PlatF <$> arg),
+    toTree = parseTree [ app "Prog" (pure Prog),
+                         app "Interp" (pure Interp),
+                         app "Comp" (pure Comp),
+                         app "PlatF" (pure PlatF),
                          app "Runnable" (pure Runnable),
-                         app "Framework" (pure Framework),
-<<<<<<< HEAD
-                         app "Err" (pure Err),
-                         app "CompileTy" (CompileTy <$> arg <*> arg),
-                         app "ExecInter" (ExecInter <$> arg <*> arg),
-                         app "ExecPlat" (ExecPlat <$> arg)
+                         app "Framework" (pure Framework)
                        ]
 
 
 
-match :: Ty -> TyCons -> Bool
-match (Prog _) Runnable = True
-match (Interp _ _)  Runnable = True
-match (Comp _ _ _) Runnable = True
-match (Interp _ _) Framework = True
-match (PlatF _) Framework = True
-match (Prog _) ProgCons = True
-match (Interp _ _) InterpCons = True
-match (Comp _ _ _) CompCons = True
-match (PlatF _) PlatFCons = True
-match (CompileTy _ _) CompileTyCons = True
-match (ExecInter _ _) ExecInterCons = True
-match (ExecPlat _) ExecPlat = True
-match _ _ = False
-
-
-newExecuteType :: Ty -> Ty -> Ty
-newExecuteType ty1 ty2 = case ty1 of
-                            (Prog s) -> functie s
-                            (Interp s m) -> functie s m
-                            (Comp s t m) -> functie t m
-                            (CompileTy t m) -> functie t m
-                            (ExecInter s m) -> functie s m
-                            (ExecPlat m) -> functie m
-            where functie x = case ty2 of
-                            (Plat m) -> ExecPlat m
-                            (Interp _) -> ty2
-                            (Comp _) -> ty2
-=======
-                         app "Top" (pure Top)]
-
 match :: Ty -> Ty -> Bool
-match _ Top = False
-match Top _ = False
-match Runnable Prog = True
-match Runnable Interp = True
-match Runnable Comp = True
+match Runnable Runnable = True
+match Runnable _ = False
+match Framework Framework = True
+match Framework _ = False
 match Prog Runnable = True
 match Interp Runnable = True
 match Comp Runnable = True
-match Framework Interp = True
-match Framework PlatF = True
 match Interp Framework = True
 match PlatF Framework = True
 match ty1 ty2 = ty1 == ty2
 
->>>>>>> d8aa3f9b4584a30c25743de3156f0d18be3f8a10
-
-typeOfExecute :: Ty -> Ty -> Ty
-typeOfExecute ty1 ty2
-    | not (match ty1 PlatF) && (match ty2 PlatF) || match ty2 Interp) = case ty1 of
-                                                                            (Prog _) -> case ty2 of
-                                                                                            PlatF
-                                                                                            Interp
-                                                                            (Interp _) -> case ty
-                                                                            (Comp _)
-    | otherwise = Err
 
 
-typeOfCompile :: Ty -> Ty -> Ty
-typeOfCompile ty1 ty2
-    | not (match ty1 PlatF) && (match ty2 Comp) = ty
-    | otherwise = Err
-
+findTypeInfo :: TypeInfo -> TypeInfo -> TypeInfo
+findTypeInfo  _ _ = TypeInfo [] [] []
 }
 
 
@@ -112,30 +51,28 @@ typeOfCompile ty1 ty2
 attr Diag Diag_
     syn ty :: {Ty}
     syn tyErrs use {++} {[]} :: {[TyErr]}
-
-        | Interp {source :: Ident, platform :: Ident}
-        | Comp {source :: Ident, target :: Ident, platform :: Ident} 
-        | PlatF {platform :: Ident} 
-        | Runnable 
-        | Framework 
-        | Err
-        | CompileTy {source :: Ident, platform :: Ident} 
-        | ExecInter {source :: Ident, platform :: Ident} 
-        | ExecPlat {platform :: Ident}
-         deriving (Eq, Show)
+    syn tyInfo :: {TypeInfo}
 
 sem Diag_
-    | Program lhs.ty = Prog @l
-    | Interpreter lhs.ty = Interp @l @m
-    | Compiler lhs.ty = Comp @l1 @l2 @m
-    | Platform lhs.ty = PlatF @m
-    | Execute lhs.ty = typeOfExecute @d1.ty @d2.ty
-    | Compile lhs.ty = typeOfCompile @d1.ty @d2.ty
+    | Program lhs.ty = Prog
+    | Interpreter lhs.ty = Interp
+    | Compiler lhs.ty = Comp
+    | Platform lhs.ty = PlatF
+    | Execute lhs.ty = @d1.ty
+    | Compile lhs.ty = @d1.ty
+
+sem Diag_
+    | Program lhs.tyInfo = TypeInfo [@l] [] []
+    | Interpreter lhs.tyInfo = TypeInfo [@l] [] [@m]
+    | Compiler lhs.tyInfo = TypeInfo [@l1] [@l2] [@m]
+    | Platform lhs.tyInfo = TypeInfo [] [] [@m]
+    | Compile lhs.tyInfo = findTypeInfo @d1.tyInfo @d2.tyInfo
+    | Execute lhs.tyInfo = findTypeInfo @d1.tyInfo @d2.tyInfo
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
                             checkRunnable @d1.pos @d1.ty ++
-                            checkFramework @d2.pos @d2.ty
+                            checkFramework @d2.pos @d2.ty ++
                             checkLang @d1.pos @d1.ty @d2.ty
 
 {
@@ -165,10 +102,15 @@ checkComp pos ty               = [TyErr pos nonComp Comp ty]
         nonComp = "Must be compiled using a compiler"
 
 checkLang :: SourcePos -> Ty -> Ty -> [TyErr]
-checkLang _ ty1 ty2 | match ty ty2 = []
-checkLang pos ty1 ty2              = [TyErr pos nonExe Runnable ty]
+checkLang _ ty1 ty2 | match ty1 ty2 = []
+checkLang pos ty1 ty2              = [TyErr pos nonExe Runnable ty1]
     where
         nonExe = "Does not belong to the correct language"
+}
+
+--------------------Type Info-------------------------
+{
+data TypeInfo = TypeInfo {source :: [Ident], target :: [Ident], platform :: [Ident]}
 }
 
 

@@ -1,24 +1,31 @@
 
 
--- UUAGC 0.9.52.1 (Ag.ag)
+-- UUAGC 0.9.52.1 (ag.ag)
 module CCO.Diag.AG where
 
 {-# LINE 2 "AG\\Pos.ag" #-}
 
 import CCO.SourcePos
-{-# LINE 10 "Ag.hs" #-}
+{-# LINE 10 "ag.hs" #-}
 
 {-# LINE 2 "AG\\Base.ag" #-}
 
 import CCO.Feedback
+import CCO.Printing
 import CCO.SourcePos        (SourcePos)
 import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
-{-# LINE 19 "Ag.hs" #-}
+{-# LINE 20 "ag.hs" #-}
 {-# LINE 3 "AG\\Typing.ag" #-}
 
-data Ty = Prog Ident | Interp Ident Ident | Comp Ident Ident Ident | PlatF Ident | Runnable | Framework | Top deriving (Eq, Show)
+data Ty = Prog
+        | Interp
+        | Comp
+        | PlatF
+        | Runnable
+        | Framework
+         deriving (Eq, Show)
 
 instance Tree Ty where
     fromTree Prog = App "Prog" []
@@ -27,47 +34,36 @@ instance Tree Ty where
     fromTree PlatF = App "PlatF" []
     fromTree Runnable = App "Runnable" []
     fromTree Framework = App "Framework" []
-    fromTree Top = App "Top" []
 
     toTree = parseTree [ app "Prog" (pure Prog),
                          app "Interp" (pure Interp),
                          app "Comp" (pure Comp),
                          app "PlatF" (pure PlatF),
                          app "Runnable" (pure Runnable),
-                         app "Framework" (pure Framework),
-                         app "Top" (pure Top)]
+                         app "Framework" (pure Framework)
+                       ]
 
 
 
 match :: Ty -> Ty -> Bool
-match _ Top = False
-match Top _ = False
-match Runnable Prog = True
-match Runnable Interp = True
-match Runnable Comp = True
+match Runnable Runnable = True
+match Runnable _ = False
+match Framework Framework = True
+match Framework _ = False
 match Prog Runnable = True
 match Interp Runnable = True
 match Comp Runnable = True
-match Framework Interp = True
-match Framework PlatF = True
 match Interp Framework = True
 match PlatF Framework = True
 match ty1 ty2 = ty1 == ty2
 
 
-typeOfExecute :: Ty -> Ty -> Ty
-typeOfExecute ty1 ty2
-    | not (match ty1 PlatF) && (match ty2 PlatF || match ty2 Interp) = ty1
-    | otherwise = Top
 
-typeOfCompile :: Ty -> Ty -> Ty
-typeOfCompile ty1 ty2
-    | not (match ty1 PlatF) && (match ty2 Comp) = ty1
-    | otherwise = Top
+findTypeInfo :: TypeInfo -> TypeInfo -> TypeInfo
+findTypeInfo  _ _ = TypeInfo [] [] []
+{-# LINE 65 "ag.hs" #-}
 
-{-# LINE 69 "Ag.hs" #-}
-
-{-# LINE 74 "AG\\Typing.ag" #-}
+{-# LINE 78 "AG\\Typing.ag" #-}
 
 checkRunnable :: SourcePos -> Ty -> [TyErr]
 checkRunnable _ ty | match ty Runnable = []
@@ -80,26 +76,37 @@ checkFramework _ ty | match ty Framework = []
 checkFramework pos ty                    = [TyErr pos nonFrame Framework ty]
     where
         nonFrame = "Cannot execute on non-Framework"
-{-# LINE 84 "Ag.hs" #-}
+{-# LINE 80 "ag.hs" #-}
 
-{-# LINE 93 "AG\\Typing.ag" #-}
+{-# LINE 97 "AG\\Typing.ag" #-}
 
 checkComp :: SourcePos -> Ty -> [TyErr]
 checkComp _ ty | match ty Comp = []
 checkComp pos ty               = [TyErr pos nonComp Comp ty]
     where
         nonComp = "Must be compiled using a compiler"
-{-# LINE 93 "Ag.hs" #-}
 
-{-# LINE 104 "AG\\Typing.ag" #-}
+checkLang :: SourcePos -> Ty -> Ty -> [TyErr]
+checkLang _ ty1 ty2 | match ty1 ty2 = []
+checkLang pos ty1 ty2              = [TyErr pos nonExe Runnable ty1]
+    where
+        nonExe = "Does not belong to the correct language"
+{-# LINE 95 "ag.hs" #-}
+
+{-# LINE 112 "AG\\Typing.ag" #-}
+
+data TypeInfo = TypeInfo {source :: [Ident], target :: [Ident], platform :: [Ident]}
+{-# LINE 100 "ag.hs" #-}
+
+{-# LINE 119 "AG\\Typing.ag" #-}
 
 data TyErr = TyErr SourcePos String Ty Ty
 
 instance Printable TyErr where
     pp = ppTyErr
-{-# LINE 101 "Ag.hs" #-}
+{-# LINE 108 "ag.hs" #-}
 
-{-# LINE 112 "AG\\Typing.ag" #-}
+{-# LINE 127 "AG\\Typing.ag" #-}
 
 -- | Pretty prints a type error message.
 ppTyErr :: TyErr -> Doc
@@ -110,7 +117,7 @@ ppTyErr (TyErr pos descr expected inferred)
                  describeSourcePos pos ++ ": Type error: " ++ descr ++ "."
     ppExpected = text "? expected : " >|< showable expected
     ppInferred = text "? inferred : " >|< showable inferred
-{-# LINE 114 "Ag.hs" #-}
+{-# LINE 121 "ag.hs" #-}
 
 {-# LINE 22 "AG\\Pos.ag" #-}
 
@@ -125,14 +132,14 @@ describeSourcePos (SourcePos (File file) EOF)    = file ++
 describeSourcePos (SourcePos Stdin (Pos ln col)) = "line " ++ show ln ++
                                                    ":column " ++ show col
 describeSourcePos (SourcePos Stdin EOF)          = "<at end of input>"
-{-# LINE 129 "Ag.hs" #-}
+{-# LINE 136 "ag.hs" #-}
 
-{-# LINE 14 "AG\\Base.ag" #-}
+{-# LINE 15 "AG\\Base.ag" #-}
 
 type Ident = String
-{-# LINE 134 "Ag.hs" #-}
+{-# LINE 141 "ag.hs" #-}
 
-{-# LINE 33 "AG\\Base.ag" #-}
+{-# LINE 34 "AG\\Base.ag" #-}
 
 instance Tree Diag where
   fromTree (Diag pos d) = App "Diag" [fromTree pos, fromTree d]
@@ -156,7 +163,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 160 "Ag.hs" #-}
+{-# LINE 167 "ag.hs" #-}
 -- Diag --------------------------------------------------------
 data Diag = Diag (SourcePos) (Diag_)
 -- cata
@@ -165,15 +172,15 @@ sem_Diag :: Diag ->
 sem_Diag (Diag _pos _d) =
     (sem_Diag_Diag _pos (sem_Diag_ _d))
 -- semantic domain
-type T_Diag = ( SourcePos,Ty,([TyErr]))
+type T_Diag = ( SourcePos,Ty,([TyErr]),TypeInfo)
 data Inh_Diag = Inh_Diag {}
-data Syn_Diag = Syn_Diag {pos_Syn_Diag :: SourcePos,ty_Syn_Diag :: Ty,tyErrs_Syn_Diag :: ([TyErr])}
+data Syn_Diag = Syn_Diag {pos_Syn_Diag :: SourcePos,ty_Syn_Diag :: Ty,tyErrs_Syn_Diag :: ([TyErr]),tyInfo_Syn_Diag :: TypeInfo}
 wrap_Diag :: T_Diag ->
              Inh_Diag ->
              Syn_Diag
 wrap_Diag sem (Inh_Diag) =
-    (let ( _lhsOpos,_lhsOty,_lhsOtyErrs) = sem
-     in  (Syn_Diag _lhsOpos _lhsOty _lhsOtyErrs))
+    (let ( _lhsOpos,_lhsOty,_lhsOtyErrs,_lhsOtyInfo) = sem
+     in  (Syn_Diag _lhsOpos _lhsOty _lhsOtyErrs _lhsOtyInfo))
 sem_Diag_Diag :: SourcePos ->
                  T_Diag_ ->
                  T_Diag
@@ -182,31 +189,38 @@ sem_Diag_Diag pos_ d_ =
          _dOpos :: SourcePos
          _lhsOtyErrs :: ([TyErr])
          _lhsOty :: Ty
+         _lhsOtyInfo :: TypeInfo
          _dIty :: Ty
          _dItyErrs :: ([TyErr])
+         _dItyInfo :: TypeInfo
          _lhsOpos =
              ({-# LINE 14 "AG\\Pos.ag" #-}
               pos_
-              {-# LINE 191 "Ag.hs" #-}
+              {-# LINE 200 "ag.hs" #-}
               )
          _dOpos =
              ({-# LINE 20 "AG\\Pos.ag" #-}
               pos_
-              {-# LINE 196 "Ag.hs" #-}
+              {-# LINE 205 "ag.hs" #-}
               )
          _lhsOtyErrs =
-             ({-# LINE 59 "AG\\Typing.ag" #-}
+             ({-# LINE 53 "AG\\Typing.ag" #-}
               _dItyErrs
-              {-# LINE 201 "Ag.hs" #-}
+              {-# LINE 210 "ag.hs" #-}
               )
          _lhsOty =
-             ({-# LINE 58 "AG\\Typing.ag" #-}
+             ({-# LINE 52 "AG\\Typing.ag" #-}
               _dIty
-              {-# LINE 206 "Ag.hs" #-}
+              {-# LINE 215 "ag.hs" #-}
               )
-         ( _dIty,_dItyErrs) =
+         _lhsOtyInfo =
+             ({-# LINE 54 "AG\\Typing.ag" #-}
+              _dItyInfo
+              {-# LINE 220 "ag.hs" #-}
+              )
+         ( _dIty,_dItyErrs,_dItyInfo) =
              d_ _dOpos
-     in  ( _lhsOpos,_lhsOty,_lhsOtyErrs))
+     in  ( _lhsOpos,_lhsOty,_lhsOtyErrs,_lhsOtyInfo))
 -- Diag_ -------------------------------------------------------
 data Diag_ = Program (Ident) (Ident)
            | Platform (Ident)
@@ -231,50 +245,62 @@ sem_Diag_ (Compile _d1 _d2) =
     (sem_Diag__Compile (sem_Diag _d1) (sem_Diag _d2))
 -- semantic domain
 type T_Diag_ = SourcePos ->
-               ( Ty,([TyErr]))
+               ( Ty,([TyErr]),TypeInfo)
 data Inh_Diag_ = Inh_Diag_ {pos_Inh_Diag_ :: SourcePos}
-data Syn_Diag_ = Syn_Diag_ {ty_Syn_Diag_ :: Ty,tyErrs_Syn_Diag_ :: ([TyErr])}
+data Syn_Diag_ = Syn_Diag_ {ty_Syn_Diag_ :: Ty,tyErrs_Syn_Diag_ :: ([TyErr]),tyInfo_Syn_Diag_ :: TypeInfo}
 wrap_Diag_ :: T_Diag_ ->
               Inh_Diag_ ->
               Syn_Diag_
 wrap_Diag_ sem (Inh_Diag_ _lhsIpos) =
-    (let ( _lhsOty,_lhsOtyErrs) = sem _lhsIpos
-     in  (Syn_Diag_ _lhsOty _lhsOtyErrs))
+    (let ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo) = sem _lhsIpos
+     in  (Syn_Diag_ _lhsOty _lhsOtyErrs _lhsOtyInfo))
 sem_Diag__Program :: Ident ->
                      Ident ->
                      T_Diag_
 sem_Diag__Program p_ l_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _lhsOty =
-                  ({-# LINE 62 "AG\\Typing.ag" #-}
+                  ({-# LINE 57 "AG\\Typing.ag" #-}
                    Prog
-                   {-# LINE 254 "Ag.hs" #-}
+                   {-# LINE 269 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 65 "AG\\Typing.ag" #-}
+                   TypeInfo [l_] [] []
+                   {-# LINE 274 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 59 "AG\\Typing.ag" #-}
+                  ({-# LINE 53 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 259 "Ag.hs" #-}
+                   {-# LINE 279 "ag.hs" #-}
                    )
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))
 sem_Diag__Platform :: Ident ->
                       T_Diag_
 sem_Diag__Platform m_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _lhsOty =
-                  ({-# LINE 65 "AG\\Typing.ag" #-}
+                  ({-# LINE 60 "AG\\Typing.ag" #-}
                    PlatF
-                   {-# LINE 271 "Ag.hs" #-}
+                   {-# LINE 292 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 68 "AG\\Typing.ag" #-}
+                   TypeInfo [] [] [m_]
+                   {-# LINE 297 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 59 "AG\\Typing.ag" #-}
+                  ({-# LINE 53 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 276 "Ag.hs" #-}
+                   {-# LINE 302 "ag.hs" #-}
                    )
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))
 sem_Diag__Interpreter :: Ident ->
                          Ident ->
                          Ident ->
@@ -282,18 +308,24 @@ sem_Diag__Interpreter :: Ident ->
 sem_Diag__Interpreter i_ l_ m_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _lhsOty =
-                  ({-# LINE 63 "AG\\Typing.ag" #-}
+                  ({-# LINE 58 "AG\\Typing.ag" #-}
                    Interp
-                   {-# LINE 290 "Ag.hs" #-}
+                   {-# LINE 317 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 66 "AG\\Typing.ag" #-}
+                   TypeInfo [l_] [] [m_]
+                   {-# LINE 322 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 59 "AG\\Typing.ag" #-}
+                  ({-# LINE 53 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 295 "Ag.hs" #-}
+                   {-# LINE 327 "ag.hs" #-}
                    )
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))
 sem_Diag__Compiler :: Ident ->
                       Ident ->
                       Ident ->
@@ -302,75 +334,98 @@ sem_Diag__Compiler :: Ident ->
 sem_Diag__Compiler c_ l1_ l2_ m_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _lhsOty =
-                  ({-# LINE 64 "AG\\Typing.ag" #-}
+                  ({-# LINE 59 "AG\\Typing.ag" #-}
                    Comp
-                   {-# LINE 310 "Ag.hs" #-}
+                   {-# LINE 343 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 67 "AG\\Typing.ag" #-}
+                   TypeInfo [l1_] [l2_] [m_]
+                   {-# LINE 348 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 59 "AG\\Typing.ag" #-}
+                  ({-# LINE 53 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 315 "Ag.hs" #-}
+                   {-# LINE 353 "ag.hs" #-}
                    )
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))
 sem_Diag__Execute :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Execute d1_ d2_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _d1Ipos :: SourcePos
               _d1Ity :: Ty
               _d1ItyErrs :: ([TyErr])
+              _d1ItyInfo :: TypeInfo
               _d2Ipos :: SourcePos
               _d2Ity :: Ty
               _d2ItyErrs :: ([TyErr])
+              _d2ItyInfo :: TypeInfo
               _lhsOty =
-                  ({-# LINE 66 "AG\\Typing.ag" #-}
-                   typeOfExecute _d1Ity _d2Ity
-                   {-# LINE 334 "Ag.hs" #-}
+                  ({-# LINE 61 "AG\\Typing.ag" #-}
+                   _d1Ity
+                   {-# LINE 375 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 70 "AG\\Typing.ag" #-}
+                   findTypeInfo _d1ItyInfo _d2ItyInfo
+                   {-# LINE 380 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 70 "AG\\Typing.ag" #-}
+                  ({-# LINE 73 "AG\\Typing.ag" #-}
                    _d1ItyErrs ++ _d2ItyErrs ++
                    checkRunnable _d1Ipos _d1Ity ++
-                   checkFramework _d2Ipos _d2Ity
-                   {-# LINE 341 "Ag.hs" #-}
+                   checkFramework _d2Ipos _d2Ity ++
+                   checkLang _d1Ipos _d1Ity _d2Ity
+                   {-# LINE 388 "ag.hs" #-}
                    )
-              ( _d1Ipos,_d1Ity,_d1ItyErrs) =
+              ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1ItyInfo) =
                   d1_
-              ( _d2Ipos,_d2Ity,_d2ItyErrs) =
+              ( _d2Ipos,_d2Ity,_d2ItyErrs,_d2ItyInfo) =
                   d2_
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))
 sem_Diag__Compile :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Compile d1_ d2_ =
     (\ _lhsIpos ->
          (let _lhsOty :: Ty
+              _lhsOtyInfo :: TypeInfo
               _lhsOtyErrs :: ([TyErr])
               _d1Ipos :: SourcePos
               _d1Ity :: Ty
               _d1ItyErrs :: ([TyErr])
+              _d1ItyInfo :: TypeInfo
               _d2Ipos :: SourcePos
               _d2Ity :: Ty
               _d2ItyErrs :: ([TyErr])
+              _d2ItyInfo :: TypeInfo
               _lhsOty =
-                  ({-# LINE 67 "AG\\Typing.ag" #-}
-                   typeOfCompile _d1Ity _d2Ity
-                   {-# LINE 364 "Ag.hs" #-}
+                  ({-# LINE 62 "AG\\Typing.ag" #-}
+                   _d1Ity
+                   {-# LINE 414 "ag.hs" #-}
+                   )
+              _lhsOtyInfo =
+                  ({-# LINE 69 "AG\\Typing.ag" #-}
+                   findTypeInfo _d1ItyInfo _d2ItyInfo
+                   {-# LINE 419 "ag.hs" #-}
                    )
               _lhsOtyErrs =
-                  ({-# LINE 89 "AG\\Typing.ag" #-}
+                  ({-# LINE 93 "AG\\Typing.ag" #-}
                    _d1ItyErrs ++ _d2ItyErrs ++
                    checkRunnable _d1Ipos _d1Ity ++
                    checkComp _d2Ipos _d2Ity
-                   {-# LINE 371 "Ag.hs" #-}
+                   {-# LINE 426 "ag.hs" #-}
                    )
-              ( _d1Ipos,_d1Ity,_d1ItyErrs) =
+              ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1ItyInfo) =
                   d1_
-              ( _d2Ipos,_d2Ity,_d2ItyErrs) =
+              ( _d2Ipos,_d2Ity,_d2ItyErrs,_d2ItyInfo) =
                   d2_
-          in  ( _lhsOty,_lhsOtyErrs)))
+          in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo)))

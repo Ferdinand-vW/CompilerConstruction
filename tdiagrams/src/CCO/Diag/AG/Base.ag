@@ -1,6 +1,7 @@
 imports
 {
 import CCO.Feedback
+import CCO.Printing
 import CCO.SourcePos        (SourcePos)
 import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
