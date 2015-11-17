@@ -1,13 +1,3 @@
-imports
-{
-import CCO.Printing
-import CCO.SourcePos        (SourcePos)
-import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
-import CCO.Tree.Parser      (parseTree, app)
-import Control.Applicative  (Applicative (pure))
-}
-
-
 -------------------Syntax-----------------
 
 {
@@ -41,6 +31,7 @@ instance Tree Ty where
                          app "PlatF" (PlatF <$> arg),
                          app "Runnable" (pure Runnable),
                          app "Framework" (pure Framework),
+<<<<<<< HEAD
                          app "Err" (pure Err),
                          app "CompileTy" (CompileTy <$> arg <*> arg),
                          app "ExecInter" (ExecInter <$> arg <*> arg),
@@ -77,6 +68,25 @@ newExecuteType ty1 ty2 = case ty1 of
                             (Plat m) -> ExecPlat m
                             (Interp _) -> ty2
                             (Comp _) -> ty2
+=======
+                         app "Top" (pure Top)]
+
+match :: Ty -> Ty -> Bool
+match _ Top = False
+match Top _ = False
+match Runnable Prog = True
+match Runnable Interp = True
+match Runnable Comp = True
+match Prog Runnable = True
+match Interp Runnable = True
+match Comp Runnable = True
+match Framework Interp = True
+match Framework PlatF = True
+match Interp Framework = True
+match PlatF Framework = True
+match ty1 ty2 = ty1 == ty2
+
+>>>>>>> d8aa3f9b4584a30c25743de3156f0d18be3f8a10
 
 typeOfExecute :: Ty -> Ty -> Ty
 typeOfExecute ty1 ty2
