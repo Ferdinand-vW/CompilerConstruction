@@ -41,8 +41,16 @@ match ty1 ty2 = ty1 == ty2
 
 
 
-findTypeInfo :: TypeInfo -> TypeInfo -> TypeInfo
-findTypeInfo  _ _ = TypeInfo [] [] []
+joinTypeInfo :: Diag_ -> Diag_ -> TypeInfo -> TypeInfo -> TypeInfo
+joinTypeInfo (Execute _ _) (Execute _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo (Execute _ _) (Compile _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo (Execute _ _) d2 (TypeInfo s1 m1) (TypeInfo s2 t2 m2)            = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo (Compile _ _) (Execute _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo (Compile _ _) (Compile _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo (Compile _ _) d2 (TypeInfo s1 m1) (TypeInfo s2 t2 m2)            = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+joinTypeInfo d1 d2 (TypeInfo s1 t1 m1) (TypeInfo s2 t2 m2)                    = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
+
+
 }
 
 
@@ -66,8 +74,8 @@ sem Diag_
     | Interpreter lhs.tyInfo = TypeInfo [@l] [] [@m]
     | Compiler lhs.tyInfo = TypeInfo [@l1] [@l2] [@m]
     | Platform lhs.tyInfo = TypeInfo [] [] [@m]
-    | Compile lhs.tyInfo = findTypeInfo @d1.tyInfo @d2.tyInfo
-    | Execute lhs.tyInfo = findTypeInfo @d1.tyInfo @d2.tyInfo
+    | Compile lhs.tyInfo = joinTypeInfo @d1 @d2 @d1.tyInfo @d2.tyInfo
+    | Execute lhs.tyInfo = joinTypeInfo @d1.tyInfo @d2.tyInfo
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
