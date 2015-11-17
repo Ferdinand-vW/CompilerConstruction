@@ -1,13 +1,3 @@
-imports
-{
-import CCO.Printing
-import CCO.SourcePos        (SourcePos)
-import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
-import CCO.Tree.Parser      (parseTree, app)
-import Control.Applicative  (Applicative (pure))
-}
-
-
 -------------------Syntax-----------------
 
 {
@@ -29,8 +19,6 @@ instance Tree Ty where
                          app "Runnable" (pure Runnable),
                          app "Framework" (pure Framework),
                          app "Top" (pure Top)]
-
-
 
 match :: Ty -> Ty -> Bool
 match _ Top = False
