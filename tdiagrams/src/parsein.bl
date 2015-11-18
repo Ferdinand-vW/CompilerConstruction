@@ -1,6 +1,6 @@
 execute
     compile
-        interpreter m for Test in i6
+        program m in h
     with
         compiler uuagc from Haskell to Haskell in i686-windows
     end
