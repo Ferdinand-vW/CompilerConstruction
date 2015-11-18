@@ -76,14 +76,14 @@ sem Diag_
 
 {
 checkRunnable :: SourcePos -> Ty -> [TyErr]
-checkRunnable _ ty | match ty Runnable = []
-checkRunnable pos ty                   = [TyErr pos nonExe Runnable ty]
+checkRunnable pos ty | match ty Runnable = []
+                     | otherwise          = [TyErr pos nonExe Runnable ty]
     where
         nonExe = "Cannot execute a non-runnable"
 
 checkFramework :: SourcePos -> Ty -> [TyErr]
-checkFramework _ ty | match ty Framework = []
-checkFramework pos ty                    = [TyErr pos nonFrame Framework ty]
+checkFramework pos ty | match ty Framework = []
+                      | otherwise          = [TyErr pos nonFrame Framework ty]
     where
         nonFrame = "Cannot execute on non-Framework"
 }
@@ -110,14 +110,14 @@ sem Diag_
 
 {
 checkIfMatches :: SourcePos -> Ty -> Ty -> TyInfo -> TyInfo -> [TyInfoErr]
-checkIfMatches _ Prog Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo s1 s2 = []
-checkIfMatches pos Prog Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos s1 s2
-checkIfMatches _ _ Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo m1 s2 = []
-checkIfMatches pos _ Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos m1 s2
-checkIfMatches _ Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo s1 m2 = []
-checkIfMatches pos Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos s1 m2
-checkIfMatches _ _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo m1 m2 = []
-checkIfMatches pos _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos m1 m2
+checkIfMatches pos Prog Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo s1 s2 = []
+                                                                   | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos _ Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)    | matchInfo m1 s2 = []
+                                                                   | otherwise = genTyInfoErr pos m1 s2
+checkIfMatches pos Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)  | matchInfo s1 m2 = []
+                                                                   | otherwise = genTyInfoErr pos s1 m2
+checkIfMatches pos _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)     | matchInfo m1 m2 = []
+                                                                   | otherwise = genTyInfoErr pos m1 m2
 checkIfMatches pos Prog Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)   | matchInfo s1 s2 = []
                                                                    | otherwise = genTyInfoErr pos s1 s2
 checkIfMatches pos _ Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)      | matchInfo m1 s2 = []
