@@ -105,6 +105,8 @@ checkComp pos ty               = [TyErr pos nonComp Comp ty]
 sem Diag_
     | Execute lhs.tyInfoErrs = @d1.tyInfoErrs ++ @d2.tyInfoErrs ++
                                 checkIfMatches @d1.pos @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
+    | Compile lhs.tyInfoErrs = @d1.tyInfoErrs ++ @d2.tyInfoErrs ++
+                                checkIfMatches @d1.pos @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
 
 {
 checkIfMatches :: SourcePos -> Ty -> Ty -> TyInfo -> TyInfo -> [TyInfoErr]
@@ -116,7 +118,13 @@ checkIfMatches _ Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo s1 m
 checkIfMatches pos Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos s1 m2
 checkIfMatches _ _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo m1 m2 = []
 checkIfMatches pos _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos m1 m2
+checkIfMatches pos Prog Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)   | matchInfo s1 s2 = []
+                                                                   | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos _ Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)      | matchInfo m1 s2 = []
+                                                                   | otherwise = genTyInfoErr pos m1 s2
 checkIfMatches _ _ _ _ _ = [] --Type error has occurred so we cannot match type infos
+
+
 
 genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyInfoErr]
 genTyInfoErr pos mi mj = [TyInfoErr pos descr mi mj]
