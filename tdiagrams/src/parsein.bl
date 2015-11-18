@@ -1,9 +1,9 @@
 execute
     compile
-        program m in h
+        interpreter m for Test in i6
     with
-        compiler uuagc from UUAG to Haskell in i686-windows
+        compiler uuagc from Haskell to Haskell in i686-windows
     end
 on
-    interpreter hugs for Haskell in i686-windows
+    interpreter hugs for i6 in i686-windows
 end

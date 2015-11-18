@@ -27,4 +27,5 @@ import CCO.Printing
 checkTy :: Diag -> Feedback Ty
 checkTy t = do let syn = wrap_Diag (sem_Diag t) Inh_Diag
                messages [Error (pp tyErr) | tyErr <- tyErrs_Syn_Diag syn]
+               messages [Error (pp tyInfoErr) | tyInfoErr <- tyInfoErrs_Syn_Diag syn]
                return (ty_Syn_Diag syn)

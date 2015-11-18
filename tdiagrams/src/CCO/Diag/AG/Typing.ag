@@ -39,18 +39,9 @@ match Interp Framework = True
 match PlatF Framework = True
 match ty1 ty2 = ty1 == ty2
 
-
-
-joinTypeInfo :: Diag_ -> Diag_ -> TypeInfo -> TypeInfo -> TypeInfo
-joinTypeInfo (Execute _ _) (Execute _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo (Execute _ _) (Compile _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo (Execute _ _) d2 (TypeInfo s1 m1) (TypeInfo s2 t2 m2)            = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo (Compile _ _) (Execute _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo (Compile _ _) (Compile _ _) (TypeInfo s1 m1) (TypeInfo s2 t2 m2) = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo (Compile _ _) d2 (TypeInfo s1 m1) (TypeInfo s2 t2 m2)            = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-joinTypeInfo d1 d2 (TypeInfo s1 t1 m1) (TypeInfo s2 t2 m2)                    = TypeInfo (s1 ++ s2) (t1 ++ t2) (m1 ++ m2)
-
-
+matchInfo :: Maybe Ident -> Maybe Ident -> Bool
+matchInfo (Just i) (Just j) = i == j
+matchInfo _ _ = True
 }
 
 
@@ -59,29 +50,29 @@ joinTypeInfo d1 d2 (TypeInfo s1 t1 m1) (TypeInfo s2 t2 m2)                    = 
 attr Diag Diag_
     syn ty :: {Ty}
     syn tyErrs use {++} {[]} :: {[TyErr]}
-    syn tyInfo :: {TypeInfo}
+    syn tyInfo :: {TyInfo}
+    syn tyInfoErrs use {++} {[]} :: {[TyInfoErr]}
 
 sem Diag_
     | Program lhs.ty = Prog
     | Interpreter lhs.ty = Interp
     | Compiler lhs.ty = Comp
     | Platform lhs.ty = PlatF
-    | Execute lhs.ty = @d1.ty
+    | Execute lhs.ty = @d2.ty
     | Compile lhs.ty = @d1.ty
 
 sem Diag_
-    | Program lhs.tyInfo = TypeInfo [@l] [] []
-    | Interpreter lhs.tyInfo = TypeInfo [@l] [] [@m]
-    | Compiler lhs.tyInfo = TypeInfo [@l1] [@l2] [@m]
-    | Platform lhs.tyInfo = TypeInfo [] [] [@m]
-    | Compile lhs.tyInfo = joinTypeInfo @d1 @d2 @d1.tyInfo @d2.tyInfo
-    | Execute lhs.tyInfo = joinTypeInfo @d1.tyInfo @d2.tyInfo
+    | Program lhs.tyInfo = TyInfo (Just @l) Nothing Nothing
+    | Interpreter lhs.tyInfo = TyInfo (Just @l) Nothing (Just @m)
+    | Compiler lhs.tyInfo = TyInfo (Just @l1) (Just @l2) (Just @m)
+    | Platform lhs.tyInfo = TyInfo Nothing Nothing (Just @m)
+    | Execute lhs.tyInfo = @d2.tyInfo
+    | Compile lhs.tyInfo = @d1.tyInfo
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
                             checkRunnable @d1.pos @d1.ty ++
-                            checkFramework @d2.pos @d2.ty ++
-                            checkLang @d1.pos @d1.ty @d2.ty
+                            checkFramework @d2.pos @d2.ty
 
 {
 checkRunnable :: SourcePos -> Ty -> [TyErr]
@@ -109,16 +100,34 @@ checkComp pos ty               = [TyErr pos nonComp Comp ty]
     where
         nonComp = "Must be compiled using a compiler"
 
-checkLang :: SourcePos -> Ty -> Ty -> [TyErr]
-checkLang _ ty1 ty2 | match ty1 ty2 = []
-checkLang pos ty1 ty2              = [TyErr pos nonExe Runnable ty1]
+}
+
+sem Diag_
+    | Execute lhs.tyInfoErrs = @d1.tyInfoErrs ++ @d2.tyInfoErrs ++
+                                checkIfMatches @d1.pos @d2.ty @d1.tyInfo @d2.tyInfo
+
+{
+checkIfMatches :: SourcePos -> Ty -> TyInfo -> TyInfo -> [TyInfoErr]
+checkIfMatches _ Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo m1 s2 = []
+checkIfMatches pos Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos m1 s2
+checkIfMatches _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo m1 m2 = []
+checkIfMatches pos PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = genTyInfoErr pos m1 m2
+checkIfMatches _ _ _ _ = [] --Type error has occurred so we cannot match type infos
+
+genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyInfoErr]
+genTyInfoErr pos mi mj = [TyInfoErr pos descr mi mj]
     where
-        nonExe = "Does not belong to the correct language"
+        descr = "Cannot execute runnable on a non-matching platform or interpreter"
 }
 
 --------------------Type Info-------------------------
 {
-data TypeInfo = TypeInfo {source :: [Ident], target :: [Ident], platform :: [Ident]}
+data TyInfo = TyInfo {source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}
+
+data TyInfoErr = TyInfoErr SourcePos String (Maybe Ident) (Maybe Ident)
+
+instance Printable TyInfoErr where
+    pp = ppTyInfoErr
 }
 
 
@@ -142,4 +151,14 @@ ppTyErr (TyErr pos descr expected inferred)
                  describeSourcePos pos ++ ": Type error: " ++ descr ++ "."
     ppExpected = text "? expected : " >|< showable expected
     ppInferred = text "? inferred : " >|< showable inferred
+
+-- | Pretty prints a type info error message
+ppTyInfoErr :: TyInfoErr -> Doc
+ppTyInfoErr (TyInfoErr pos descr expected inferred)
+    = above [ppHeader, text " ", ppExpected, ppInferred]
+    where
+        ppHeader = wrapped $
+                    describeSourcePos pos ++ ": Type info error: " ++ descr ++ "."
+        ppExpected = text "? expected : " >|< showable expected
+        ppInferred = text "? inferred : " >|< showable inferred            
 }
