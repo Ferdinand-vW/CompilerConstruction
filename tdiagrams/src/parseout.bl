@@ -4,7 +4,7 @@ Diag(
     Diag(
       SourcePos(Stdin, Pos(2, 5))
     , Compile(
-        Diag(SourcePos(Stdin, Pos(3, 9)), Program("m", "h"))
+        Diag(SourcePos(Stdin, Pos(3, 9)), Interpreter("h", "2", "h"))
       , Diag(
           SourcePos(Stdin, Pos(5, 9))
         , Compiler("uuagc", "Haskell", "Haskell", "i686-windows")

@@ -1,6 +1,6 @@
 execute
     compile
-        program m in h
+        interpreter h for 2 in h
     with
         compiler uuagc from Haskell to Haskell in i686-windows
     end

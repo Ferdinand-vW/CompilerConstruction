@@ -130,23 +130,22 @@ instance Printable TyErr where
 -- | Pretty prints a type error message.
 ppTyErr :: TyErr -> Doc
 ppTyErr (TyErr pos descr expected inferred)
-  = above [ppHeader, text " ", ppExpected, ppInferred]
-  where
-    ppHeader   = wrapped $
-                 describeSourcePos pos ++ ": Type error: " ++ descr ++ "."
-    ppExpected = text "? expected : " >|< showable expected
-    ppInferred = text "? inferred : " >|< showable inferred
+  = ppErr "Type error" pos descr expected inferred
 
 -- | Pretty prints a type info error message
 ppTyInfoErr :: TyInfoErr -> Doc
 ppTyInfoErr (TyInfoErr pos descr expected inferred)
-    = above [ppHeader, text " ", ppExpected, ppInferred]
+    = ppErr "Type info error" pos descr expected inferred
+
+ppErr :: (Show a, Show b) => String -> SourcePos -> String -> a -> b -> Doc
+ppErr msg pos descr a b =
+    above [ppHeader, text " ", ppExpected, ppInferred]
     where
         ppHeader = wrapped $
-                    describeSourcePos pos ++ ": Type info error: " ++ descr ++ "."
-        ppExpected = text "? expected : " >|< showable expected
-        ppInferred = text "? inferred : " >|< showable inferred            
-{-# LINE 150 "Ag.hs" #-}
+                    describeSourcePos pos ++ ": " ++ msg ++ ": " ++ descr ++ "."
+        ppExpected = text "? expected : " >|< showable a
+        ppInferred = text "? inferred : " >|< showable b
+{-# LINE 149 "Ag.hs" #-}
 
 {-# LINE 22 "AG\\Pos.ag" #-}
 
@@ -161,12 +160,12 @@ describeSourcePos (SourcePos (File file) EOF)    = file ++
 describeSourcePos (SourcePos Stdin (Pos ln col)) = "line " ++ show ln ++
                                                    ":column " ++ show col
 describeSourcePos (SourcePos Stdin EOF)          = "<at end of input>"
-{-# LINE 165 "Ag.hs" #-}
+{-# LINE 164 "Ag.hs" #-}
 
 {-# LINE 16 "AG\\Base.ag" #-}
 
 type Ident = String
-{-# LINE 170 "Ag.hs" #-}
+{-# LINE 169 "Ag.hs" #-}
 
 {-# LINE 35 "AG\\Base.ag" #-}
 
@@ -192,7 +191,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 196 "Ag.hs" #-}
+{-# LINE 195 "Ag.hs" #-}
 -- Diag --------------------------------------------------------
 data Diag = Diag (SourcePos) (Diag_)
 -- cata
@@ -227,32 +226,32 @@ sem_Diag_Diag pos_ d_ =
          _lhsOpos =
              ({-# LINE 14 "AG\\Pos.ag" #-}
               pos_
-              {-# LINE 231 "Ag.hs" #-}
+              {-# LINE 230 "Ag.hs" #-}
               )
          _dOpos =
              ({-# LINE 20 "AG\\Pos.ag" #-}
               pos_
-              {-# LINE 236 "Ag.hs" #-}
+              {-# LINE 235 "Ag.hs" #-}
               )
          _lhsOtyErrs =
              ({-# LINE 52 "AG\\Typing.ag" #-}
               _dItyErrs
-              {-# LINE 241 "Ag.hs" #-}
+              {-# LINE 240 "Ag.hs" #-}
               )
          _lhsOtyInfoErrs =
              ({-# LINE 54 "AG\\Typing.ag" #-}
               _dItyInfoErrs
-              {-# LINE 246 "Ag.hs" #-}
+              {-# LINE 245 "Ag.hs" #-}
               )
          _lhsOty =
              ({-# LINE 51 "AG\\Typing.ag" #-}
               _dIty
-              {-# LINE 251 "Ag.hs" #-}
+              {-# LINE 250 "Ag.hs" #-}
               )
          _lhsOtyInfo =
              ({-# LINE 53 "AG\\Typing.ag" #-}
               _dItyInfo
-              {-# LINE 256 "Ag.hs" #-}
+              {-# LINE 255 "Ag.hs" #-}
               )
          ( _dIty,_dItyErrs,_dItyInfo,_dItyInfoErrs) =
              d_ _dOpos
@@ -302,22 +301,22 @@ sem_Diag__Program p_ l_ =
               _lhsOty =
                   ({-# LINE 57 "AG\\Typing.ag" #-}
                    Prog
-                   {-# LINE 306 "Ag.hs" #-}
+                   {-# LINE 305 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 65 "AG\\Typing.ag" #-}
                    TyInfo (Just l_) Nothing Nothing
-                   {-# LINE 311 "Ag.hs" #-}
+                   {-# LINE 310 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 52 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 316 "Ag.hs" #-}
+                   {-# LINE 315 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 54 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 321 "Ag.hs" #-}
+                   {-# LINE 320 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo,_lhsOtyInfoErrs)))
 sem_Diag__Platform :: Ident ->
@@ -331,22 +330,22 @@ sem_Diag__Platform m_ =
               _lhsOty =
                   ({-# LINE 60 "AG\\Typing.ag" #-}
                    PlatF
-                   {-# LINE 335 "Ag.hs" #-}
+                   {-# LINE 334 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 68 "AG\\Typing.ag" #-}
                    TyInfo Nothing Nothing (Just m_)
-                   {-# LINE 340 "Ag.hs" #-}
+                   {-# LINE 339 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 52 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 345 "Ag.hs" #-}
+                   {-# LINE 344 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 54 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 350 "Ag.hs" #-}
+                   {-# LINE 349 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo,_lhsOtyInfoErrs)))
 sem_Diag__Interpreter :: Ident ->
@@ -362,22 +361,22 @@ sem_Diag__Interpreter i_ l_ m_ =
               _lhsOty =
                   ({-# LINE 58 "AG\\Typing.ag" #-}
                    Interp
-                   {-# LINE 366 "Ag.hs" #-}
+                   {-# LINE 365 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 66 "AG\\Typing.ag" #-}
                    TyInfo (Just l_) Nothing (Just m_)
-                   {-# LINE 371 "Ag.hs" #-}
+                   {-# LINE 370 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 52 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 376 "Ag.hs" #-}
+                   {-# LINE 375 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 54 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 381 "Ag.hs" #-}
+                   {-# LINE 380 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo,_lhsOtyInfoErrs)))
 sem_Diag__Compiler :: Ident ->
@@ -394,22 +393,22 @@ sem_Diag__Compiler c_ l1_ l2_ m_ =
               _lhsOty =
                   ({-# LINE 59 "AG\\Typing.ag" #-}
                    Comp
-                   {-# LINE 398 "Ag.hs" #-}
+                   {-# LINE 397 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 67 "AG\\Typing.ag" #-}
                    TyInfo (Just l1_) (Just l2_) (Just m_)
-                   {-# LINE 403 "Ag.hs" #-}
+                   {-# LINE 402 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 52 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 408 "Ag.hs" #-}
+                   {-# LINE 407 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 54 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 413 "Ag.hs" #-}
+                   {-# LINE 412 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtyInfo,_lhsOtyInfoErrs)))
 sem_Diag__Execute :: T_Diag ->
@@ -434,25 +433,25 @@ sem_Diag__Execute d1_ d2_ =
               _lhsOty =
                   ({-# LINE 61 "AG\\Typing.ag" #-}
                    _d2Ity
-                   {-# LINE 438 "Ag.hs" #-}
+                   {-# LINE 437 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 69 "AG\\Typing.ag" #-}
                    _d2ItyInfo
-                   {-# LINE 443 "Ag.hs" #-}
+                   {-# LINE 442 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 73 "AG\\Typing.ag" #-}
                    _d1ItyErrs ++ _d2ItyErrs ++
                    checkRunnable _d1Ipos _d1Ity ++
                    checkFramework _d2Ipos _d2Ity
-                   {-# LINE 450 "Ag.hs" #-}
+                   {-# LINE 449 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 106 "AG\\Typing.ag" #-}
                    _d1ItyInfoErrs ++ _d2ItyInfoErrs ++
                     checkIfMatches _d1Ipos _d1Ity _d2Ity _d1ItyInfo _d2ItyInfo
-                   {-# LINE 456 "Ag.hs" #-}
+                   {-# LINE 455 "Ag.hs" #-}
                    )
               ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1ItyInfo,_d1ItyInfoErrs) =
                   d1_
@@ -481,24 +480,24 @@ sem_Diag__Compile d1_ d2_ =
               _lhsOty =
                   ({-# LINE 62 "AG\\Typing.ag" #-}
                    _d1Ity
-                   {-# LINE 485 "Ag.hs" #-}
+                   {-# LINE 484 "Ag.hs" #-}
                    )
               _lhsOtyInfo =
                   ({-# LINE 70 "AG\\Typing.ag" #-}
                    _d1ItyInfo
-                   {-# LINE 490 "Ag.hs" #-}
+                   {-# LINE 489 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 92 "AG\\Typing.ag" #-}
                    _d1ItyErrs ++ _d2ItyErrs ++
                    checkRunnable _d1Ipos _d1Ity ++
                    checkComp _d2Ipos _d2Ity
-                   {-# LINE 497 "Ag.hs" #-}
+                   {-# LINE 496 "Ag.hs" #-}
                    )
               _lhsOtyInfoErrs =
                   ({-# LINE 54 "AG\\Typing.ag" #-}
                    _d1ItyInfoErrs ++ _d2ItyInfoErrs
-                   {-# LINE 502 "Ag.hs" #-}
+                   {-# LINE 501 "Ag.hs" #-}
                    )
               ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1ItyInfo,_d1ItyInfoErrs) =
                   d1_

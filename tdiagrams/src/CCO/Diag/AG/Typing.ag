@@ -149,20 +149,19 @@ instance Printable TyErr where
 -- | Pretty prints a type error message.
 ppTyErr :: TyErr -> Doc
 ppTyErr (TyErr pos descr expected inferred)
-  = above [ppHeader, text " ", ppExpected, ppInferred]
-  where
-    ppHeader   = wrapped $
-                 describeSourcePos pos ++ ": Type error: " ++ descr ++ "."
-    ppExpected = text "? expected : " >|< showable expected
-    ppInferred = text "? inferred : " >|< showable inferred
+  = ppErr "Type error" pos descr expected inferred
 
 -- | Pretty prints a type info error message
 ppTyInfoErr :: TyInfoErr -> Doc
 ppTyInfoErr (TyInfoErr pos descr expected inferred)
-    = above [ppHeader, text " ", ppExpected, ppInferred]
+    = ppErr "Type info error" pos descr expected inferred
+
+ppErr :: (Show a, Show b) => String -> SourcePos -> String -> a -> b -> Doc
+ppErr msg pos descr a b =
+    above [ppHeader, text " ", ppExpected, ppInferred]
     where
         ppHeader = wrapped $
-                    describeSourcePos pos ++ ": Type info error: " ++ descr ++ "."
-        ppExpected = text "? expected : " >|< showable expected
-        ppInferred = text "? inferred : " >|< showable inferred            
+                    describeSourcePos pos ++ ": " ++ msg ++ ": " ++ descr ++ "."
+        ppExpected = text "? expected : " >|< showable a
+        ppInferred = text "? inferred : " >|< showable b
 }
