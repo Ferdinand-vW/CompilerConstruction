@@ -1,0 +1,13 @@
+Diag(
+  SourcePos(Stdin, Pos(1, 1))
+, Compile(
+    Diag(
+      SourcePos(Stdin, Pos(2, 5))
+    , Compiler("uuagc", "Matthew", "Haskell", "i686-windos")
+    )
+  , Diag(
+      SourcePos(Stdin, Pos(4, 5))
+    , Compiler("uuagc", "i686-windows", "Haskell", "i686-windows")
+    )
+  )
+)
