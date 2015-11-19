@@ -5,5 +5,5 @@ execute
         compiler uuagc from UUAG to Haskell in i6
     end
 on
-    interpreter hugs for UUAG in i6
+    interpreter hugs for Haskell in i6
 end

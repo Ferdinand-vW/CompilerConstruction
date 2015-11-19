@@ -1,0 +1,16 @@
+Diag(
+  SourcePos(Stdin, Pos(1, 1))
+, Execute(
+    Diag(
+      SourcePos(Stdin, Pos(2, 5))
+    , Compile(
+        Diag(SourcePos(Stdin, Pos(3, 9)), Program("m", "UUAG"))
+      , Diag(
+          SourcePos(Stdin, Pos(5, 9))
+        , Compiler("uuagc", "UUAG", "Haskell", "i6")
+        )
+      )
+    )
+  , Diag(SourcePos(Stdin, Pos(8, 5)), Interpreter("hugs", "Haskell", "i6"))
+  )
+)
