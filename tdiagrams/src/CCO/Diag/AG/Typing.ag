@@ -42,6 +42,11 @@ match ty1 ty2 = ty1 == ty2
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
 matchInfo (Just i) (Just j) = i == j
 matchInfo _ _ = True
+
+translate :: Ty -> Ty -> TyInfo -> TyInfo -> TyInfo
+translate Prog Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = TyInfo t2 t1 m1
+translate _ Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = TyInfo s1 t1 t2
+translate _ _ tyinfo1 _ = tyinfo1
 }
 
 
@@ -67,7 +72,7 @@ sem Diag_
     | Compiler lhs.tyInfo = TyInfo (Just @l1) (Just @l2) (Just @m)
     | Platform lhs.tyInfo = TyInfo Nothing Nothing (Just @m)
     | Execute lhs.tyInfo = @d2.tyInfo
-    | Compile lhs.tyInfo = @d1.tyInfo
+    | Compile lhs.tyInfo = translate @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
