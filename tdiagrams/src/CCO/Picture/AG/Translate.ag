@@ -1,0 +1,6 @@
+attr Diag Diag_
+    syn pic use {++} {[]} :: {[Commands]}
+    inh pnt :: {(Double,Double)}
+
+sem Diag_
+    | Platform lhs.pic = 

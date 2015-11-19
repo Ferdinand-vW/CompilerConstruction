@@ -8,7 +8,7 @@ module CCO.Picture.AG where
 import CCO.Printing
 {-# LINE 10 "Ag.hs" #-}
 
-{-# LINE 2 "AG\\Diag.ag" #-}
+{-# LINE 2 "..\\Diag.ag" #-}
 
 import CCO.Feedback
 import CCO.Printing
@@ -38,12 +38,12 @@ ppPair :: Show a => (a, a) -> Doc
 ppPair (i, j) = parens (showable i >|< comma >|< showable j)
 {-# LINE 40 "Ag.hs" #-}
 
-{-# LINE 16 "AG\\Diag.ag" #-}
+{-# LINE 16 "..\\Diag.ag" #-}
 
 type Ident = String
 {-# LINE 45 "Ag.hs" #-}
 
-{-# LINE 35 "AG\\Diag.ag" #-}
+{-# LINE 35 "..\\Diag.ag" #-}
 
 instance Tree Diag where
   fromTree (Diag pos d) = App "Diag" [fromTree pos, fromTree d]

@@ -14,6 +14,6 @@
 
 module {CCO.Diag.AG}{}{}
 
-include "AG/Base.ag"
+include "../Diag.ag"
 include "AG/Pos.ag"
 include "AG/Typing.ag"
