@@ -1,12 +1,12 @@
 
 
--- UUAGC 0.9.52.1 (Ag.ag)
+-- UUAGC 0.9.52.1 (AG.ag)
 module CCO.Picture.AG where
 
 {-# LINE 2 "AG\\Printing.ag" #-}
 
 import CCO.Printing
-{-# LINE 10 "Ag.hs" #-}
+{-# LINE 10 "AG.hs" #-}
 
 {-# LINE 2 "..\\Diag.ag" #-}
 
@@ -17,14 +17,14 @@ import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
 import Data.Maybe
-{-# LINE 21 "Ag.hs" #-}
+{-# LINE 21 "AG.hs" #-}
 
 {-# LINE 2 "AG\\Base.ag" #-}
 
 import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
-{-# LINE 28 "Ag.hs" #-}
+{-# LINE 28 "AG.hs" #-}
 {-# LINE 34 "AG\\Printing.ag" #-}
 
 ppCall :: Show a => String -> (a, a) -> Doc -> Doc
@@ -36,12 +36,12 @@ ppCall cmd args body = singleLine >//< multiLine
 
 ppPair :: Show a => (a, a) -> Doc
 ppPair (i, j) = parens (showable i >|< comma >|< showable j)
-{-# LINE 40 "Ag.hs" #-}
+{-# LINE 40 "AG.hs" #-}
 
 {-# LINE 16 "..\\Diag.ag" #-}
 
 type Ident = String
-{-# LINE 45 "Ag.hs" #-}
+{-# LINE 45 "AG.hs" #-}
 
 {-# LINE 35 "..\\Diag.ag" #-}
 
@@ -67,7 +67,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 71 "Ag.hs" #-}
+{-# LINE 71 "AG.hs" #-}
 
 {-# LINE 29 "AG\\Base.ag" #-}
 
@@ -88,7 +88,7 @@ instance Tree Command where
 instance Tree Picture where
   fromTree (Picture d cs) = App "Picture" [fromTree d, fromTree cs]
   toTree = parseTree [app "Picture" (Picture <$> arg <*> arg)]
-{-# LINE 92 "Ag.hs" #-}
+{-# LINE 92 "AG.hs" #-}
 -- Command -----------------------------------------------------
 data Command = Put (((Double, Double))) (Object)
 -- cata
@@ -115,7 +115,7 @@ sem_Command_Put pos_ obj_ =
          _lhsOpp =
              ({-# LINE 19 "AG\\Printing.ag" #-}
               ppCall "put" pos_ _objIpp
-              {-# LINE 119 "Ag.hs" #-}
+              {-# LINE 119 "AG.hs" #-}
               )
          ( _objIpp) =
              obj_
@@ -147,7 +147,7 @@ sem_Commands_Cons hd_ tl_ =
          _lhsOpp =
              ({-# LINE 23 "AG\\Printing.ag" #-}
               _hdIpp >-< _tlIpp
-              {-# LINE 151 "Ag.hs" #-}
+              {-# LINE 151 "AG.hs" #-}
               )
          ( _hdIpp) =
              hd_
@@ -160,7 +160,7 @@ sem_Commands_Nil =
          _lhsOpp =
              ({-# LINE 22 "AG\\Printing.ag" #-}
               empty
-              {-# LINE 164 "Ag.hs" #-}
+              {-# LINE 164 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 -- Diag --------------------------------------------------------
@@ -287,7 +287,7 @@ sem_Object_Line slope_ len_ =
          _lhsOpp =
              ({-# LINE 14 "AG\\Printing.ag" #-}
               ppCall "line"     slope_ (showable len_)
-              {-# LINE 291 "Ag.hs" #-}
+              {-# LINE 291 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Makebox :: ((Double, Double)) ->
@@ -298,7 +298,7 @@ sem_Object_Makebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 15 "AG\\Printing.ag" #-}
               ppCall "makebox"  dim_   (text body_)
-              {-# LINE 302 "Ag.hs" #-}
+              {-# LINE 302 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Framebox :: ((Double, Double)) ->
@@ -309,7 +309,7 @@ sem_Object_Framebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 16 "AG\\Printing.ag" #-}
               ppCall "framebox" dim_   (text body_)
-              {-# LINE 313 "Ag.hs" #-}
+              {-# LINE 313 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 -- Picture -----------------------------------------------------
@@ -340,7 +340,7 @@ sem_Picture_Picture dim_ cmds_ =
               text "\\begin{picture}" >|< ppPair dim_ >-<
               indent 2 _cmdsIpp >-<
               text "\\end{picture}"
-              {-# LINE 344 "Ag.hs" #-}
+              {-# LINE 344 "AG.hs" #-}
               )
          ( _cmdsIpp) =
              cmds_

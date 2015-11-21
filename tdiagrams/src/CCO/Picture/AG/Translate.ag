@@ -9,7 +9,10 @@ attr Diag Diag_
 sem Diag_
     | Platform lhs.pic = [Put @lhs.pos [line (1,0) (50)]] ++ [Put (fst @lhs.pos + 50, snd @lhs.pos) [line (0,-1) (50)]]
                lhs.cjoint = (fst @lhs.pos + 50, snd @lhs.pos)
-               lhs.ejoint = @lhs.pos
+               lhs.ejoint = 
+    | Program lhs.pic = program @p @l
+              lhs.ejoin = ((fst @lhs.pos) +  7.5, (snd @lhs.pos) - 30)
+              lhs.cjoin = 
     | Execute lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
@@ -19,3 +22,58 @@ sem Diag_
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
               d2.pos = @d1.cjoint
+
+
+{
+
+
+platform :: (Doube, Double) -> String  -> [Command]
+platform (x,y) m = [
+            Put (x, y + 15) Line (5, -3) 25,
+            Put (x + 25,y) Line (5, 3) 25,
+            Put (x, y + 15) Line (0, 1) 15,
+            Put (x, y + 30) Line (1, 0) 50,
+            Put (x + 50, y + 30) Line (0,-1) 15,
+            Put (x, y + 15) Makebox (50, 15) m
+        ]
+
+program ::  (Doube, Double) ->  String -> String -> [Command]
+program (x,y) p l = [
+                Put (x + 7.5, y) Line (1,0) 50,
+                Put (x + 7.5, y) Line (0,-1) 15,
+                Put (x + 7.5, y + 15) Line (-1, 2) 7.5,
+                Put (x + 57.5, y + 15) Line (1, 2) 7.5,
+                Put (x + 57.5, y) Line (0,1) 15,
+                Put (x, y + 30) Line (1,0) 65,
+                Put (x + 7.5, y + 15) Makebox (50, 15) p,
+                Put (x + 7.5, y) Makebox (50, 15) l,
+            ]
+
+
+interpreter :: (Doube, Double) -> String -> String -> String -> [Command]
+interpreter (x,y) i l m = [ 
+                        Put (x, y) Framebox (50, 30) "", 
+                        Put (x, y + 20) Makebox (50, 10) i,
+                        Put (x, y + 10) Makebox (50, 10) l,
+                        Put (x, y) Makebox (50,10) m
+                    ]
+
+compiler :: (Doube, Double) -> String -> String -> String -> String -> [Command] 
+compiler (x,y) c l1 l2 m = [
+                        Put (x + 50, y) Line (0, 1) 20,
+                        Put (x + 50, y + 20) Line (-1, 0) 50,
+                        Put (x, y + 20) Line (0, 1) 10,
+                        Put (x, y + 30) Line (1, 0) 150,
+                        Put (x + 150, y + 30) Line (0,-1) 10,
+                        Put (x + 150, y + 20) Line (-1,0) 50,
+                        Put (x + 100, y + 20) Line (0,-1) 20,
+                        Put (x + 100, y) Line (-1, 0) 50,
+                        Put (x, y + 20) Makebox (50,10) l1,
+                        Put (x + 50, y + 20) Makebox (50,10) "$\longrightarrow$",
+                        put (x + 100, y + 20) Makebox (50,10) l2,
+                        Put (x + 55, y + 10) Makebox (50,10) c,
+                        Put (x + 50, y) Makebox (50,10) m
+                    ]
+
+
+}
