@@ -1,5 +1,5 @@
-compile
-    platform M
-with
-    platform M2
+execute
+    program M in Haskell
+on
+    interpreter hugs for Haskell in i686-windows
 end
