@@ -171,51 +171,21 @@ sem_Diag :: Diag ->
 sem_Diag (Diag _pos _d) =
     (sem_Diag_Diag _pos (sem_Diag_ _d))
 -- semantic domain
-type T_Diag = ((Double,Double)) ->
-              ( ((Double,Double)),((Double,Double)),([Command]))
-data Inh_Diag = Inh_Diag {pos_Inh_Diag :: ((Double,Double))}
-data Syn_Diag = Syn_Diag {cjoint_Syn_Diag :: ((Double,Double)),ejoint_Syn_Diag :: ((Double,Double)),pic_Syn_Diag :: ([Command])}
+type T_Diag = ( )
+data Inh_Diag = Inh_Diag {}
+data Syn_Diag = Syn_Diag {}
 wrap_Diag :: T_Diag ->
              Inh_Diag ->
              Syn_Diag
-wrap_Diag sem (Inh_Diag _lhsIpos) =
-    (let ( _lhsOcjoint,_lhsOejoint,_lhsOpic) = sem _lhsIpos
-     in  (Syn_Diag _lhsOcjoint _lhsOejoint _lhsOpic))
+wrap_Diag sem (Inh_Diag) =
+    (let ( ) = sem
+     in  (Syn_Diag))
 sem_Diag_Diag :: SourcePos ->
                  T_Diag_ ->
                  T_Diag
 sem_Diag_Diag pos_ d_ =
-    (\ _lhsIpos ->
-         (let _lhsOpic :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _dOpos :: ((Double,Double))
-              _dIcjoint :: ((Double,Double))
-              _dIejoint :: ((Double,Double))
-              _dIpic :: ([Command])
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   _dIpic
-                   {-# LINE 200 "Ag.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 5 "AG\\Translate.ag" #-}
-                   _dIcjoint
-                   {-# LINE 205 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 6 "AG\\Translate.ag" #-}
-                   _dIejoint
-                   {-# LINE 210 "Ag.hs" #-}
-                   )
-              _dOpos =
-                  ({-# LINE 7 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 215 "Ag.hs" #-}
-                   )
-              ( _dIcjoint,_dIejoint,_dIpic) =
-                  d_ _dOpos
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 -- Diag_ -------------------------------------------------------
 data Diag_ = Program (Ident) (Ident)
            | Platform (Ident)
@@ -239,206 +209,53 @@ sem_Diag_ (Execute _d1 _d2) =
 sem_Diag_ (Compile _d1 _d2) =
     (sem_Diag__Compile (sem_Diag _d1) (sem_Diag _d2))
 -- semantic domain
-type T_Diag_ = ((Double,Double)) ->
-               ( ((Double,Double)),((Double,Double)),([Command]))
-data Inh_Diag_ = Inh_Diag_ {pos_Inh_Diag_ :: ((Double,Double))}
-data Syn_Diag_ = Syn_Diag_ {cjoint_Syn_Diag_ :: ((Double,Double)),ejoint_Syn_Diag_ :: ((Double,Double)),pic_Syn_Diag_ :: ([Command])}
+type T_Diag_ = ( )
+data Inh_Diag_ = Inh_Diag_ {}
+data Syn_Diag_ = Syn_Diag_ {}
 wrap_Diag_ :: T_Diag_ ->
               Inh_Diag_ ->
               Syn_Diag_
-wrap_Diag_ sem (Inh_Diag_ _lhsIpos) =
-    (let ( _lhsOcjoint,_lhsOejoint,_lhsOpic) = sem _lhsIpos
-     in  (Syn_Diag_ _lhsOcjoint _lhsOejoint _lhsOpic))
+wrap_Diag_ sem (Inh_Diag_) =
+    (let ( ) = sem
+     in  (Syn_Diag_))
 sem_Diag__Program :: Ident ->
                      Ident ->
                      T_Diag_
 sem_Diag__Program p_ l_ =
-    (\ _lhsIpos ->
-         (let _lhsOpic :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   []
-                   {-# LINE 264 "Ag.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 5 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Program.lhs.cjoint"
-                   {-# LINE 269 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 6 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Program.lhs.ejoint"
-                   {-# LINE 274 "Ag.hs" #-}
-                   )
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 sem_Diag__Platform :: Ident ->
                       T_Diag_
 sem_Diag__Platform m_ =
-    (\ _lhsIpos ->
-         (let _lhsOpic :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _lhsOpic =
-                  ({-# LINE 11 "AG\\Translate.ag" #-}
-                   [Put _lhsIpos (Line (1,0) 50)] ++ [Put (fst _lhsIpos + 50, snd _lhsIpos) (Line (0,-1) 50)]
-                   {-# LINE 287 "Ag.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 12 "AG\\Translate.ag" #-}
-                   (fst _lhsIpos + 50, snd _lhsIpos)
-                   {-# LINE 292 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 13 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 297 "Ag.hs" #-}
-                   )
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 sem_Diag__Interpreter :: Ident ->
                          Ident ->
                          Ident ->
                          T_Diag_
 sem_Diag__Interpreter i_ l_ m_ =
-    (\ _lhsIpos ->
-         (let _lhsOpic :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   []
-                   {-# LINE 312 "Ag.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 5 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Interpreter.lhs.cjoint"
-                   {-# LINE 317 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 6 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Interpreter.lhs.ejoint"
-                   {-# LINE 322 "Ag.hs" #-}
-                   )
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 sem_Diag__Compiler :: Ident ->
                       Ident ->
                       Ident ->
                       Ident ->
                       T_Diag_
 sem_Diag__Compiler c_ l1_ l2_ m_ =
-    (\ _lhsIpos ->
-         (let _lhsOpic :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   []
-                   {-# LINE 338 "Ag.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 5 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Compiler.lhs.cjoint"
-                   {-# LINE 343 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 6 "AG\\Translate.ag" #-}
-                   error "missing rule: Diag_.Compiler.lhs.ejoint"
-                   {-# LINE 348 "Ag.hs" #-}
-                   )
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 sem_Diag__Execute :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Execute d1_ d2_ =
-    (\ _lhsIpos ->
-         (let _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _d1Opos :: ((Double,Double))
-              _d2Opos :: ((Double,Double))
-              _lhsOpic :: ([Command])
-              _d1Icjoint :: ((Double,Double))
-              _d1Iejoint :: ((Double,Double))
-              _d1Ipic :: ([Command])
-              _d2Icjoint :: ((Double,Double))
-              _d2Iejoint :: ((Double,Double))
-              _d2Ipic :: ([Command])
-              _lhsOcjoint =
-                  ({-# LINE 14 "AG\\Translate.ag" #-}
-                   _d2Icjoint
-                   {-# LINE 370 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 15 "AG\\Translate.ag" #-}
-                   _d2Iejoint
-                   {-# LINE 375 "Ag.hs" #-}
-                   )
-              _d1Opos =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 380 "Ag.hs" #-}
-                   )
-              _d2Opos =
-                  ({-# LINE 17 "AG\\Translate.ag" #-}
-                   _d1Iejoint
-                   {-# LINE 385 "Ag.hs" #-}
-                   )
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   _d1Ipic ++ _d2Ipic
-                   {-# LINE 390 "Ag.hs" #-}
-                   )
-              ( _d1Icjoint,_d1Iejoint,_d1Ipic) =
-                  d1_ _d1Opos
-              ( _d2Icjoint,_d2Iejoint,_d2Ipic) =
-                  d2_ _d2Opos
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 sem_Diag__Compile :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Compile d1_ d2_ =
-    (\ _lhsIpos ->
-         (let _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _d1Opos :: ((Double,Double))
-              _d2Opos :: ((Double,Double))
-              _lhsOpic :: ([Command])
-              _d1Icjoint :: ((Double,Double))
-              _d1Iejoint :: ((Double,Double))
-              _d1Ipic :: ([Command])
-              _d2Icjoint :: ((Double,Double))
-              _d2Iejoint :: ((Double,Double))
-              _d2Ipic :: ([Command])
-              _lhsOcjoint =
-                  ({-# LINE 18 "AG\\Translate.ag" #-}
-                   (fst _d1Icjoint + (3 * 50), snd _d1Icjoint)
-                   {-# LINE 416 "Ag.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 19 "AG\\Translate.ag" #-}
-                   _d2Iejoint
-                   {-# LINE 421 "Ag.hs" #-}
-                   )
-              _d1Opos =
-                  ({-# LINE 20 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 426 "Ag.hs" #-}
-                   )
-              _d2Opos =
-                  ({-# LINE 21 "AG\\Translate.ag" #-}
-                   _d1Icjoint
-                   {-# LINE 431 "Ag.hs" #-}
-                   )
-              _lhsOpic =
-                  ({-# LINE 4 "AG\\Translate.ag" #-}
-                   _d1Ipic ++ _d2Ipic
-                   {-# LINE 436 "Ag.hs" #-}
-                   )
-              ( _d1Icjoint,_d1Iejoint,_d1Ipic) =
-                  d1_ _d1Opos
-              ( _d2Icjoint,_d2Iejoint,_d2Ipic) =
-                  d2_ _d2Opos
-          in  ( _lhsOcjoint,_lhsOejoint,_lhsOpic)))
+    (let
+     in  ( ))
 -- Object ------------------------------------------------------
 data Object = Line (((Int, Int))) (Double)
             | Makebox (((Double, Double))) (String)
@@ -470,7 +287,7 @@ sem_Object_Line slope_ len_ =
          _lhsOpp =
              ({-# LINE 14 "AG\\Printing.ag" #-}
               ppCall "line"     slope_ (showable len_)
-              {-# LINE 474 "Ag.hs" #-}
+              {-# LINE 291 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Makebox :: ((Double, Double)) ->
@@ -481,7 +298,7 @@ sem_Object_Makebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 15 "AG\\Printing.ag" #-}
               ppCall "makebox"  dim_   (text body_)
-              {-# LINE 485 "Ag.hs" #-}
+              {-# LINE 302 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Framebox :: ((Double, Double)) ->
@@ -492,7 +309,7 @@ sem_Object_Framebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 16 "AG\\Printing.ag" #-}
               ppCall "framebox" dim_   (text body_)
-              {-# LINE 496 "Ag.hs" #-}
+              {-# LINE 313 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 -- Picture -----------------------------------------------------
@@ -523,7 +340,7 @@ sem_Picture_Picture dim_ cmds_ =
               text "\\begin{picture}" >|< ppPair dim_ >-<
               indent 2 _cmdsIpp >-<
               text "\\end{picture}"
-              {-# LINE 527 "Ag.hs" #-}
+              {-# LINE 344 "Ag.hs" #-}
               )
          ( _cmdsIpp) =
              cmds_
