@@ -1,9 +1,5 @@
-execute
-    compile
-        program m in UUAG
-    with
-        compiler uuagc from UUAG to Haskell in i6
-    end
-on
-    interpreter hugs for Haskell in i6
+compile
+    platform M
+with
+    platform M2
 end

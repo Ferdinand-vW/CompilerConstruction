@@ -16,4 +16,5 @@ module {CCO.Picture.AG}{}{}
 
 include "AG/Base.ag"
 include "../Diag.ag"
+include "AG/Translate.ag"
 include "AG/Printing.ag"

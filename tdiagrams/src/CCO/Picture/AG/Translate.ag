@@ -2,20 +2,20 @@
 
 attr Diag Diag_
     syn pic use {++} {[]} :: {[Command]}
-    syn cjoint ejoint :: {(Double,Double)}
+    syn cjoint :: {(Double,Double)}
+    syn ejoint :: {(Double,Double)}
     inh pos :: {(Double,Double)}
 
 
 sem Diag_
-    | Platform lhs.pic = [Put @lhs.pos [line (1,0) (50)]] ++ [Put (fst @lhs.pos + 50, snd @lhs.pos) [line (0,-1) (50)]]
+    | Platform lhs.pic = [Put @lhs.pos (Line (1,0) 50)] ++ [Put (fst @lhs.pos + 50, snd @lhs.pos) (Line (0,-1) 50)]
                lhs.cjoint = (fst @lhs.pos + 50, snd @lhs.pos)
                lhs.ejoint = @lhs.pos
     | Execute lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
               d2.pos = @d1.ejoint
-
-    | Compile lhs.cjoint = (fst @d2.cjoint + (fst @d1.cjoint - fst @d1.pos), snd @d1.cjoint)
+    | Compile lhs.cjoint = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
               d2.pos = @d1.cjoint
