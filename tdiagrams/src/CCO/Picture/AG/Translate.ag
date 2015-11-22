@@ -8,7 +8,7 @@ attr Pic
 
 sem Pic
   | Pic lhs.pic = Picture (500,500) @d.cmd
-         d.pos = (0,500)
+         d.pos = (-200,500)
          d.len = @d.mlen
 
 
@@ -47,7 +47,7 @@ sem Diag_
               lhs.mlen = max @d1.mlen @d2.mlen
               d1.len = @lhs.len
               d2.len = @lhs.len
-    | Compile loc.cpos = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
+    | Compile loc.cpos = (fst @d1.cjoint + (3 * @lhs.len), snd @d1.cjoint)
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.len
               lhs.cjoint = cJoint @loc.cmpl @loc.cpos @lhs.len
@@ -79,10 +79,10 @@ maxLength (Compiler c l1 l2 m) = maximum [wordLength c, wordLength l1, wordLengt
 eJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
 eJoint (Program _ _) (x,y) _= (x + 7.5, y - 30)
 eJoint (Interpreter _ _ _) (x, y) _= (x, y - 30)
-eJoint (Compiler _ _ _ _) (x, y) len = (fst pos + len, snd pos - 30)
+eJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 30)
 
 cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-cJoint (Program _ _) (x, y) len = (y + len + 7.5, y - 20)
+cJoint (Program _ _) (x, y) len = (x + len + 7.5, y - 20)
 cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
 cJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
 
@@ -118,7 +118,7 @@ platform (x,y) len m = [
             Put (x, y + 15) $ Line (0, 1) 15,
             Put (x, y + 30) $ Line (1, 0) 50,
             Put (x + len, y + 30) $ Line (0,-1) 15,
-            Put (x, y + 15) $ Makebox (50, 15) m
+            Put (x, y + 15) $ Makebox (len, 15) m
         ]
 
 program ::  (Double, Double) -> Double -> String -> String -> [Command]
@@ -155,7 +155,7 @@ compiler (x,y) len c l1 l2 m = [
                         Put (x, y + 20) $ Makebox (len,10) l1,
                         Put (x + len, y + 20) $ Makebox (len,10) "$\\longrightarrow$",
                         Put (x + (2 * len), y + 20) $ Makebox (len,10) l2,
-                        Put (x + (len + 5), y + 10) $ Makebox (len,10) c,
+                        Put (x + len, y + 10) $ Makebox (len,10) c,
                         Put (x + len, y) $ Makebox (len,10) m
                     ]
 

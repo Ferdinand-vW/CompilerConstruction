@@ -1,13 +1,6 @@
 compile
-    execute
-        compile
-            program M in Haskell
-        with
-            compiler hugs from Haskell to UUAG in i686-windows
-        end
-    on
-        interpreter hugs for UUAG in i686-windows
-    end
+    program m in eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
 with
-    compiler hugs from i686-windows to helllo in i686-windows
+    compiler hugs from eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee to haskell in i686-windows
 end

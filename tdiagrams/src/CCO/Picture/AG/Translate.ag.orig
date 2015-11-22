@@ -1,0 +1,177 @@
+----------------------------------------
+
+  data Pic
+    | Pic d :: Diag
+
+attr Pic
+  syn pic :: {Picture}
+
+sem Pic
+  | Pic lhs.pic = Picture (500,500) @d.cmd
+         d.pos = (0,500)
+         d.len = @d.mlen
+
+
+attr Diag Diag_
+    syn diag :: self
+    syn cmd use {++} {[]} :: {[Command]}
+    syn cjoint :: {(Double,Double)}
+    syn ejoint :: {(Double,Double)}
+    syn mlen :: {(Double)}
+    inh len :: {(Double)}
+    inh pos :: {(Double,Double)}
+
+
+sem Diag_
+    | Platform lhs.cmd = platform @lhs.pos @lhs.len @m
+               lhs.ejoint = @lhs.pos
+               lhs.cjoint = @lhs.pos
+               lhs.mlen = maxLength @diag
+    | Program lhs.cmd = program @lhs.pos @lhs.len @p @l
+              lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
+              lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+              lhs.mlen = maxLength @diag
+    | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.len @i @l @m
+                  lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
+                  lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+                  lhs.mlen = maxLength @diag
+    | Compiler lhs.cmd = compiler @lhs.pos @lhs.len @c @l1 @l2 @m
+               lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
+               lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+               lhs.mlen = maxLength @diag
+    | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
+              lhs.cjoint = @d2.cjoint
+              lhs.ejoint = @d2.ejoint
+              d1.pos = @lhs.pos
+              d2.pos = @d1.ejoint
+              lhs.mlen = max @d1.mlen @d2.mlen
+              d1.len = @lhs.len
+              d2.len = @lhs.len
+    | Compile loc.cpos = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
+              loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
+              lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.len
+              lhs.cjoint = cJoint @loc.cmpl @loc.cpos @lhs.len
+              lhs.ejoint = eJoint @loc.cmpl @loc.cpos @lhs.len
+              d1.pos = @lhs.pos
+              d2.pos = @d1.cjoint
+              lhs.mlen = maximum [@d1.mlen, @d2.mlen, arrowLength]
+              d1.len = @lhs.len
+              d2.len = @lhs.len
+
+
+{
+
+<<<<<<< HEAD
+arrowLength :: Double
+arrowLength = 20
+
+wordLength :: String -> Double
+wordLength s = fromIntegral (length s) * 5
+
+maxLength :: Diag_ -> Double
+maxLength (Platform m) = wordLength m
+maxLength (Program p l) = max (wordLength p) (wordLength l)
+maxLength (Interpreter i l m) = maximum [wordLength i, wordLength l, wordLength m]
+maxLength (Compiler c l1 l2 m) = maximum [wordLength c, wordLength l1, wordLength l2, wordLength m]
+
+--These are necessary, because we need to determine the ejoint and cjoint of the compiled
+--diag, but as we then do not know what diag it is we have to do pattern matching.
+eJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
+eJoint (Program _ _) pos _ = (fst pos + 7.5, snd pos - 30)
+eJoint (Interpreter _ _ _) pos _ = (fst pos, snd pos - 30)
+eJoint (Compiler _ _ _ _) pos len = (fst pos + len, snd pos - 30)
+
+cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
+cJoint (Program _ _) pos len = (fst pos + len + 7.5, snd pos - 15)
+cJoint (Interpreter _ _ _) pos len = (fst pos + len, snd pos - 20)
+cJoint (Compiler _ _ _ _) pos len = (fst pos + len, snd pos - 20)
+=======
+type Position = (Double,Double)
+--These are necessary, because we need to determine the ejoint and cjoint of the compiled
+--diag, but as we then do not know what diag it is we have to do pattern matching.
+eJoint :: Diag_ -> (Double,Double) -> (Double,Double)
+eJoint (Program _ _) (x,y) = (x + 7.5, y - 30)
+eJoint (Interpreter _ _ _) (x, y) = (x, y - 30)
+eJoint (Compiler _ _ _ _) (x, y) = (fst pos + 50, snd pos - 30)
+
+cJoint :: Diag_ -> (Double,Double) -> (Double,Double)
+cJoint (Program _ _) (x, y) = (y + 57.5, y - 20)
+cJoint (Interpreter _ _ _) (x, y) = (x + 50, y - 20)
+cJoint (Compiler _ _ _ _) (x, y) = (x + 50, y - 20)
+
+rightPos :: Diag_ -> Position -> Position
+rightPos (Program _ _) (x, y) = (y + 57.5, y - 20)
+rightPos (Interpreter _ _ _) (x, y) = (x + 50, y - 20)
+rightPos (Compiler _ _ _ _) (x, y) = (x + 50, y - 20)
+>>>>>>> ce2b65684fb8cb01351c5069d1d7c77e53451126
+
+dtd_ :: Diag -> Diag_
+dtd_ (Diag p d) = d
+
+--First we still have to do some translation
+compile :: Diag_ -> Diag_ -> Diag_
+compile dg (Compile d1 d2) = compile dg (compile (dtd_ d1) (dtd_ d2))
+compile (Program p _) (Compiler _ _ t _) = Program p t
+compile (Interpreter i l _) (Compiler _ _ t _) = Interpreter i l t
+compile (Compiler c l1 l2 _) (Compiler _ _ t _) = Compiler c l1 l2 t
+compile (Execute d1 d2) dg = compile (dtd_ d2) dg
+compile (Compile d1 d2) dg = compile (compile (dtd_ d1) (dtd_ d2)) dg
+compile d1 _ = d1
+
+--Given the translated diag and a position, convert it to a list of commands
+compiled :: Diag_ -> (Double, Double) -> Double -> [Command]
+compiled (Program p l) pos len = program pos len p l
+compiled (Interpreter i l m) pos len = interpreter pos len i l m
+compiled (Compiler c l1 l2 t) pos len = compiler pos len c l1 l2 t
+compiled _ _ _= []
+
+platform :: (Double, Double) -> Double -> String -> [Command]
+platform (x,y) len m = [
+            Put (x, y + 15) $ Line (5, -3) 25,
+            Put (x + len / 2,y) $ Line (5, 3) 25,
+            Put (x, y + 15) $ Line (0, 1) 15,
+            Put (x, y + 30) $ Line (1, 0) 50,
+            Put (x + len, y + 30) $ Line (0,-1) 15,
+            Put (x, y + 15) $ Makebox (50, 15) m
+        ]
+
+program ::  (Double, Double) -> Double -> String -> String -> [Command]
+program (x,y) len p l = [
+                Put (x + 7.5, y) $ Line (1,0) len,
+                Put (x + 7.5, y) $ Line (0,1) 15,
+                Put (x + 7.5, y + 15) $ Line (-1, 2) 7.5,
+                Put (x + len + 7.5, y + 15) $ Line (1, 2) 7.5,
+                Put (x + len + 7.5, y) $ Line (0,1) 15,
+                Put (x, y + 30) $ Line (1,0) (len + 15),
+                Put (x + 7.5, y + 15) $ Makebox (len, 15) p,
+                Put (x + 7.5, y) $ Makebox (len, 15) l
+            ]
+
+
+interpreter :: (Double, Double) -> Double -> String -> String -> String -> [Command]
+interpreter (x,y) len i l m = [ 
+                        Put (x, y) $ Framebox (len, 30) "", 
+                        Put (x, y + 20) $ Makebox (len, 10) i,
+                        Put (x, y + 10) $ Makebox (len, 10) l,
+                        Put (x, y) $ Makebox (len,10) m
+                    ]
+
+compiler :: (Double, Double) -> Double -> String -> String -> String -> String -> [Command] 
+compiler (x,y) len c l1 l2 m = [
+                        Put (x + len, y) $ Line (0, 1) 20,
+                        Put (x + len, y + 20) $ Line (-1, 0) len,
+                        Put (x, y + 20) $ Line (0, 1) 10,
+                        Put (x, y + 30) $ Line (1, 0) (3 * len),
+                        Put (x + (3 * len), y + 30) $ Line (0,-1) 10,
+                        Put (x + (3 * len), y + 20) $ Line (-1,0) len,
+                        Put (x + (2 * len), y + 20) $ Line (0,-1) 20,
+                        Put (x + (2 * len), y) $ Line (-1, 0) len,
+                        Put (x, y + 20) $ Makebox (len,10) l1,
+                        Put (x + len, y + 20) $ Makebox (len,10) "$\\longrightarrow$",
+                        Put (x + (2 * len), y + 20) $ Makebox (len,10) l2,
+                        Put (x + (len + 5), y + 10) $ Makebox (len,10) c,
+                        Put (x + len, y) $ Makebox (len,10) m
+                    ]
+
+
+}
