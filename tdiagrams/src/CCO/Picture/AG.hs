@@ -1,12 +1,12 @@
 
 
--- UUAGC 0.9.52.1 (Ag.ag)
+-- UUAGC 0.9.52.1 (AG.ag)
 module CCO.Picture.AG where
 
 {-# LINE 2 "AG\\Printing.ag" #-}
 
 import CCO.Printing
-{-# LINE 10 "Ag.hs" #-}
+{-# LINE 10 "AG.hs" #-}
 
 {-# LINE 2 "..\\Diag.ag" #-}
 
@@ -17,14 +17,14 @@ import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
 import Data.Maybe
-{-# LINE 21 "Ag.hs" #-}
+{-# LINE 21 "AG.hs" #-}
 
 {-# LINE 2 "AG\\Base.ag" #-}
 
 import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
-{-# LINE 28 "Ag.hs" #-}
+{-# LINE 28 "AG.hs" #-}
 {-# LINE 34 "AG\\Printing.ag" #-}
 
 ppCall :: Show a => String -> (a, a) -> Doc -> Doc
@@ -36,19 +36,19 @@ ppCall cmd args body = singleLine >//< multiLine
 
 ppPair :: Show a => (a, a) -> Doc
 ppPair (i, j) = parens (showable i >|< comma >|< showable j)
-{-# LINE 40 "Ag.hs" #-}
+{-# LINE 40 "AG.hs" #-}
 
 {-# LINE 49 "AG\\Translate.ag" #-}
 
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
 eJoint :: Diag_ -> (Double,Double) -> (Double,Double)
-eJoint (Program _ _) pos = (fst pos + 7.5, snd pos - 30)
+eJoint (Program _ _) (x,y) = (x, y)
 eJoint (Interpreter _ _ _) pos = (fst pos, snd pos - 30)
 eJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 30)
 
 cJoint :: Diag_ -> (Double,Double) -> (Double,Double)
-cJoint (Program _ _) pos = (fst pos + 57.5, snd pos - 15)
+cJoint (Program _ _) pos = (fst pos + 57.5, snd pos - 20)
 cJoint (Interpreter _ _ _) pos = (fst pos + 50, snd pos - 20)
 cJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 20)
 
@@ -121,12 +121,12 @@ compiler (x,y) c l1 l2 m = [
                     ]
 
 
-{-# LINE 125 "Ag.hs" #-}
+{-# LINE 125 "AG.hs" #-}
 
 {-# LINE 16 "..\\Diag.ag" #-}
 
 type Ident = String
-{-# LINE 130 "Ag.hs" #-}
+{-# LINE 130 "AG.hs" #-}
 
 {-# LINE 35 "..\\Diag.ag" #-}
 
@@ -152,7 +152,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 156 "Ag.hs" #-}
+{-# LINE 156 "AG.hs" #-}
 
 {-# LINE 29 "AG\\Base.ag" #-}
 
@@ -173,7 +173,7 @@ instance Tree Command where
 instance Tree Picture where
   fromTree (Picture d cs) = App "Picture" [fromTree d, fromTree cs]
   toTree = parseTree [app "Picture" (Picture <$> arg <*> arg)]
-{-# LINE 177 "Ag.hs" #-}
+{-# LINE 177 "AG.hs" #-}
 -- Command -----------------------------------------------------
 data Command = Put (((Double, Double))) (Object)
 -- cata
@@ -200,7 +200,7 @@ sem_Command_Put pos_ obj_ =
          _lhsOpp =
              ({-# LINE 19 "AG\\Printing.ag" #-}
               ppCall "put" pos_ _objIpp
-              {-# LINE 204 "Ag.hs" #-}
+              {-# LINE 204 "AG.hs" #-}
               )
          ( _objIpp) =
              obj_
@@ -232,7 +232,7 @@ sem_Commands_Cons hd_ tl_ =
          _lhsOpp =
              ({-# LINE 23 "AG\\Printing.ag" #-}
               _hdIpp >-< _tlIpp
-              {-# LINE 236 "Ag.hs" #-}
+              {-# LINE 236 "AG.hs" #-}
               )
          ( _hdIpp) =
              hd_
@@ -245,7 +245,7 @@ sem_Commands_Nil =
          _lhsOpp =
              ({-# LINE 22 "AG\\Printing.ag" #-}
               empty
-              {-# LINE 249 "Ag.hs" #-}
+              {-# LINE 249 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 -- Diag --------------------------------------------------------
@@ -283,32 +283,32 @@ sem_Diag_Diag pos_ d_ =
               _lhsOcmd =
                   ({-# LINE 16 "AG\\Translate.ag" #-}
                    _dIcmd
-                   {-# LINE 287 "Ag.hs" #-}
+                   {-# LINE 287 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Diag pos_ _dIdiag
-                   {-# LINE 292 "Ag.hs" #-}
+                   {-# LINE 292 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 297 "Ag.hs" #-}
+                   {-# LINE 297 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 17 "AG\\Translate.ag" #-}
                    _dIcjoint
-                   {-# LINE 302 "Ag.hs" #-}
+                   {-# LINE 302 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 18 "AG\\Translate.ag" #-}
                    _dIejoint
-                   {-# LINE 307 "Ag.hs" #-}
+                   {-# LINE 307 "AG.hs" #-}
                    )
               _dOpos =
                   ({-# LINE 19 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 312 "Ag.hs" #-}
+                   {-# LINE 312 "AG.hs" #-}
                    )
               ( _dIcjoint,_dIcmd,_dIdiag,_dIejoint) =
                   d_ _dOpos
@@ -358,27 +358,27 @@ sem_Diag__Program p_ l_ =
               _lhsOcmd =
                   ({-# LINE 26 "AG\\Translate.ag" #-}
                    program _lhsIpos p_ l_
-                   {-# LINE 362 "Ag.hs" #-}
+                   {-# LINE 362 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 27 "AG\\Translate.ag" #-}
                    eJoint _diag _lhsIpos
-                   {-# LINE 367 "Ag.hs" #-}
+                   {-# LINE 367 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 28 "AG\\Translate.ag" #-}
                    cJoint _diag _lhsIpos
-                   {-# LINE 372 "Ag.hs" #-}
+                   {-# LINE 372 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Program p_ l_
-                   {-# LINE 377 "Ag.hs" #-}
+                   {-# LINE 377 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 382 "Ag.hs" #-}
+                   {-# LINE 382 "AG.hs" #-}
                    )
           in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOejoint)))
 sem_Diag__Platform :: Ident ->
@@ -392,27 +392,27 @@ sem_Diag__Platform m_ =
               _lhsOcmd =
                   ({-# LINE 23 "AG\\Translate.ag" #-}
                    platform _lhsIpos m_
-                   {-# LINE 396 "Ag.hs" #-}
+                   {-# LINE 396 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 24 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 401 "Ag.hs" #-}
+                   {-# LINE 401 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 25 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 406 "Ag.hs" #-}
+                   {-# LINE 406 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Platform m_
-                   {-# LINE 411 "Ag.hs" #-}
+                   {-# LINE 411 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 416 "Ag.hs" #-}
+                   {-# LINE 416 "AG.hs" #-}
                    )
           in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOejoint)))
 sem_Diag__Interpreter :: Ident ->
@@ -428,27 +428,27 @@ sem_Diag__Interpreter i_ l_ m_ =
               _lhsOcmd =
                   ({-# LINE 29 "AG\\Translate.ag" #-}
                    interpreter _lhsIpos i_ l_ m_
-                   {-# LINE 432 "Ag.hs" #-}
+                   {-# LINE 432 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 30 "AG\\Translate.ag" #-}
                    eJoint _diag _lhsIpos
-                   {-# LINE 437 "Ag.hs" #-}
+                   {-# LINE 437 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 31 "AG\\Translate.ag" #-}
                    cJoint _diag _lhsIpos
-                   {-# LINE 442 "Ag.hs" #-}
+                   {-# LINE 442 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Interpreter i_ l_ m_
-                   {-# LINE 447 "Ag.hs" #-}
+                   {-# LINE 447 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 452 "Ag.hs" #-}
+                   {-# LINE 452 "AG.hs" #-}
                    )
           in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOejoint)))
 sem_Diag__Compiler :: Ident ->
@@ -465,27 +465,27 @@ sem_Diag__Compiler c_ l1_ l2_ m_ =
               _lhsOcmd =
                   ({-# LINE 32 "AG\\Translate.ag" #-}
                    compiler _lhsIpos c_ l1_ l2_ m_
-                   {-# LINE 469 "Ag.hs" #-}
+                   {-# LINE 469 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 33 "AG\\Translate.ag" #-}
                    eJoint _diag _lhsIpos
-                   {-# LINE 474 "Ag.hs" #-}
+                   {-# LINE 474 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 34 "AG\\Translate.ag" #-}
                    cJoint _diag _lhsIpos
-                   {-# LINE 479 "Ag.hs" #-}
+                   {-# LINE 479 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Compiler c_ l1_ l2_ m_
-                   {-# LINE 484 "Ag.hs" #-}
+                   {-# LINE 484 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 489 "Ag.hs" #-}
+                   {-# LINE 489 "AG.hs" #-}
                    )
           in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOejoint)))
 sem_Diag__Execute :: T_Diag ->
@@ -510,37 +510,37 @@ sem_Diag__Execute d1_ d2_ =
               _lhsOcmd =
                   ({-# LINE 35 "AG\\Translate.ag" #-}
                    _d1Icmd ++ _d2Icmd
-                   {-# LINE 514 "Ag.hs" #-}
+                   {-# LINE 514 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 36 "AG\\Translate.ag" #-}
                    _d2Icjoint
-                   {-# LINE 519 "Ag.hs" #-}
+                   {-# LINE 519 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 37 "AG\\Translate.ag" #-}
                    _d2Iejoint
-                   {-# LINE 524 "Ag.hs" #-}
+                   {-# LINE 524 "AG.hs" #-}
                    )
               _d1Opos =
                   ({-# LINE 38 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 529 "Ag.hs" #-}
+                   {-# LINE 529 "AG.hs" #-}
                    )
               _d2Opos =
                   ({-# LINE 39 "AG\\Translate.ag" #-}
                    _d1Iejoint
-                   {-# LINE 534 "Ag.hs" #-}
+                   {-# LINE 534 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Execute _d1Idiag _d2Idiag
-                   {-# LINE 539 "Ag.hs" #-}
+                   {-# LINE 539 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 544 "Ag.hs" #-}
+                   {-# LINE 544 "AG.hs" #-}
                    )
               ( _d1Icjoint,_d1Icmd,_d1Idiag,_d1Iejoint) =
                   d1_ _d1Opos
@@ -569,47 +569,47 @@ sem_Diag__Compile d1_ d2_ =
               _cpos =
                   ({-# LINE 40 "AG\\Translate.ag" #-}
                    (fst _d1Icjoint + (3 * 50), snd _d1Icjoint)
-                   {-# LINE 573 "Ag.hs" #-}
+                   {-# LINE 573 "AG.hs" #-}
                    )
               _cmpl =
                   ({-# LINE 41 "AG\\Translate.ag" #-}
                    compile (dtd_ _d1Idiag) (dtd_ _d2Idiag)
-                   {-# LINE 578 "Ag.hs" #-}
+                   {-# LINE 578 "AG.hs" #-}
                    )
               _lhsOcmd =
                   ({-# LINE 42 "AG\\Translate.ag" #-}
                    _d1Icmd ++ _d2Icmd ++ compiled _cmpl     _cpos
-                   {-# LINE 583 "Ag.hs" #-}
+                   {-# LINE 583 "AG.hs" #-}
                    )
               _lhsOcjoint =
                   ({-# LINE 43 "AG\\Translate.ag" #-}
                    cJoint _cmpl     _cpos
-                   {-# LINE 588 "Ag.hs" #-}
+                   {-# LINE 588 "AG.hs" #-}
                    )
               _lhsOejoint =
                   ({-# LINE 44 "AG\\Translate.ag" #-}
                    eJoint _cmpl     _cpos
-                   {-# LINE 593 "Ag.hs" #-}
+                   {-# LINE 593 "AG.hs" #-}
                    )
               _d1Opos =
                   ({-# LINE 45 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 598 "Ag.hs" #-}
+                   {-# LINE 598 "AG.hs" #-}
                    )
               _d2Opos =
                   ({-# LINE 46 "AG\\Translate.ag" #-}
                    _d1Icjoint
-                   {-# LINE 603 "Ag.hs" #-}
+                   {-# LINE 603 "AG.hs" #-}
                    )
               _diag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    Compile _d1Idiag _d2Idiag
-                   {-# LINE 608 "Ag.hs" #-}
+                   {-# LINE 608 "AG.hs" #-}
                    )
               _lhsOdiag =
                   ({-# LINE 15 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 613 "Ag.hs" #-}
+                   {-# LINE 613 "AG.hs" #-}
                    )
               ( _d1Icjoint,_d1Icmd,_d1Idiag,_d1Iejoint) =
                   d1_ _d1Opos
@@ -647,7 +647,7 @@ sem_Object_Line slope_ len_ =
          _lhsOpp =
              ({-# LINE 14 "AG\\Printing.ag" #-}
               ppCall "line"     slope_ (showable len_)
-              {-# LINE 651 "Ag.hs" #-}
+              {-# LINE 651 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Makebox :: ((Double, Double)) ->
@@ -658,7 +658,7 @@ sem_Object_Makebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 15 "AG\\Printing.ag" #-}
               ppCall "makebox"  dim_   (text body_)
-              {-# LINE 662 "Ag.hs" #-}
+              {-# LINE 662 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Framebox :: ((Double, Double)) ->
@@ -669,7 +669,7 @@ sem_Object_Framebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 16 "AG\\Printing.ag" #-}
               ppCall "framebox" dim_   (text body_)
-              {-# LINE 673 "Ag.hs" #-}
+              {-# LINE 673 "AG.hs" #-}
               )
      in  ( _lhsOpp))
 -- Pic ---------------------------------------------------------
@@ -701,12 +701,12 @@ sem_Pic_Pic d_ =
          _lhsOpic =
              ({-# LINE 10 "AG\\Translate.ag" #-}
               Picture (500,500) _dIcmd
-              {-# LINE 705 "Ag.hs" #-}
+              {-# LINE 705 "AG.hs" #-}
               )
          _dOpos =
              ({-# LINE 11 "AG\\Translate.ag" #-}
               (0,500)
-              {-# LINE 710 "Ag.hs" #-}
+              {-# LINE 710 "AG.hs" #-}
               )
          ( _dIcjoint,_dIcmd,_dIdiag,_dIejoint) =
              d_ _dOpos
@@ -739,7 +739,7 @@ sem_Picture_Picture dim_ cmds_ =
               text "\\begin{picture}" >|< ppPair dim_ >-<
               indent 2 _cmdsIpp >-<
               text "\\end{picture}"
-              {-# LINE 743 "Ag.hs" #-}
+              {-# LINE 743 "AG.hs" #-}
               )
          ( _cmdsIpp) =
              cmds_

@@ -47,17 +47,24 @@ sem Diag_
 
 
 {
+
+type Position = (Double,Double)
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
 eJoint :: Diag_ -> (Double,Double) -> (Double,Double)
-eJoint (Program _ _) pos = (fst pos + 7.5, snd pos - 30)
-eJoint (Interpreter _ _ _) pos = (fst pos, snd pos - 30)
-eJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 30)
+eJoint (Program _ _) (x,y) = (x + 7.5, y - 30)
+eJoint (Interpreter _ _ _) (x, y) = (x, y - 30)
+eJoint (Compiler _ _ _ _) (x, y) = (fst pos + 50, snd pos - 30)
 
 cJoint :: Diag_ -> (Double,Double) -> (Double,Double)
-cJoint (Program _ _) pos = (fst pos + 57.5, snd pos - 15)
-cJoint (Interpreter _ _ _) pos = (fst pos + 50, snd pos - 20)
-cJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 20)
+cJoint (Program _ _) (x, y) = (y + 57.5, y - 20)
+cJoint (Interpreter _ _ _) (x, y) = (x + 50, y - 20)
+cJoint (Compiler _ _ _ _) (x, y) = (x + 50, y - 20)
+
+rightPos :: Diag_ -> Position -> Position
+rightPos (Program _ _) (x, y) = (y + 57.5, y - 20)
+rightPos (Interpreter _ _ _) (x, y) = (x + 50, y - 20)
+rightPos (Compiler _ _ _ _) (x, y) = (x + 50, y - 20)
 
 dtd_ :: Diag -> Diag_
 dtd_ (Diag p d) = d
