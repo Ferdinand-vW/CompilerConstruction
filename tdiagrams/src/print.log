@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.11.21)  22 NOV 2015 16:11
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.11.21)  22 NOV 2015 16:37
 entering extended mode
 **C:/Users/Ferdinand/CompilerConstruction/tdiagrams/src/print.tex
 (C:/Users/Ferdinand/CompilerConstruction/tdiagrams/src/print.tex
@@ -34,11 +34,11 @@ LaTeX Font Info:    ... okay on input line 2.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 2.
 LaTeX Font Info:    ... okay on input line 2.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 22.
+(Font)              <7> on input line 23.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 22.
+(Font)              <5> on input line 23.
 
-Overfull \hbox (170.0pt too wide) in paragraph at lines 55--56
+Overfull \hbox (170.0pt too wide) in paragraph at lines 35--36
 [][] 
  []
 
@@ -48,7 +48,7 @@ Overfull \hbox (170.0pt too wide) in paragraph at lines 55--56
 Here is how much of TeX's memory you used:
  205 strings out of 493698
  2266 string characters out of 3144399
- 55149 words of memory out of 3000000
+ 53149 words of memory out of 3000000
  3616 multiletter control sequences out of 15000+200000
  3640 words of font info for 14 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
@@ -57,7 +57,7 @@ Here is how much of TeX's memory you used:
 Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiK
 TeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/
 fonts/type1/public/amsfonts/latxfont/line10.pfb>
-Output written on print.pdf (1 page, 26706 bytes).
+Output written on print.pdf (1 page, 25522 bytes).
 PDF statistics:
  18 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

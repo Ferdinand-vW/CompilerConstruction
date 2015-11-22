@@ -3,26 +3,16 @@ Diag(
 , Compile(
     Diag(
       SourcePos(Stdin, Pos(2, 5))
-    , Execute(
-        Diag(
-          SourcePos(Stdin, Pos(3, 9))
-        , Compile(
-            Diag(SourcePos(Stdin, Pos(4, 13)), Program("M", "Haskell"))
-          , Diag(
-              SourcePos(Stdin, Pos(6, 13))
-            , Compiler("hugs", "Haskell", "UUAG", "i686-windows")
-            )
-          )
-        )
-      , Diag(
-          SourcePos(Stdin, Pos(9, 9))
-        , Interpreter("hugs", "UUAG", "i686-windows")
-        )
-      )
+    , Program("m", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
     )
   , Diag(
-      SourcePos(Stdin, Pos(12, 5))
-    , Compiler("hugs", "i686-windows", "helllo", "i686-windows")
+      SourcePos(Stdin, Pos(5, 5))
+    , Compiler(
+        "hugs"
+      , "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      , "haskell"
+      , "i686-windows"
+      )
     )
   )
 )
