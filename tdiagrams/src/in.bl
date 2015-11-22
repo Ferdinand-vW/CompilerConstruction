@@ -1,6 +1,6 @@
 compile
-    program m in eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+    program m in eeeeeeeeeeee
 
 with
-    compiler hugs from eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee to haskell in i686-windows
+    compiler hugs from eeeeeeeeeeee to haskell in i
 end

@@ -82,7 +82,7 @@ eJoint (Interpreter _ _ _) (x, y) _= (x, y - 30)
 eJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 30)
 
 cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-cJoint (Program _ _) (x, y) len = (y + len + 7.5, y - 20)
+cJoint (Program _ _) (x, y) len = (x + len + 7.5, y - 20)
 cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
 cJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
 
