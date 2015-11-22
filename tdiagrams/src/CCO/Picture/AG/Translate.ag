@@ -60,6 +60,7 @@ sem Diag_
 
 
 {
+type Position = (Double,Double)
 
 arrowLength :: Double
 arrowLength = 20
@@ -76,14 +77,19 @@ maxLength (Compiler c l1 l2 m) = maximum [wordLength c, wordLength l1, wordLengt
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
 eJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-eJoint (Program _ _) pos _ = (fst pos + 7.5, snd pos - 30)
-eJoint (Interpreter _ _ _) pos _ = (fst pos, snd pos - 30)
-eJoint (Compiler _ _ _ _) pos len = (fst pos + len, snd pos - 30)
+eJoint (Program _ _) (x,y) _= (x + 7.5, y - 30)
+eJoint (Interpreter _ _ _) (x, y) _= (x, y - 30)
+eJoint (Compiler _ _ _ _) (x, y) len = (fst pos + len, snd pos - 30)
 
 cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-cJoint (Program _ _) pos len = (fst pos + len + 7.5, snd pos - 15)
-cJoint (Interpreter _ _ _) pos len = (fst pos + len, snd pos - 20)
-cJoint (Compiler _ _ _ _) pos len = (fst pos + len, snd pos - 20)
+cJoint (Program _ _) (x, y) len = (y + len + 7.5, y - 20)
+cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
+cJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
+
+rightPos :: Diag_ -> Position -> Double -> Position
+rightPos (Program _ _) (x, y) len = (y + len + 7.5, y - 20)
+rightPos (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
+rightPos (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
 
 dtd_ :: Diag -> Diag_
 dtd_ (Diag p d) = d
