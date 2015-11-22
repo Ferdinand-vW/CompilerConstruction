@@ -1,6 +1,5 @@
 compile
-    program m in eeeeeeeeeeee
-
+    program hello in UUAG
 with
-    compiler hugs from eeeeeeeeeeee to haskell in i
+    compiler uuagc from UUAG to Haskell in i686-windows
 end

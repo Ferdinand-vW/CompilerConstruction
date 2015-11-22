@@ -7,14 +7,15 @@ attr Pic
   syn pic :: {Picture}
 
 sem Pic
-  | Pic lhs.pic = Picture (500,500) @d.cmd
-         d.pos = (0,500)
-         d.len = @d.mlen
+  | Pic lhs.pic = Picture @d.dim @d.cmd
+         d.pos = (0,snd @d.dim)
+         d.len = max @d.mlen 50 --50 is the minimum size
 
 
 attr Diag Diag_
     syn diag :: self
     syn cmd use {++} {[]} :: {[Command]}
+    syn dim :: {(Double,Double)}
     syn cjoint :: {(Double,Double)}
     syn ejoint :: {(Double,Double)}
     syn mlen :: {(Double)}
@@ -27,18 +28,22 @@ sem Diag_
                lhs.ejoint = @lhs.pos
                lhs.cjoint = @lhs.pos
                lhs.mlen = maxLength @diag
+               lhs.dim = dimension @diag @lhs.len
     | Program lhs.cmd = program @lhs.pos @lhs.len @p @l
               lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
               lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
               lhs.mlen = maxLength @diag
+              lhs.dim = dimension @diag @lhs.len
     | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.len @i @l @m
                   lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
                   lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
                   lhs.mlen = maxLength @diag
+                  lhs.dim = dimension @diag @lhs.len
     | Compiler lhs.cmd = compiler @lhs.pos @lhs.len @c @l1 @l2 @m
                lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
                lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
                lhs.mlen = maxLength @diag
+               lhs.dim = dimension @diag @lhs.len
     | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
               lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
@@ -47,6 +52,7 @@ sem Diag_
               lhs.mlen = max @d1.mlen @d2.mlen
               d1.len = @lhs.len
               d2.len = @lhs.len
+              lhs.dim = joinDimensions @diag @d1.dim @d2.dim
     | Compile loc.cpos = rightPos @loc.cmpl @d1.cjoint @lhs.len
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.len
@@ -54,16 +60,14 @@ sem Diag_
               lhs.ejoint = eJoint @loc.cmpl @loc.cpos @lhs.len
               d1.pos = @lhs.pos
               d2.pos = @d1.cjoint
-              lhs.mlen = maximum [@d1.mlen, @d2.mlen, arrowLength]
+              lhs.mlen = max @d1.mlen @d2.mlen
               d1.len = @lhs.len
               d2.len = @lhs.len
+              lhs.dim = joinDimensions @diag (dimension @loc.cmpl @lhs.len) (joinDimensions @diag @d1.dim @d2.dim)
 
 
 {
 type Position = (Double,Double)
-
-arrowLength :: Double
-arrowLength = 20
 
 wordLength :: String -> Double
 wordLength s = fromIntegral (length s) * 5
@@ -73,6 +77,17 @@ maxLength (Platform m) = wordLength m
 maxLength (Program p l) = max (wordLength p) (wordLength l)
 maxLength (Interpreter i l m) = maximum [wordLength i, wordLength l, wordLength m]
 maxLength (Compiler c l1 l2 m) = maximum [wordLength c, wordLength l1, wordLength l2, wordLength m]
+
+dimension :: Diag_ -> Double -> (Double, Double)
+dimension (Platform _) len = (len, 30)
+dimension (Program _ _) len = (len + 15, 30)
+dimension (Interpreter _ _ _) len = (len, 30)
+dimension (Compiler _ _ _ _) len = (len * 3, 30)
+dimension _ _ = (0,0)
+
+joinDimensions :: Diag_  -> (Double, Double) -> (Double, Double) -> (Double, Double)
+joinDimensions (Execute _ _) (x1,y1) (x2,y2) = (max x1 x2, y1 + y2)
+joinDimensions (Compile _ _) (x1,y1) (x2,y2) = (x1 + x2, max y1 y2)
 
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
@@ -113,50 +128,50 @@ compiled _ _ _= []
 
 platform :: (Double, Double) -> Double -> String -> [Command]
 platform (x,y) len m = [
-            Put (x, y + 15) $ Line (5, -3) 25,
-            Put (x + len / 2,y) $ Line (5, 3) 25,
-            Put (x, y + 15) $ Line (0, 1) 15,
-            Put (x, y + 30) $ Line (1, 0) 50,
-            Put (x + len, y + 30) $ Line (0,-1) 15,
-            Put (x, y + 15) $ Makebox (50, 15) m
+            Put (x, y - 15) $ Line (5, -3) 25,
+            Put (x + len / 2,y - 30) $ Line (5, 3) 25,
+            Put (x, y - 15) $ Line (0, 1) 15,
+            Put (x, y)  $ Line (1, 0) 50,
+            Put (x + len, y) $ Line (0,-1) 15,
+            Put (x, y - 15) $ Makebox (50, 15) m
         ]
 
 program ::  (Double, Double) -> Double -> String -> String -> [Command]
 program (x,y) len p l = [
-                Put (x + 7.5, y) $ Line (1,0) len,
-                Put (x + 7.5, y) $ Line (0,1) 15,
-                Put (x + 7.5, y + 15) $ Line (-1, 2) 7.5,
-                Put (x + len + 7.5, y + 15) $ Line (1, 2) 7.5,
-                Put (x + len + 7.5, y) $ Line (0,1) 15,
-                Put (x, y + 30) $ Line (1,0) (len + 15),
-                Put (x + 7.5, y + 15) $ Makebox (len, 15) p,
-                Put (x + 7.5, y) $ Makebox (len, 15) l
+                Put (x + 7.5, y - 30) $ Line (1,0) len,
+                Put (x + 7.5, y - 30) $ Line (0,1) 15,
+                Put (x + 7.5, y - 15) $ Line (-1, 2) 7.5,
+                Put (x + len + 7.5, y - 15) $ Line (1, 2) 7.5,
+                Put (x + len + 7.5, y - 30) $ Line (0,1) 15,
+                Put (x, y) $ Line (1,0) (len + 15),
+                Put (x + 7.5, y - 15) $ Makebox (len, 15) p,
+                Put (x + 7.5, y - 30) $ Makebox (len, 15) l
             ]
 
 
 interpreter :: (Double, Double) -> Double -> String -> String -> String -> [Command]
 interpreter (x,y) len i l m = [ 
-                        Put (x, y) $ Framebox (len, 30) "", 
-                        Put (x, y + 20) $ Makebox (len, 10) i,
-                        Put (x, y + 10) $ Makebox (len, 10) l,
-                        Put (x, y) $ Makebox (len,10) m
+                        Put (x, y - 30) $ Framebox (len, 30) "", 
+                        Put (x, y - 10) $ Makebox (len, 10) i,
+                        Put (x, y - 20) $ Makebox (len, 10) l,
+                        Put (x, y - 30) $ Makebox (len,10) m
                     ]
 
 compiler :: (Double, Double) -> Double -> String -> String -> String -> String -> [Command] 
 compiler (x,y) len c l1 l2 m = [
-                        Put (x + len, y) $ Line (0, 1) 20,
-                        Put (x + len, y + 20) $ Line (-1, 0) len,
-                        Put (x, y + 20) $ Line (0, 1) 10,
-                        Put (x, y + 30) $ Line (1, 0) (3 * len),
-                        Put (x + (3 * len), y + 30) $ Line (0,-1) 10,
-                        Put (x + (3 * len), y + 20) $ Line (-1,0) len,
-                        Put (x + (2 * len), y + 20) $ Line (0,-1) 20,
-                        Put (x + (2 * len), y) $ Line (-1, 0) len,
-                        Put (x, y + 20) $ Makebox (len,10) l1,
-                        Put (x + len, y + 20) $ Makebox (len,10) "$\\longrightarrow$",
-                        Put (x + (2 * len), y + 20) $ Makebox (len,10) l2,
-                        Put (x + len, y + 10) $ Makebox (len,10) c,
-                        Put (x + len, y) $ Makebox (len,10) m
+                        Put (x + len, y - 30) $ Line (0, 1) 20,
+                        Put (x + len, y - 10) $ Line (-1, 0) len,
+                        Put (x, y - 10) $ Line (0, 1) 10,
+                        Put (x, y) $ Line (1, 0) (3 * len),
+                        Put (x + (3 * len), y) $ Line (0,-1) 10,
+                        Put (x + (3 * len), y - 10) $ Line (-1,0) len,
+                        Put (x + (2 * len), y - 10) $ Line (0,-1) 20,
+                        Put (x + (2 * len), y - 30) $ Line (-1, 0) len,
+                        Put (x, y - 10) $ Makebox (len,10) l1,
+                        Put (x + len, y - 10) $ Makebox (len,10) "$\\longrightarrow$",
+                        Put (x + (2 * len), y - 10) $ Makebox (len,10) l2,
+                        Put (x + len, y - 20) $ Makebox (len,10) c,
+                        Put (x + len, y - 30) $ Makebox (len,10) m
                     ]
 
 
