@@ -87,9 +87,9 @@ cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
 cJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
 
 rightPos :: Diag_ -> Position -> Double -> Position
-rightPos (Program _ _) (x, y) len = (x + len + 142.5, y)
-rightPos (Interpreter _ _ _) (x, y) len = (x + len + 150, y)
-rightPos (Compiler _ _ _ _) (x, y) len = (x + len + 150, y)
+rightPos (Program _ _) (x, y) len = (x + (len * 3) - 7.5, y + 20)
+rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 3), y)
+rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 3), y)
 
 dtd_ :: Diag -> Diag_
 dtd_ (Diag p d) = d
