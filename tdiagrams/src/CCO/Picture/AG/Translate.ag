@@ -1,6 +1,7 @@
 ----------------------------------------
 
 attr Diag Diag_
+    syn diag :: self
     syn pic use {++} {[]} :: {[Command]}
     syn cjoint :: {(Double,Double)}
     syn ejoint :: {(Double,Double)}
@@ -9,30 +10,63 @@ attr Diag Diag_
 
 sem Diag_
     | Platform lhs.pic = platform @lhs.pos @m
-               lhs.cjoint = (fst @lhs.pos + 50, snd @lhs.pos - 25)
-               lhs.ejoint = (fst @lhs.pos, snd @lhs.pos - 25)
+               lhs.ejoint = @lhs.pos
+               lhs.cjoint = @lhs.pos
     | Program lhs.pic = program @lhs.pos @p @l
-              lhs.ejoint = ((fst @lhs.pos) +  7.5, (snd @lhs.pos) - 30)
-              lhs.cjoint = ((fst @lhs.pos) + 57.5, (snd @lhs.pos) - 15)
+              lhs.ejoint = eJoint @diag @lhs.pos
+              lhs.cjoint = cJoint @diag @lhs.pos
     | Interpreter lhs.pic = interpreter @lhs.pos @i @l @m
-                  lhs.ejoint = (fst @lhs.pos, snd @lhs.pos - 30)
-                  lhs.cjoint = (fst @lhs.pos + 50, snd @lhs.pos - 20)
+                  lhs.ejoint = eJoint @diag @lhs.pos
+                  lhs.cjoint = cJoint @diag @lhs.pos
     | Compiler lhs.pic = compiler @lhs.pos @c @l1 @l2 @m
-               lhs.ejoint = (fst @lhs.pos + 50, snd @lhs.pos - 30)
-               lhs.cjoint = (fst @lhs.pos + 50, snd @lhs.pos - 20)
+               lhs.ejoint = eJoint @diag @lhs.pos
+               lhs.cjoint = cJoint @diag @lhs.pos
     | Execute lhs.pic = @d1.pic ++ @d2.pic
               lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
               d2.pos = @d1.ejoint
-    | Compile lhs.cjoint = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
-              lhs.ejoint = @d2.ejoint
+    | Compile loc.cpos = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
+              loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
+              lhs.pic = @d1.pic ++ @d2.pic ++ compiled @loc.cmpl @loc.cpos
+              lhs.cjoint = cJoint @loc.cmpl @loc.cpos
+              lhs.ejoint = eJoint @loc.cmpl @loc.cpos
               d1.pos = @lhs.pos
               d2.pos = @d1.cjoint
 
 
 {
+--These are necessary, because we need to determine the ejoint and cjoint of the compiled
+--diag, but as we then do not know what diag it is we have to do pattern matching.
+eJoint :: Diag_ -> (Double,Double) -> (Double,Double)
+eJoint (Program _ _) pos = (fst pos + 7.5, snd pos - 30)
+eJoint (Interpreter _ _ _) pos = (fst pos, snd pos - 30)
+eJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 30)
 
+cJoint :: Diag_ -> (Double,Double) -> (Double,Double)
+cJoint (Program _ _) pos = (fst pos + 57.5, snd pos - 15)
+cJoint (Interpreter _ _ _) pos = (fst pos + 50, snd pos - 20)
+cJoint (Compiler _ _ _ _) pos = (fst pos + 50, snd pos - 20)
+
+dtd_ :: Diag -> Diag_
+dtd_ (Diag p d) = d
+
+--First we still have to do some translation
+compile :: Diag_ -> Diag_ -> Diag_
+compile dg (Compile d1 d2) = compile dg (compile (dtd_ d1) (dtd_ d2))
+compile (Program p _) (Compiler _ _ t _) = Program p t
+compile (Interpreter i l _) (Compiler _ _ t _) = Interpreter i l t
+compile (Compiler c l1 l2 _) (Compiler _ _ t _) = Compiler c l1 l2 t
+compile (Execute d1 d2) dg = compile (dtd_ d2) dg
+compile (Compile d1 d2) dg = compile (compile (dtd_ d1) (dtd_ d2)) dg
+compile d1 _ = d1
+
+--Given the translated diag and a position, convert it to a list of commands
+compiled :: Diag_ -> (Double, Double) -> [Command]
+compiled (Program p l) pos = program pos p l
+compiled (Interpreter i l m) pos = interpreter pos i l m
+compiled (Compiler c l1 l2 t) pos = compiler pos c l1 l2 t
+compiled _ _ = []
 
 platform :: (Double, Double) -> String -> [Command]
 platform (x,y) m = [
