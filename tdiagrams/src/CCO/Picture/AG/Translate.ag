@@ -1,34 +1,45 @@
 ----------------------------------------
 
+  data Pic
+    | Pic d :: Diag
+
+attr Pic
+  syn pic :: {Picture}
+
+sem Pic
+  | Pic lhs.pic = Picture (500,500) @d.cmd
+         d.pos = (0,500)
+
+
 attr Diag Diag_
     syn diag :: self
-    syn pic use {++} {[]} :: {[Command]}
+    syn cmd use {++} {[]} :: {[Command]}
     syn cjoint :: {(Double,Double)}
     syn ejoint :: {(Double,Double)}
     inh pos :: {(Double,Double)}
 
 
 sem Diag_
-    | Platform lhs.pic = platform @lhs.pos @m
+    | Platform lhs.cmd = platform @lhs.pos @m
                lhs.ejoint = @lhs.pos
                lhs.cjoint = @lhs.pos
-    | Program lhs.pic = program @lhs.pos @p @l
+    | Program lhs.cmd = program @lhs.pos @p @l
               lhs.ejoint = eJoint @diag @lhs.pos
               lhs.cjoint = cJoint @diag @lhs.pos
-    | Interpreter lhs.pic = interpreter @lhs.pos @i @l @m
+    | Interpreter lhs.cmd = interpreter @lhs.pos @i @l @m
                   lhs.ejoint = eJoint @diag @lhs.pos
                   lhs.cjoint = cJoint @diag @lhs.pos
-    | Compiler lhs.pic = compiler @lhs.pos @c @l1 @l2 @m
+    | Compiler lhs.cmd = compiler @lhs.pos @c @l1 @l2 @m
                lhs.ejoint = eJoint @diag @lhs.pos
                lhs.cjoint = cJoint @diag @lhs.pos
-    | Execute lhs.pic = @d1.pic ++ @d2.pic
+    | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
               lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
               d1.pos = @lhs.pos
               d2.pos = @d1.ejoint
     | Compile loc.cpos = (fst @d1.cjoint + (3 * 50), snd @d1.cjoint)
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
-              lhs.pic = @d1.pic ++ @d2.pic ++ compiled @loc.cmpl @loc.cpos
+              lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos
               lhs.cjoint = cJoint @loc.cmpl @loc.cpos
               lhs.ejoint = eJoint @loc.cmpl @loc.cpos
               d1.pos = @lhs.pos
