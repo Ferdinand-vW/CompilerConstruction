@@ -9,52 +9,51 @@ data TyCons = Prog
         | Framework
          deriving (Eq, Show)
 
-data Ty = Cons (TyCons,Maybe TyInfo)
+data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)
 
-data TyInfo = TyInfo {source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}
-
-data TyInfoErr = TyInfoErr SourcePos String (Maybe Ident) (Maybe Ident)
-
-instance Printable TyInfoErr where
-    pp = ppTyInfoErr
+show' :: Maybe String -> String
+show' (Just x) = show x
+show' Nothing  = ""   
 
 instance Tree Ty where
-    fromTree (Cons (t,mt)) = App "Cons" [fromTree t, fromTree mt]
-    toTree = parseTree [ app "Cons" ((\a b -> Cons (a,b)) <$> arg <*> arg)]
+    fromTree (Ty c s t p) = App "Ty" [fromTree c, fromTree s, fromTree t, fromTree p]
+    toTree = parseTree [ app "Ty" (Ty <$> arg <*> arg <*> arg <*> arg)]
 
+instance Tree TyCons where
+    fromTree Prog = App "Prog" []
+    fromTree Interp = App "Interp" []
+    fromTree Comp = App "Comp" []
+    fromTree PlatF = App "PlatF" []
+    fromTree Runnable = App "Runnable" []
+    fromTree Framework = App "Framework" []
 
+    toTree = parseTree [ app "Prog" (pure Prog),
+                         app "Interp" (pure Interp),
+                         app "Comp" (pure Comp),
+                         app "PlatF" (pure PlatF),
+                         app "Runnable" (pure Runnable),
+                         app "Framework" (pure Framework)
+                       ]
 
-subst :: Ty -> Ty -> Ty
-subst (Prog tinf) (Prog Nothing) = Prog tinf
-subst (Interp tinf) (Interp Nothing) = Interp tinf
-subst (Comp tinf) (Comp Nothing) = Comp tinf
-subst (PlatF tinf) (PlatF Nothing) = PlatF tinf
-subst _ tyinf = tyinf
+match :: Ty -> TyCons -> Bool
+match (Ty Prog _ _ _) Runnable       = True
+match (Ty Interp _ _ _) Runnable     = True
+match (Ty Comp _ _ _) Runnable       = True
+match (Ty Interp _ _ _) Framework    = True
+match (Ty PlatF _ _ _) Framework     = True
+match (Ty ty1 _ _ _) ty2             = ty1 == ty2 
 
-match :: Ty -> Ty -> Bool
-match Runnable Runnable = True
-match Runnable _ = False
-match Framework Framework = True
-match Framework _ = False
-match (Prog _) Runnable = True
-match (Interp _) Runnable = True
-match (Comp _) Runnable = True
-match (Interp _) Framework = True
-match (PlatF _) Framework = True
-match ty1 ty2 = ty1 == subst ty1 ty2
 
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
 matchInfo (Just i) (Just j) = i == j
 matchInfo _ _ = True
 
-{-translate :: Ty -> Ty -> Ty
-translate (Prog (Just (TyInfo s1 t1 m1))) (Comp (Just (TyInfo s2 t2 m2)) = Prog (Just (TyInfo t2 t1 m1))
-translate (Interp (Just ....)) Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = Interp (TyInfo s1 t1 t2)
-translate (Comp (Just ....)) 
-translate _ _ tyinfo1 _ = tyinfo1-}
+translate :: Ty -> Ty -> Ty
+translate (Ty Prog s1 t1 m1) (Ty Comp s2 t2 m2)   = Ty Prog t2 t1 m1
+translate (Ty Interp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Interp s1 t1 t2
+translate (Ty Comp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Comp s1 t1 t2
+translate tyinfo1 _ = tyinfo1
 
-translate :: Ty -> Ty -> TyInfo -> TyInfo -> TyInfo
-translate _ _ _ t = t
 }
 
 
@@ -63,40 +62,32 @@ translate _ _ _ t = t
 attr Diag Diag_
     syn ty :: {Ty}
     syn tyErrs use {++} {[]} :: {[TyErr]}
-    syn tyInfo :: {TyInfo}
-    syn tyInfoErrs use {++} {[]} :: {[TyInfoErr]}
 
 sem Diag_
-    | Program lhs.ty = Prog
-    | Interpreter lhs.ty = Interp
-    | Compiler lhs.ty = Comp
-    | Platform lhs.ty = PlatF
+    | Program lhs.ty =  Ty Prog (Just @l) Nothing Nothing
+    | Interpreter lhs.ty = Ty Interp (Just @l) Nothing (Just @m)
+    | Compiler lhs.ty = Ty Comp (Just @l1) (Just @l2) (Just @m)
+    | Platform lhs.ty = Ty PlatF Nothing Nothing (Just @m)
     | Execute lhs.ty = @d2.ty
-    | Compile lhs.ty = @d1.ty
+    | Compile lhs.ty = translate @d1.ty @d2.ty
 
-sem Diag_
-    | Program lhs.tyInfo = TyInfo (Just @l) Nothing Nothing
-    | Interpreter lhs.tyInfo = TyInfo (Just @l) Nothing (Just @m)
-    | Compiler lhs.tyInfo = TyInfo (Just @l1) (Just @l2) (Just @m)
-    | Platform lhs.tyInfo = TyInfo Nothing Nothing (Just @m)
-    | Execute lhs.tyInfo = @d2.tyInfo
-    | Compile lhs.tyInfo = translate @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
                             checkRunnable @d1.pos @d1.ty ++
-                            checkFramework @d2.pos @d2.ty
+                            checkFramework @d2.pos @d2.ty ++
+                            checkIfMatches @d1.pos @d1.ty @d2.ty
 
 {
 checkRunnable :: SourcePos -> Ty -> [TyErr]
 checkRunnable pos ty | match ty Runnable = []
-                     | otherwise          = [TyErr pos nonExe Runnable ty]
+                     | otherwise          = [TyErr pos nonExe (show Runnable) (show $ cons ty)]
     where
         nonExe = "Cannot execute a non-runnable"
 
 checkFramework :: SourcePos -> Ty -> [TyErr]
 checkFramework pos ty | match ty Framework = []
-                      | otherwise          = [TyErr pos nonFrame Framework ty]
+                          | otherwise          = [TyErr pos nonFrame (show Framework) (show $ cons ty)]
     where
         nonFrame = "Cannot execute on non-Framework"
 }
@@ -104,43 +95,34 @@ checkFramework pos ty | match ty Framework = []
 sem Diag_
     | Compile lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
                             checkRunnable @d1.pos @d1.ty ++
-                            checkComp @d2.pos @d2.ty
+                            checkComp @d2.pos @d2.ty ++
+                            checkIfMatches @d1.pos @d1.ty @d2.ty
 
 {
 checkComp :: SourcePos -> Ty -> [TyErr]
-checkComp _ ty | match ty Comp = []
-checkComp pos ty               = [TyErr pos nonComp Comp ty]
+checkComp pos ty | match ty Comp = []
+                 | otherwise = [TyErr pos nonComp (show Comp) (show $ cons ty)]
     where
         nonComp = "Must be compiled using a compiler"
 
-}
-
-sem Diag_
-    | Execute lhs.tyInfoErrs = @d1.tyInfoErrs ++ @d2.tyInfoErrs ++
-                                checkIfMatches @d1.pos @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
-    | Compile lhs.tyInfoErrs = @d1.tyInfoErrs ++ @d2.tyInfoErrs ++
-                                checkIfMatches @d1.pos @d1.ty @d2.ty @d1.tyInfo @d2.tyInfo
-
-{
-checkIfMatches :: SourcePos -> Ty -> Ty -> TyInfo -> TyInfo -> [TyInfoErr]
-checkIfMatches pos Prog Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) | matchInfo s1 s2 = []
-                                                                   | otherwise = genTyInfoErr pos s1 s2
-checkIfMatches pos _ Interp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)    | matchInfo m1 s2 = []
-                                                                   | otherwise = genTyInfoErr pos m1 s2
-checkIfMatches pos Prog PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)  | matchInfo s1 m2 = []
-                                                                   | otherwise = genTyInfoErr pos s1 m2
-checkIfMatches pos _ PlatF (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)     | matchInfo m1 m2 = []
-                                                                   | otherwise = genTyInfoErr pos m1 m2
-checkIfMatches pos Prog Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)   | matchInfo s1 s2 = []
-                                                                   | otherwise = genTyInfoErr pos s1 s2
-checkIfMatches pos _ Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2)      | matchInfo m1 s2 = []
-                                                                   | otherwise = genTyInfoErr pos m1 s2
-checkIfMatches _ _ _ _ _ = [] --Type error has occurred so we cannot match type infos
+checkIfMatches :: SourcePos -> Ty -> Ty -> [TyErr]
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty Interp s2 _ m2) | matchInfo s1 s2 = []
+                                                         | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty Interp s2 _ m2) | matchInfo m1 s2 = []
+                                                         | otherwise = genTyInfoErr pos m1 s2
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty PlatF  s2 _ m2) | matchInfo s1 m2 = []
+                                                         | otherwise = genTyInfoErr pos s1 m2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty PlatF  s2 _ m2) | matchInfo m1 m2 = []
+                                                         | otherwise = genTyInfoErr pos m1 m2
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty Comp   s2 _ m2) | matchInfo s1 s2 = []
+                                                         | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty Comp   s2 _ m2) | matchInfo m1 s2 = []
+                                                         | otherwise = genTyInfoErr pos m1 s2
+checkIfMatches _ _ _ = [] --Type error has occurred so we cannot match type infos
 
 
-
-genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyInfoErr]
-genTyInfoErr pos mi mj = [TyInfoErr pos descr mi mj]
+genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyErr]
+genTyInfoErr pos mi mj = [TyErr pos descr (show' mi) (show' mj)]
     where
         descr = "Cannot execute runnable on a non-matching platform or interpreter"
 }
@@ -148,7 +130,7 @@ genTyInfoErr pos mi mj = [TyInfoErr pos descr mi mj]
 --------------------Type Errors-----------------------
 
 {
-data TyErr = TyErr SourcePos String Ty Ty
+data TyErr = TyErr SourcePos String String String
 
 instance Printable TyErr where
     pp = ppTyErr
@@ -161,17 +143,12 @@ ppTyErr :: TyErr -> Doc
 ppTyErr (TyErr pos descr expected inferred)
   = ppErr "Type error" pos descr expected inferred
 
--- | Pretty prints a type info error message
-ppTyInfoErr :: TyInfoErr -> Doc
-ppTyInfoErr (TyInfoErr pos descr expected inferred)
-    = ppErr "Type info error" pos descr expected inferred
-
-ppErr :: (Show a, Show b) => String -> SourcePos -> String -> a -> b -> Doc
+ppErr :: String -> SourcePos -> String -> String -> String -> Doc
 ppErr msg pos descr a b =
     above [ppHeader, text " ", ppExpected, ppInferred]
     where
         ppHeader = wrapped $
                     describeSourcePos pos ++ ": " ++ msg ++ ": " ++ descr ++ "."
-        ppExpected = text "? expected : " >|< showable a
-        ppInferred = text "? inferred : " >|< showable b
+        ppExpected = text "? expected : " >|< text a
+        ppInferred = text "? inferred : " >|< text b
 }

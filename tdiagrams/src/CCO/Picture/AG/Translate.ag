@@ -18,6 +18,7 @@ attr Diag Diag_
     syn dim :: {(Double,Double)}
     syn cjoint :: {(Double,Double)}
     syn ejoint :: {(Double,Double)}
+    syn h :: {Double}
     syn mlen :: {(Double)}
     inh len :: {(Double)}
     inh pos :: {(Double,Double)}
@@ -28,21 +29,25 @@ sem Diag_
                lhs.ejoint = @lhs.pos
                lhs.cjoint = @lhs.pos
                lhs.mlen = maxLength @diag
+               lhs.h = 30
                lhs.dim = dimension @diag @lhs.len
     | Program lhs.cmd = program @lhs.pos @lhs.len @p @l
               lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
               lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
               lhs.mlen = maxLength @diag
+              lhs.h = 30
               lhs.dim = dimension @diag @lhs.len
     | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.len @i @l @m
                   lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
                   lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
                   lhs.mlen = maxLength @diag
+                  lhs.h = 30
                   lhs.dim = dimension @diag @lhs.len
     | Compiler lhs.cmd = compiler @lhs.pos @lhs.len @c @l1 @l2 @m
                lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
                lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
                lhs.mlen = maxLength @diag
+               lhs.h = 30
                lhs.dim = dimension @diag @lhs.len
     | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
               lhs.cjoint = @d2.cjoint
@@ -52,8 +57,9 @@ sem Diag_
               lhs.mlen = max @d1.mlen @d2.mlen
               d1.len = @lhs.len
               d2.len = @lhs.len
+              lhs.h = @d1.h + @d2.h
               lhs.dim = joinDimensions @diag @d1.dim @d2.dim
-    | Compile loc.cpos = rightPos @loc.cmpl @d1.cjoint @lhs.len
+    | Compile loc.cpos = rightPos @loc.cmpl @lhs.pos @lhs.len
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.len
               lhs.cjoint = cJoint @loc.cmpl @loc.cpos @lhs.len
@@ -63,7 +69,10 @@ sem Diag_
               lhs.mlen = max @d1.mlen @d2.mlen
               d1.len = @lhs.len
               d2.len = @lhs.len
-              lhs.dim = joinDimensions @diag (dimension @loc.cmpl @lhs.len) (joinDimensions @diag @d1.dim @d2.dim)
+              loc.h = @d1.h + @d2.h - 10
+              lhs.h = @d1.h
+              loc.dim = (joinDimensions @diag (fst @d1.dim, @d1.h) @d2.dim)
+              lhs.dim = (fst $ joinDimensions @diag (dimension @loc.cmpl @lhs.len) @loc.dim, snd @loc.dim)
 
 
 {
@@ -87,7 +96,7 @@ dimension _ _ = (0,0)
 
 joinDimensions :: Diag_  -> (Double, Double) -> (Double, Double) -> (Double, Double)
 joinDimensions (Execute _ _) (x1,y1) (x2,y2) = (max x1 x2, y1 + y2)
-joinDimensions (Compile _ _) (x1,y1) (x2,y2) = (x1 + x2, max y1 y2)
+joinDimensions (Compile _ _) (x1,y1) (x2,y2) = (x1 + x2, y1 + y2 - 10)
 
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
@@ -99,12 +108,12 @@ eJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 30)
 cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
 cJoint (Program _ _) (x, y) len = (x + len + 7.5, y - 20)
 cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
-cJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 20)
+cJoint (Compiler _ _ _ _) (x, y) len = (x + (2 * len), y - 20)
 
 rightPos :: Diag_ -> Position -> Double -> Position
-rightPos (Program _ _) (x, y) len = (x + (len * 3) - 7.5, y + 20)
-rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 3), y)
-rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 3), y)
+rightPos (Program _ _) (x, y) len = (x + (len * 4), y)
+rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 4), y)
+rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 4), y)
 
 dtd_ :: Diag -> Diag_
 dtd_ (Diag p d) = d
