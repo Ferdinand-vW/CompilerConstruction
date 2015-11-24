@@ -1,7 +1,7 @@
 -------------------Syntax-----------------
 
 {
-data Ty = Prog
+data TyCons = Prog
         | Interp
         | Comp
         | PlatF
@@ -9,42 +9,52 @@ data Ty = Prog
         | Framework
          deriving (Eq, Show)
 
-instance Tree Ty where
-    fromTree Prog = App "Prog" []
-    fromTree Interp = App "Interp" []
-    fromTree Comp = App "Comp" []
-    fromTree PlatF = App "PlatF" []
-    fromTree Runnable = App "Runnable" []
-    fromTree Framework = App "Framework" []
+data Ty = Cons (TyCons,Maybe TyInfo)
 
-    toTree = parseTree [ app "Prog" (pure Prog),
-                         app "Interp" (pure Interp),
-                         app "Comp" (pure Comp),
-                         app "PlatF" (pure PlatF),
-                         app "Runnable" (pure Runnable),
-                         app "Framework" (pure Framework)
-                       ]
+data TyInfo = TyInfo {source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}
+
+data TyInfoErr = TyInfoErr SourcePos String (Maybe Ident) (Maybe Ident)
+
+instance Printable TyInfoErr where
+    pp = ppTyInfoErr
+
+instance Tree Ty where
+    fromTree (Cons (t,mt)) = App "Cons" [fromTree t, fromTree mt]
+    toTree = parseTree [ app "Cons" ((\a b -> Cons (a,b)) <$> arg <*> arg)]
+
+
+
+subst :: Ty -> Ty -> Ty
+subst (Prog tinf) (Prog Nothing) = Prog tinf
+subst (Interp tinf) (Interp Nothing) = Interp tinf
+subst (Comp tinf) (Comp Nothing) = Comp tinf
+subst (PlatF tinf) (PlatF Nothing) = PlatF tinf
+subst _ tyinf = tyinf
 
 match :: Ty -> Ty -> Bool
 match Runnable Runnable = True
 match Runnable _ = False
 match Framework Framework = True
 match Framework _ = False
-match Prog Runnable = True
-match Interp Runnable = True
-match Comp Runnable = True
-match Interp Framework = True
-match PlatF Framework = True
-match ty1 ty2 = ty1 == ty2
+match (Prog _) Runnable = True
+match (Interp _) Runnable = True
+match (Comp _) Runnable = True
+match (Interp _) Framework = True
+match (PlatF _) Framework = True
+match ty1 ty2 = ty1 == subst ty1 ty2
 
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
 matchInfo (Just i) (Just j) = i == j
 matchInfo _ _ = True
 
+{-translate :: Ty -> Ty -> Ty
+translate (Prog (Just (TyInfo s1 t1 m1))) (Comp (Just (TyInfo s2 t2 m2)) = Prog (Just (TyInfo t2 t1 m1))
+translate (Interp (Just ....)) Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = Interp (TyInfo s1 t1 t2)
+translate (Comp (Just ....)) 
+translate _ _ tyinfo1 _ = tyinfo1-}
+
 translate :: Ty -> Ty -> TyInfo -> TyInfo -> TyInfo
-translate Prog Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = TyInfo t2 t1 m1
-translate _ Comp (TyInfo s1 t1 m1) (TyInfo s2 t2 m2) = TyInfo s1 t1 t2
-translate _ _ tyinfo1 _ = tyinfo1
+translate _ _ _ t = t
 }
 
 
@@ -134,17 +144,6 @@ genTyInfoErr pos mi mj = [TyInfoErr pos descr mi mj]
     where
         descr = "Cannot execute runnable on a non-matching platform or interpreter"
 }
-
---------------------Type Info-------------------------
-{
-data TyInfo = TyInfo {source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}
-
-data TyInfoErr = TyInfoErr SourcePos String (Maybe Ident) (Maybe Ident)
-
-instance Printable TyInfoErr where
-    pp = ppTyInfoErr
-}
-
 
 --------------------Type Errors-----------------------
 
