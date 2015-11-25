@@ -1,9 +1,9 @@
 compile
-    program m in Haskell
+    interpreter hugs for Haskell in Haskell
 with
     compile
-        compiler uuagc from Haskell to Haskell in i686-windows
+        compiler C2 from Haskell to Haskell in i686
     with
-        compiler uuagc from i686-windows to Haskell in i6
+        compiler C3 from i686 to Haskell in i6
     end
 end

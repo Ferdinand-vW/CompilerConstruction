@@ -1,6 +1,29 @@
 ----------------------------------------
 
-  data Pic
+data DiagCons
+    | Plat
+    | Interp
+    | Comp
+    | Prog
+
+{
+type Pos = (Double,Double)
+type Ejoint = (Double, Double)
+type Cjoint = (Double, Double)
+type Height = Double
+type Length = Double
+type TotalLength = Double
+type BlockLength = Double
+type CompLength = Double
+
+data DiagInfo = D {cons :: DiagCons, h :: Height, len :: Length, clen :: CompLength,
+                   ejoint :: Ejoint, cjoint :: Cjoint}
+
+}
+
+
+
+data Pic
     | Pic d :: Diag
 
 attr Pic
@@ -8,75 +31,117 @@ attr Pic
 
 sem Pic
   | Pic lhs.pic = Picture @d.dim @d.cmd
-         d.pos = (0,snd @d.dim)
-         d.len = max @d.mlen 50 --50 is the minimum size
+         d.pos = (-100,snd @d.dim)
+         d.blen = max @d.mlen 50 --50 is the minimum size
 
 
 attr Diag Diag_
     syn diag :: self
+    syn diag' :: {(Diag_)}
     syn cmd use {++} {[]} :: {[Command]}
     syn dim :: {(Double,Double)}
-    syn cjoint :: {(Double,Double)}
-    syn ejoint :: {(Double,Double)}
+    syn dinfo :: {(DiagInfo)}
     syn h :: {Double}
+    syn tlen :: {(Double)}
     syn mlen :: {(Double)}
-    inh len :: {(Double)}
+    inh blen :: {(Double)}
     inh pos :: {(Double,Double)}
 
 
 sem Diag_
-    | Platform lhs.cmd = platform @lhs.pos @lhs.len @m
-               lhs.ejoint = @lhs.pos
-               lhs.cjoint = @lhs.pos
+    | Platform lhs.cmd = platform @lhs.pos @lhs.blen @m
+               lhs.diag' = @diag
                lhs.mlen = maxLength @diag
                lhs.h = 30
-               lhs.dim = dimension @diag @lhs.len
-    | Program lhs.cmd = program @lhs.pos @lhs.len @p @l
-              lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
-              lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+               lhs.tlen = 50
+               lhs.dim = dimension @diag @lhs.blen
+               lhs.dinfo = diagInfo Plat @lhs.blen
+    | Program lhs.cmd = program @lhs.pos @lhs.blen @p @l
+              lhs.diag' = @diag
               lhs.mlen = maxLength @diag
               lhs.h = 30
-              lhs.dim = dimension @diag @lhs.len
-    | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.len @i @l @m
-                  lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
-                  lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+              lhs.tlen = 50
+              lhs.dim = dimension @diag @lhs.blen
+              lhs.dinfo = diagInfo Prog @lhs.blen
+    | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.blen @i @l @m
+                  lhs.diag' = @diag
                   lhs.mlen = maxLength @diag
                   lhs.h = 30
-                  lhs.dim = dimension @diag @lhs.len
-    | Compiler lhs.cmd = compiler @lhs.pos @lhs.len @c @l1 @l2 @m
-               lhs.ejoint = eJoint @diag @lhs.pos @lhs.len
-               lhs.cjoint = cJoint @diag @lhs.pos @lhs.len
+                  lhs.tlen = 50
+                  lhs.dim = dimension @diag @lhs.blen
+                  lhs.dinfo = diagInfo Interp @lhs.blen 
+    | Compiler lhs.cmd = compiler @lhs.pos @lhs.blen @c @l1 @l2 @m
+               lhs.diag' = @diag
                lhs.mlen = maxLength @diag
                lhs.h = 30
-               lhs.dim = dimension @diag @lhs.len
+               lhs.tlen = 150
+               lhs.dim = dimension @diag @lhs.blen
+               lhs.dinfo = diagInfo Comp @lhs.blen
     | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
-              lhs.cjoint = @d2.cjoint
-              lhs.ejoint = @d2.ejoint
+              lhs.diag' = @d2.diag'
               d1.pos = @lhs.pos
-              d2.pos = @d1.ejoint
+              d2.pos = sumTuple @lhs.pos (ejoint @d1.dinfo)
               lhs.mlen = max @d1.mlen @d2.mlen
-              d1.len = @lhs.len
-              d2.len = @lhs.len
+              d1.blen = @lhs.blen
+              d2.blen = @lhs.blen
               lhs.h = @d1.h + @d2.h
+              lhs.tlen = @d1.tlen + @d2.tlen
               lhs.dim = joinDimensions @diag @d1.dim @d2.dim
-    | Compile loc.cpos = rightPos @loc.cmpl @lhs.pos @lhs.len
+              lhs.dinfo = @d2.dinfo
+    | Compile loc.cpos = rightPos @loc.cmpl @loc.d1pos @lhs.blen
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
-              lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.len
-              lhs.cjoint = cJoint @loc.cmpl @loc.cpos @lhs.len
-              lhs.ejoint = eJoint @loc.cmpl @loc.cpos @lhs.len
-              d1.pos = @lhs.pos
-              d2.pos = @d1.cjoint
+              lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.blen
+              lhs.diag' = @d1.diag'
+              loc.d1pos = compilationPos @d2.diag @lhs.pos @d2.tlen (clen @d1.dinfo)
+              d1.pos = @loc.d1pos
+              d2.pos = compileWithPos @d2.diag @lhs.pos (clen @d1.dinfo) @lhs.blen
               lhs.mlen = max @d1.mlen @d2.mlen
-              d1.len = @lhs.len
-              d2.len = @lhs.len
+              d1.blen = @lhs.blen
+              d2.blen = @lhs.blen
               loc.h = @d1.h + @d2.h - 10
               lhs.h = @d1.h
+              lhs.tlen = (2 * clen @d1.dinfo) + @d2.tlen
               loc.dim = (joinDimensions @diag (fst @d1.dim, @d1.h) @d2.dim)
-              lhs.dim = (fst $ joinDimensions @diag (dimension @loc.cmpl @lhs.len) @loc.dim, snd @loc.dim)
+              lhs.dim = (fst $ joinDimensions @diag (dimension @loc.cmpl @lhs.blen) @loc.dim, snd @loc.dim)
+              lhs.dinfo = translateDiagInfo @d1.dinfo (translatePos @d1.dinfo)
 
 
 {
+
+
+compilationPos :: Diag -> Pos -> TotalLength -> CompLength -> Pos
+compilationPos (Diag _ (Compiler _ _ _ _)) (x,y) _ _= (x,y)
+compilationPos (Diag _ (Compile _ _)) (x,y) tlen clen = (x + tlen - 150 - clen,y + 20)
+
+compileWithPos :: Diag -> Pos -> CompLength -> BlockLength -> Pos
+compileWithPos (Diag _ (Compiler _ _ _ _)) (x,y) clen blen = cJoint Comp (x,y) blen
+compileWithPos (Diag _ (Compile _ _)) (x,y) _ _ = (x,y)
+
+mapTuple :: (a -> b) -> (a,a) -> (b,b)
+mapTuple f (a1,a2) = (f a1, f a2)
+
+sumTuple :: Num a => (a,a) -> (a,a) -> (a,a)
+sumTuple (a1,a2) (b1,b2) = (a1 + b1, a2 + b2)
+
+diagInfo :: DiagCons -> BlockLength -> DiagInfo
+diagInfo Plat   blen = D Plat   30 50  50  (0   ,0  ) (       0      ,   0)
+diagInfo Interp blen = D Interp 30 50  50  (0   ,-30) (    blen      , -20)
+diagInfo Comp   blen = D Comp   30 150 100 (blen,-30) (2 * blen      , -20)
+diagInfo prog   blen = D Prog   30 50  50  (7.5 ,-30) (    blen + 7.5, -20)
+
+translatePos :: DiagInfo -> Pos
+translatePos (D Comp _ _ _ _ _) = (0,0)
+translatePos (D cons _ _ _ _ _) = (0,0)
+
+translateDiagInfo :: DiagInfo -> Pos -> DiagInfo
+translateDiagInfo (D c h l cl (ex,ey) (cx,cy)) (x,y) = 
+    D c h l cl (ex + (x), ey + (y )) (cx + (x), cy + (y))
+
 type Position = (Double,Double)
+
+compLen :: Diag_ -> Double -> Double
+compLen (Compiler _ _ _ _) len = len - 50
+compLen _ len = len
 
 wordLength :: String -> Double
 wordLength s = fromIntegral (length s) * 5
@@ -100,15 +165,15 @@ joinDimensions (Compile _ _) (x1,y1) (x2,y2) = (x1 + x2, y1 + y2 - 10)
 
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
-eJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-eJoint (Program _ _) (x,y) _= (x + 7.5, y - 30)
-eJoint (Interpreter _ _ _) (x, y) _= (x, y - 30)
-eJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 30)
+eJoint :: DiagCons -> Pos -> BlockLength -> Ejoint
+eJoint Prog   (x,y) _    = (x + 7.5 , y - 30)
+eJoint Interp (x,y) _    = (x       , y - 30)
+eJoint Comp   (x,y) blen = (x + blen, y - 30)
 
-cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-cJoint (Program _ _) (x, y) len = (x + len + 7.5, y - 20)
-cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
-cJoint (Compiler _ _ _ _) (x, y) len = (x + (2 * len), y - 20)
+cJoint :: DiagCons -> Pos -> BlockLength -> Cjoint
+cJoint Prog   (x,y) blen = (x +      blen + 7.5, y - 20)
+cJoint Interp (x,y) blen = (x +      blen      , y - 20)
+cJoint Comp   (x,y) blen = (x + (2 * blen)     , y - 20)
 
 rightPos :: Diag_ -> Position -> Double -> Position
 rightPos (Program _ _) (x, y) len = (x + (len * 4), y)

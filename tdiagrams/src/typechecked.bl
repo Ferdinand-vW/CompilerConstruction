@@ -1,17 +1,20 @@
 Diag(
   SourcePos(Stdin, Pos(1, 1))
 , Compile(
-    Diag(SourcePos(Stdin, Pos(2, 5)), Program("m", "Haskell"))
+    Diag(
+      SourcePos(Stdin, Pos(2, 5))
+    , Interpreter("hugs", "Haskell", "Haskell")
+    )
   , Diag(
       SourcePos(Stdin, Pos(4, 5))
     , Compile(
         Diag(
           SourcePos(Stdin, Pos(5, 9))
-        , Compiler("uuagc", "Haskell", "Haskell", "i686-windows")
+        , Compiler("C2", "Haskell", "Haskell", "i686")
         )
       , Diag(
           SourcePos(Stdin, Pos(7, 9))
-        , Compiler("uuagc", "i686-windows", "Haskell", "i6")
+        , Compiler("C3", "i686", "Haskell", "i6")
         )
       )
     )
