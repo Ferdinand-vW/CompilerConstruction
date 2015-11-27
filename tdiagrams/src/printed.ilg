@@ -1,103 +1,85 @@
-This is makeindex, version 2.15 [MiKTeX 2.9] (kpathsea + Thai support).
+This is makeindex, version 2.15 [MiKTeX 2.9 64-bit] (kpathsea + Thai support).
 Scanning input file printed.bl...
 !! Input index error (file = printed.bl, line = 1):
    -- Unknown index keyword \begin.
 !! Input index error (file = printed.bl, line = 2):
-   -- Unknown index keyword \put(50.0,60.0).
+   -- Unknown index keyword \put(-100.0,20.0).
 !! Input index error (file = printed.bl, line = 3):
-   -- Unknown index keyword \put(50.0,80.0).
+   -- Unknown index keyword \put(-100.0,40.0).
 !! Input index error (file = printed.bl, line = 4):
-   -- Unknown index keyword \put(50.0,70.0).
+   -- Unknown index keyword \put(-100.0,30.0).
 !! Input index error (file = printed.bl, line = 5):
-   -- Unknown index keyword \put(50.0,60.0).
+   -- Unknown index keyword \put(-100.0,20.0).
 !! Input index error (file = printed.bl, line = 6):
-   -- Unknown index keyword \put(-50.0,40.0).
+   -- Unknown index keyword \put(0.0,0.0).
 !! Input index error (file = printed.bl, line = 7):
-   -- Unknown index keyword \put(-50.0,60.0).
+   -- Unknown index keyword \put(0.0,20.0).
 !! Input index error (file = printed.bl, line = 8):
-   -- Unknown index keyword \put(-100.0,60.0).
+   -- Unknown index keyword \put(-50.0,20.0).
 !! Input index error (file = printed.bl, line = 9):
-   -- Unknown index keyword \put(-100.0,70.0).
+   -- Unknown index keyword \put(-50.0,30.0).
 !! Input index error (file = printed.bl, line = 10):
-   -- Unknown index keyword \put(50.0,70.0).
+   -- Unknown index keyword \put(100.0,30.0).
 !! Input index error (file = printed.bl, line = 11):
-   -- Unknown index keyword \put(50.0,60.0).
-!! Input index error (file = printed.bl, line = 12):
-   -- Unknown index keyword \put(0.0,60.0).
-!! Input index error (file = printed.bl, line = 13):
-   -- Unknown index keyword \put(0.0,40.0).
-!! Input index error (file = printed.bl, line = 14):
-   -- Unknown index keyword \put(-100.0,60.0).
-!! Input index error (file = printed.bl, line = 15):
-   -- Unknown index keyword \put(-50.0,60.0).
-!! Input index error (file = printed.bl, line = 16):
-   -- Unknown index keyword \put(0.0,60.0).
-!! Input index error (file = printed.bl, line = 17):
-   -- Unknown index keyword \put(-50.0,50.0).
-!! Input index error (file = printed.bl, line = 18):
-   -- Unknown index keyword \put(-50.0,40.0).
-!! Input index error (file = printed.bl, line = 19):
-   -- Unknown index keyword \put(50.0,20.0).
-!! Input index error (file = printed.bl, line = 20):
-   -- Unknown index keyword \put(50.0,40.0).
-!! Input index error (file = printed.bl, line = 21):
-   -- Unknown index keyword \put(0.0,40.0).
-!! Input index error (file = printed.bl, line = 22):
-   -- Unknown index keyword \put(0.0,50.0).
-!! Input index error (file = printed.bl, line = 23):
-   -- Unknown index keyword \put(150.0,50.0).
-!! Input index error (file = printed.bl, line = 24):
-   -- Unknown index keyword \put(150.0,40.0).
-!! Input index error (file = printed.bl, line = 25):
-   -- Unknown index keyword \put(100.0,40.0).
-!! Input index error (file = printed.bl, line = 26):
    -- Unknown index keyword \put(100.0,20.0).
-!! Input index error (file = printed.bl, line = 27):
-   -- Unknown index keyword \put(0.0,40.0).
-!! Input index error (file = printed.bl, line = 28):
-   -- Unknown index keyword \put(50.0,40.0).
-!! Input index error (file = printed.bl, line = 29):
-   -- Unknown index keyword \put(100.0,40.0).
-!! Input index error (file = printed.bl, line = 30):
-   -- Unknown index keyword \put(50.0,30.0).
-!! Input index error (file = printed.bl, line = 31):
+!! Input index error (file = printed.bl, line = 12):
    -- Unknown index keyword \put(50.0,20.0).
+!! Input index error (file = printed.bl, line = 13):
+   -- Unknown index keyword \put(50.0,0.0).
+!! Input index error (file = printed.bl, line = 14):
+   -- Unknown index keyword \put(-50.0,20.0).
+!! Input index error (file = printed.bl, line = 15):
+   -- Unknown index keyword \put(0.0,20.0).
+!! Input index error (file = printed.bl, line = 16):
+   -- Unknown index keyword \put(50.0,20.0).
+!! Input index error (file = printed.bl, line = 17):
+   -- Unknown index keyword \put(0.0,10.0).
+!! Input index error (file = printed.bl, line = 18):
+   -- Unknown index keyword \put(0.0,0.0).
+!! Input index error (file = printed.bl, line = 19):
+   -- Unknown index keyword \put(100.0,20.0).
+!! Input index error (file = printed.bl, line = 20):
+   -- Unknown index keyword \put(100.0,40.0).
+!! Input index error (file = printed.bl, line = 21):
+   -- Unknown index keyword \put(100.0,30.0).
+!! Input index error (file = printed.bl, line = 22):
+   -- Unknown index keyword \put(100.0,20.0).
+!! Input index error (file = printed.bl, line = 23):
+   -- Unknown index keyword \put(250.0,0.0).
+!! Input index error (file = printed.bl, line = 24):
+   -- Unknown index keyword \put(250.0,20.0).
+!! Input index error (file = printed.bl, line = 25):
+   -- Unknown index keyword \put(200.0,20.0).
+!! Input index error (file = printed.bl, line = 26):
+   -- Unknown index keyword \put(200.0,30.0).
+!! Input index error (file = printed.bl, line = 27):
+   -- Unknown index keyword \put(350.0,30.0).
+!! Input index error (file = printed.bl, line = 28):
+   -- Unknown index keyword \put(350.0,20.0).
+!! Input index error (file = printed.bl, line = 29):
+   -- Unknown index keyword \put(300.0,20.0).
+!! Input index error (file = printed.bl, line = 30):
+   -- Unknown index keyword \put(300.0,0.0).
+!! Input index error (file = printed.bl, line = 31):
+   -- Unknown index keyword \put(200.0,20.0).
 !! Input index error (file = printed.bl, line = 32):
-   -- Unknown index keyword \put(150.0,40.0).
+   -- Unknown index keyword \put(250.0,20.0).
 !! Input index error (file = printed.bl, line = 33):
-   -- Unknown index keyword \put(150.0,60.0).
+   -- Unknown index keyword \put(300.0,20.0).
 !! Input index error (file = printed.bl, line = 34):
-   -- Unknown index keyword \put(100.0,60.0).
+   -- Unknown index keyword \put(250.0,10.0).
 !! Input index error (file = printed.bl, line = 35):
-   -- Unknown index keyword \put(100.0,70.0).
+   -- Unknown index keyword \put(250.0,0.0).
 !! Input index error (file = printed.bl, line = 36):
-   -- Unknown index keyword \put(250.0,70.0).
+   -- Unknown index keyword \put(300.0,20.0).
 !! Input index error (file = printed.bl, line = 37):
-   -- Unknown index keyword \put(250.0,60.0).
+   -- Unknown index keyword \put(300.0,40.0).
 !! Input index error (file = printed.bl, line = 38):
-   -- Unknown index keyword \put(200.0,60.0).
+   -- Unknown index keyword \put(300.0,30.0).
 !! Input index error (file = printed.bl, line = 39):
-   -- Unknown index keyword \put(200.0,40.0).
+   -- Unknown index keyword \put(300.0,20.0).
 !! Input index error (file = printed.bl, line = 40):
-   -- Unknown index keyword \put(100.0,60.0).
-!! Input index error (file = printed.bl, line = 41):
-   -- Unknown index keyword \put(150.0,60.0).
-!! Input index error (file = printed.bl, line = 42):
-   -- Unknown index keyword \put(200.0,60.0).
-!! Input index error (file = printed.bl, line = 43):
-   -- Unknown index keyword \put(150.0,50.0).
-!! Input index error (file = printed.bl, line = 44):
-   -- Unknown index keyword \put(150.0,40.0).
-!! Input index error (file = printed.bl, line = 45):
-   -- Unknown index keyword \put(250.0,60.0).
-!! Input index error (file = printed.bl, line = 46):
-   -- Unknown index keyword \put(250.0,80.0).
-!! Input index error (file = printed.bl, line = 47):
-   -- Unknown index keyword \put(250.0,70.0).
-!! Input index error (file = printed.bl, line = 48):
-   -- Unknown index keyword \put(250.0,60.0).
-!! Input index error (file = printed.bl, line = 49):
    -- Unknown index keyword \end.
-done (0 entries accepted, 49 rejected).
+done (0 entries accepted, 40 rejected).
 Nothing written in printed.ind.
 Transcript written in printed.ilg.

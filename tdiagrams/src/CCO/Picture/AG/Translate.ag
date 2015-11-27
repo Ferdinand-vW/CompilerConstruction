@@ -15,13 +15,34 @@ type Length = Double
 type TotalLength = Double
 type BlockLength = Double
 type CompLength = Double
+type Depth = Double
 
 data DiagInfo = D {cons :: DiagCons, h :: Height, len :: Length, clen :: CompLength,
                    ejoint :: Ejoint, cjoint :: Cjoint}
 
+
+{-
+
+data DiagToPicture
+  | Platform_ m :: {Ident}
+  | Interpreter_ i :: {Ident} l :: {Ident} m :: {Ident}
+  | Compiler_ c :: {Ident} l1 ::{Ident} l2 :: {Ident} m ::{Ident}
+  | Program_ p :: {Ident} l :: {Ident}
+  | Executed d1 :: DiagToPicture d2 :: DiagToPicture
+  | Compiled d2 :: DiagToPicture d2 :: DiagToPicture d3 :: DiagToPicture
+
+attr Diag Diag_
+  syn diag2pic :: {DiagToPicture}
+
+sem Diag_
+  | Platform lhs.diag2pic = Platform_ @m
+  | Interpreter lhs.diag2pic = Interpreter_ @i @l @m
+  | Compiler lhs.diag2pic = Compiler_ @c @l1 @l2 @m
+  | Program lhs.diag2pic = Program_ @p @l
+  | Execute lhs.diag2pic = Executed @d1 @d2
+  | Compile lhs.diag2pic = Compiled @d1 @d2 (compile @d1)
+-}
 }
-
-
 
 data Pic
     | Pic d :: Diag
@@ -42,6 +63,8 @@ attr Diag Diag_
     syn dim :: {(Double,Double)}
     syn dinfo :: {(DiagInfo)}
     syn h :: {Double}
+    syn cjoint :: {(Double,Double)}
+    syn depth :: {Double}
     syn tlen :: {(Double)}
     syn mlen :: {(Double)}
     inh blen :: {(Double)}
@@ -53,9 +76,11 @@ sem Diag_
                lhs.diag' = @diag
                lhs.mlen = maxLength @diag
                lhs.h = 30
-               lhs.tlen = 50
+               lhs.tlen = 42.5
                lhs.dim = dimension @diag @lhs.blen
                lhs.dinfo = diagInfo Plat @lhs.blen
+               lhs.depth = 0
+               lhs.cjoint = cJoint Plat @lhs.pos @lhs.blen
     | Program lhs.cmd = program @lhs.pos @lhs.blen @p @l
               lhs.diag' = @diag
               lhs.mlen = maxLength @diag
@@ -63,20 +88,26 @@ sem Diag_
               lhs.tlen = 50
               lhs.dim = dimension @diag @lhs.blen
               lhs.dinfo = diagInfo Prog @lhs.blen
+              lhs.depth = 0
+              lhs.cjoint = cJoint Prog @lhs.pos @lhs.blen
     | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.blen @i @l @m
                   lhs.diag' = @diag
                   lhs.mlen = maxLength @diag
                   lhs.h = 30
                   lhs.tlen = 50
                   lhs.dim = dimension @diag @lhs.blen
-                  lhs.dinfo = diagInfo Interp @lhs.blen 
+                  lhs.dinfo = diagInfo Interp @lhs.blen
+                  lhs.depth = 0 
+                  lhs.cjoint = cJoint Interp @lhs.pos @lhs.blen
     | Compiler lhs.cmd = compiler @lhs.pos @lhs.blen @c @l1 @l2 @m
                lhs.diag' = @diag
                lhs.mlen = maxLength @diag
                lhs.h = 30
-               lhs.tlen = 150
+               lhs.tlen = 100
                lhs.dim = dimension @diag @lhs.blen
                lhs.dinfo = diagInfo Comp @lhs.blen
+               lhs.depth = 0
+               lhs.cjoint = cJoint Comp @lhs.pos @lhs.blen
     | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
               lhs.diag' = @d2.diag'
               d1.pos = @lhs.pos
@@ -88,33 +119,55 @@ sem Diag_
               lhs.tlen = @d1.tlen + @d2.tlen
               lhs.dim = joinDimensions @diag @d1.dim @d2.dim
               lhs.dinfo = @d2.dinfo
-    | Compile loc.cpos = rightPos @loc.cmpl @loc.d1pos @lhs.blen
+              lhs.depth = max @d1.depth @d2.depth
+              lhs.cjoint = @d2.cjoint
+    | Compile loc.cpos = rightPos @loc.cmpl (fst @loc.d1pos + @d1.tlen, snd @loc.d1pos) 50
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.blen
               lhs.diag' = @d1.diag'
-              loc.d1pos = compilationPos @d2.diag @lhs.pos @d2.tlen (clen @d1.dinfo)
+              loc.d1pos = d1Pos @d1.depth @d2.depth @lhs.pos @d2.tlen (clen @d1.dinfo)
+              loc.d2pos = d2Pos @d2.depth @d1.depth @lhs.pos @d1.tlen (cjoint @d1.dinfo)
               d1.pos = @loc.d1pos
-              d2.pos = compileWithPos @d2.diag @lhs.pos (clen @d1.dinfo) @lhs.blen
+              d2.pos = @loc.d2pos
               lhs.mlen = max @d1.mlen @d2.mlen
               d1.blen = @lhs.blen
               d2.blen = @lhs.blen
               loc.h = @d1.h + @d2.h - 10
               lhs.h = @d1.h
-              lhs.tlen = (2 * clen @d1.dinfo) + @d2.tlen
+              lhs.tlen = @d1.tlen + 150 + @lhs.blen
               loc.dim = (joinDimensions @diag (fst @d1.dim, @d1.h) @d2.dim)
               lhs.dim = (fst $ joinDimensions @diag (dimension @loc.cmpl @lhs.blen) @loc.dim, snd @loc.dim)
               lhs.dinfo = translateDiagInfo @d1.dinfo (translatePos @d1.dinfo)
+              lhs.depth = 1 + max @d1.depth @d2.depth
+              loc.cjoint = cJoint Interp @loc.cpos @lhs.blen
+              lhs.cjoint = @loc.cjoint
 
 
 {
+--
+--compilationPos @d2.diag @lhs.pos @d2.tlen (clen @d1.dinfo)
+--compileWithPos @d2.diag @lhs.pos (cjoint @d1.dinfo) @lhs.blen
+d1Pos :: Depth -> Depth -> Pos -> TotalLength -> CompLength -> Pos
+d1Pos d1 d2 (x,y) tlen clen
+  | diff >= 0 = (x,y)
+  | otherwise = (x + tlen - 150 - clen, y + 20)
+  where
+    diff = d1 - d2
+
+d2Pos :: Depth -> Depth -> Pos -> TotalLength -> Cjoint -> Pos
+d2Pos d2 d1 (x,y) tlen (cx,cy)
+  | diff > 0 = (x,y)
+  | otherwise = (x + (abs diff * tlen) + cx, y + cy)
+  where
+    diff = d2 - d1
 
 
 compilationPos :: Diag -> Pos -> TotalLength -> CompLength -> Pos
-compilationPos (Diag _ (Compiler _ _ _ _)) (x,y) _ _= (x,y)
 compilationPos (Diag _ (Compile _ _)) (x,y) tlen clen = (x + tlen - 150 - clen,y + 20)
+compilationPos _ (x,y) _ _= (x,y)
 
-compileWithPos :: Diag -> Pos -> CompLength -> BlockLength -> Pos
-compileWithPos (Diag _ (Compiler _ _ _ _)) (x,y) clen blen = cJoint Comp (x,y) blen
+compileWithPos :: Diag -> Pos -> Cjoint -> BlockLength -> Pos
+compileWithPos (Diag _ (Compiler _ _ _ _)) (x,y) (cx,cy) blen = (x + cx,y + cy)
 compileWithPos (Diag _ (Compile _ _)) (x,y) _ _ = (x,y)
 
 mapTuple :: (a -> b) -> (a,a) -> (b,b)
@@ -124,10 +177,10 @@ sumTuple :: Num a => (a,a) -> (a,a) -> (a,a)
 sumTuple (a1,a2) (b1,b2) = (a1 + b1, a2 + b2)
 
 diagInfo :: DiagCons -> BlockLength -> DiagInfo
-diagInfo Plat   blen = D Plat   30 50  50  (0   ,0  ) (       0      ,   0)
-diagInfo Interp blen = D Interp 30 50  50  (0   ,-30) (    blen      , -20)
-diagInfo Comp   blen = D Comp   30 150 100 (blen,-30) (2 * blen      , -20)
-diagInfo prog   blen = D Prog   30 50  50  (7.5 ,-30) (    blen + 7.5, -20)
+diagInfo Plat   blen = D Plat   30 blen blen  (0   ,0  ) (       0      ,   0)
+diagInfo Interp blen = D Interp 30 blen blen  (0   ,-30) (    blen      , -20)
+diagInfo Comp   blen = D Comp   30 (3*blen) (2*blen) (blen,-30) (2 * blen      , -20)
+diagInfo prog   blen = D Prog   30 blen (blen + 7.5)  (7.5 ,-30) (    blen + 7.5, -20)
 
 translatePos :: DiagInfo -> Pos
 translatePos (D Comp _ _ _ _ _) = (0,0)
@@ -176,9 +229,9 @@ cJoint Interp (x,y) blen = (x +      blen      , y - 20)
 cJoint Comp   (x,y) blen = (x + (2 * blen)     , y - 20)
 
 rightPos :: Diag_ -> Position -> Double -> Position
-rightPos (Program _ _) (x, y) len = (x + (len * 4), y)
-rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 4), y)
-rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 4), y)
+rightPos (Program _ _) (x, y) len = (x + (len * 3), y)
+rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 3), y)
+rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 2), y)
 
 dtd_ :: Diag -> Diag_
 dtd_ (Diag p d) = d

@@ -1,9 +1,9 @@
 compile
-    interpreter hugs for Haskell in Haskell
-with
     compile
-        compiler C2 from Haskell to Haskell in i686
+        interpreter hugs for Haskell in UUAG
     with
-        compiler C3 from i686 to Haskell in i6
+        compiler C1 from UUAG to Haskell in ee8
     end
+with
+    compiler C3 from Haskell to Test in i7
 end
