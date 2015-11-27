@@ -54,13 +54,13 @@ instance Tree TyCons where
                          app "Framework" (pure Framework)
                        ]
 
-match :: Ty -> TyCons -> Bool
-match (Ty Prog _ _ _) Runnable       = True
-match (Ty Interp _ _ _) Runnable     = True
-match (Ty Comp _ _ _) Runnable       = True
-match (Ty Interp _ _ _) Framework    = True
-match (Ty PlatF _ _ _) Framework     = True
-match (Ty ty1 _ _ _) ty2             = ty1 == ty2 
+match :: TyCons -> TyCons -> Bool
+match Prog Runnable       = True
+match Interp Runnable     = True
+match Comp Runnable       = True
+match Interp Framework    = True
+match PlatF Framework     = True
+match ty1 ty2             = ty1 == ty2 
 
 
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
@@ -77,24 +77,24 @@ translate tyinfo1 _ = tyinfo1
 
 {-# LINE 81 "AG\\Typing.ag" #-}
 
-checkRunnable :: SourcePos -> Ty -> [TyErr]
+checkRunnable :: SourcePos -> TyCons -> [TyErr]
 checkRunnable pos ty | match ty Runnable = []
-                     | otherwise          = [TyErr pos nonExe (show Runnable) (show $ cons ty)]
+                     | otherwise          = [TyErr pos nonExe (show Runnable) (show ty)]
     where
         nonExe = "Cannot execute a non-runnable"
 
-checkFramework :: SourcePos -> Ty -> [TyErr]
+checkFramework :: SourcePos -> TyCons -> [TyErr]
 checkFramework pos ty | match ty Framework = []
-                          | otherwise          = [TyErr pos nonFrame (show Framework) (show $ cons ty)]
+                          | otherwise          = [TyErr pos nonFrame (show Framework) (show ty)]
     where
         nonFrame = "Cannot execute on non-Framework"
 {-# LINE 92 "AG.hs" #-}
 
 {-# LINE 101 "AG\\Typing.ag" #-}
 
-checkComp :: SourcePos -> Ty -> [TyErr]
+checkComp :: SourcePos -> TyCons -> [TyErr]
 checkComp pos ty | match ty Comp = []
-                 | otherwise = [TyErr pos nonComp (show Comp) (show $ cons ty)]
+                 | otherwise = [TyErr pos nonComp (show Comp) (show ty)]
     where
         nonComp = "Must be compiled using a compiler"
 
@@ -368,8 +368,8 @@ sem_Diag__Execute d1_ d2_ =
               _lhsOtyErrs =
                   ({-# LINE 76 "AG\\Typing.ag" #-}
                    _d1ItyErrs ++ _d2ItyErrs ++
-                   checkRunnable _d1Ipos _d1Ity ++
-                   checkFramework _d2Ipos _d2Ity ++
+                   checkRunnable _d1Ipos (cons _d1Ity) ++
+                   checkFramework _d2Ipos (cons _d2Ity) ++
                    checkIfMatches _d1Ipos _d1Ity _d2Ity
                    {-# LINE 375 "AG.hs" #-}
                    )
@@ -398,9 +398,9 @@ sem_Diag__Compile d1_ d2_ =
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
-                   _d1ItyErrs ++ _d2ItyErrs ++
-                   checkRunnable _d1Ipos _d1Ity ++
-                   checkComp _d2Ipos _d2Ity ++
+                   _d1ItyErrs  ++ _d2ItyErrs ++
+                   checkRunnable  _d1Ipos (cons _d1Ity) ++
+                   checkComp      _d2Ipos (cons _d2Ity) ++
                    checkIfMatches _d1Ipos _d1Ity _d2Ity
                    {-# LINE 406 "AG.hs" #-}
                    )

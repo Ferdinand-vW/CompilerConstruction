@@ -35,13 +35,13 @@ instance Tree TyCons where
                          app "Framework" (pure Framework)
                        ]
 
-match :: Ty -> TyCons -> Bool
-match (Ty Prog _ _ _) Runnable       = True
-match (Ty Interp _ _ _) Runnable     = True
-match (Ty Comp _ _ _) Runnable       = True
-match (Ty Interp _ _ _) Framework    = True
-match (Ty PlatF _ _ _) Framework     = True
-match (Ty ty1 _ _ _) ty2             = ty1 == ty2 
+match :: TyCons -> TyCons -> Bool
+match Prog Runnable       = True
+match Interp Runnable     = True
+match Comp Runnable       = True
+match Interp Framework    = True
+match PlatF Framework     = True
+match ty1 ty2             = ty1 == ty2 
 
 
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
@@ -74,34 +74,34 @@ sem Diag_
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
-                            checkRunnable @d1.pos @d1.ty ++
-                            checkFramework @d2.pos @d2.ty ++
+                            checkRunnable @d1.pos (cons @d1.ty) ++
+                            checkFramework @d2.pos (cons @d2.ty) ++
                             checkIfMatches @d1.pos @d1.ty @d2.ty
 
 {
-checkRunnable :: SourcePos -> Ty -> [TyErr]
+checkRunnable :: SourcePos -> TyCons -> [TyErr]
 checkRunnable pos ty | match ty Runnable = []
-                     | otherwise          = [TyErr pos nonExe (show Runnable) (show $ cons ty)]
+                     | otherwise          = [TyErr pos nonExe (show Runnable) (show ty)]
     where
         nonExe = "Cannot execute a non-runnable"
 
-checkFramework :: SourcePos -> Ty -> [TyErr]
+checkFramework :: SourcePos -> TyCons -> [TyErr]
 checkFramework pos ty | match ty Framework = []
-                          | otherwise          = [TyErr pos nonFrame (show Framework) (show $ cons ty)]
+                          | otherwise          = [TyErr pos nonFrame (show Framework) (show ty)]
     where
         nonFrame = "Cannot execute on non-Framework"
 }
 
 sem Diag_
-    | Compile lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
-                            checkRunnable @d1.pos @d1.ty ++
-                            checkComp @d2.pos @d2.ty ++
+    | Compile lhs.tyErrs =  @d1.tyErrs  ++ @d2.tyErrs ++
+                            checkRunnable  @d1.pos (cons @d1.ty) ++
+                            checkComp      @d2.pos (cons @d2.ty) ++
                             checkIfMatches @d1.pos @d1.ty @d2.ty
 
 {
-checkComp :: SourcePos -> Ty -> [TyErr]
+checkComp :: SourcePos -> TyCons -> [TyErr]
 checkComp pos ty | match ty Comp = []
-                 | otherwise = [TyErr pos nonComp (show Comp) (show $ cons ty)]
+                 | otherwise = [TyErr pos nonComp (show Comp) (show ty)]
     where
         nonComp = "Must be compiled using a compiler"
 
