@@ -45,41 +45,7 @@ Scanning input file printed.bl...
 !! Input index error (file = printed.bl, line = 22):
    -- Unknown index keyword \put(100.0,20.0).
 !! Input index error (file = printed.bl, line = 23):
-   -- Unknown index keyword \put(250.0,0.0).
-!! Input index error (file = printed.bl, line = 24):
-   -- Unknown index keyword \put(250.0,20.0).
-!! Input index error (file = printed.bl, line = 25):
-   -- Unknown index keyword \put(200.0,20.0).
-!! Input index error (file = printed.bl, line = 26):
-   -- Unknown index keyword \put(200.0,30.0).
-!! Input index error (file = printed.bl, line = 27):
-   -- Unknown index keyword \put(350.0,30.0).
-!! Input index error (file = printed.bl, line = 28):
-   -- Unknown index keyword \put(350.0,20.0).
-!! Input index error (file = printed.bl, line = 29):
-   -- Unknown index keyword \put(300.0,20.0).
-!! Input index error (file = printed.bl, line = 30):
-   -- Unknown index keyword \put(300.0,0.0).
-!! Input index error (file = printed.bl, line = 31):
-   -- Unknown index keyword \put(200.0,20.0).
-!! Input index error (file = printed.bl, line = 32):
-   -- Unknown index keyword \put(250.0,20.0).
-!! Input index error (file = printed.bl, line = 33):
-   -- Unknown index keyword \put(300.0,20.0).
-!! Input index error (file = printed.bl, line = 34):
-   -- Unknown index keyword \put(250.0,10.0).
-!! Input index error (file = printed.bl, line = 35):
-   -- Unknown index keyword \put(250.0,0.0).
-!! Input index error (file = printed.bl, line = 36):
-   -- Unknown index keyword \put(300.0,20.0).
-!! Input index error (file = printed.bl, line = 37):
-   -- Unknown index keyword \put(300.0,40.0).
-!! Input index error (file = printed.bl, line = 38):
-   -- Unknown index keyword \put(300.0,30.0).
-!! Input index error (file = printed.bl, line = 39):
-   -- Unknown index keyword \put(300.0,20.0).
-!! Input index error (file = printed.bl, line = 40):
    -- Unknown index keyword \end.
-done (0 entries accepted, 40 rejected).
+done (0 entries accepted, 23 rejected).
 Nothing written in printed.ind.
 Transcript written in printed.ilg.
