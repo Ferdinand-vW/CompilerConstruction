@@ -7,6 +7,9 @@ data TyCons = Prog
         | PlatF
         | Runnable
         | Framework
+        | Executed
+        | Compiled
+        | Not_Executed
          deriving (Eq, Show)
 
 data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)
@@ -60,43 +63,60 @@ translate tyinfo1 _ = tyinfo1
 
 -----------------------Typing-----------------
 attr Diag Diag_
+    syn tycons :: {TyCons}
     syn ty :: {Ty}
     syn tyErrs use {++} {[]} :: {[TyErr]}
 
 sem Diag_
     | Program lhs.ty =  Ty Prog (Just @l) Nothing Nothing
+              lhs.tycons = Prog
     | Interpreter lhs.ty = Ty Interp (Just @l) Nothing (Just @m)
+                  lhs.tycons = Interp
     | Compiler lhs.ty = Ty Comp (Just @l1) (Just @l2) (Just @m)
+               lhs.tycons = Comp
     | Platform lhs.ty = Ty PlatF Nothing Nothing (Just @m)
+               lhs.tycons = PlatF
     | Execute lhs.ty = @d2.ty
+              lhs.tycons = Executed
     | Compile lhs.ty = translate @d1.ty @d2.ty
+              lhs.tycons = Compiled
 
 
 sem Diag_
     | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
                             checkRunnable @d1.pos (cons @d1.ty) ++
                             checkFramework @d2.pos (cons @d2.ty) ++
-                            checkIfMatches @d1.pos @d1.ty @d2.ty
+                            checkIfMatches @d1.pos @d1.ty @d2.ty ++
+                            checkExeOrCompile @d2.pos @d2.tycons
 
 {
 checkRunnable :: SourcePos -> TyCons -> [TyErr]
 checkRunnable pos ty | match ty Runnable = []
                      | otherwise          = [TyErr pos nonExe (show Runnable) (show ty)]
     where
-        nonExe = "Cannot execute a non-runnable"
+        nonExe = "Cannot execute or compile a non-runnable"
 
 checkFramework :: SourcePos -> TyCons -> [TyErr]
 checkFramework pos ty | match ty Framework = []
                           | otherwise          = [TyErr pos nonFrame (show Framework) (show ty)]
     where
         nonFrame = "Cannot execute on non-Framework"
+
+checkExeOrCompile :: SourcePos -> TyCons -> [TyErr]
+checkExeOrCompile pos ty
+    | match ty Executed || match ty Compiled = [TyErr pos descr (show Framework) (show ty)]
+    | otherwise = []
+    where
+        descr = "Cannot execute runnable on a compilation or execution"
 }
 
 sem Diag_
     | Compile lhs.tyErrs =  @d1.tyErrs  ++ @d2.tyErrs ++
                             checkRunnable  @d1.pos (cons @d1.ty) ++
                             checkComp      @d2.pos (cons @d2.ty) ++
-                            checkIfMatches @d1.pos @d1.ty @d2.ty
+                            checkIfMatches @d1.pos @d1.ty @d2.ty ++
+                            checkExeInCompile @d1.pos @d1.tycons ++
+                            checkExeInCompile @d2.pos @d2.tycons
 
 {
 checkComp :: SourcePos -> TyCons -> [TyErr]
@@ -104,6 +124,12 @@ checkComp pos ty | match ty Comp = []
                  | otherwise = [TyErr pos nonComp (show Comp) (show ty)]
     where
         nonComp = "Must be compiled using a compiler"
+
+checkExeInCompile :: SourcePos -> TyCons -> [TyErr]
+checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Executed) (show ty)]
+                         | otherwise = []
+    where
+        descr = "Cannot have an execution within a compilation"
 
 checkIfMatches :: SourcePos -> Ty -> Ty -> [TyErr]
 checkIfMatches pos (Ty Prog s1 _ m1) (Ty Interp s2 _ m2) | matchInfo s1 s2 = []
@@ -124,7 +150,7 @@ checkIfMatches _ _ _ = [] --Type error has occurred so we cannot match type info
 genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyErr]
 genTyInfoErr pos mi mj = [TyErr pos descr (show' mi) (show' mj)]
     where
-        descr = "Cannot execute runnable on a non-matching platform or interpreter"
+        descr = "Cannot execute or compile runnable on a non-matching platform or interpreter"
 }
 
 --------------------Type Errors-----------------------

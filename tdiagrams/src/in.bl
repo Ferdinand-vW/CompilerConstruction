@@ -1,21 +1,13 @@
 execute
-    execute
-        compile
-            compile
-                compile
-                    compiler C5 from 5 to 6 in UUAG
-                with
-                    compiler C1 from UUAG to Haskell in i7
-                end
-            with
-                compiler C2 from Haskell to 1 in ee8
-            end
-        with
-            compiler C3 from 1 to 2 in i6
+    compile
+        program hello in UUAG
+    with
+        execute
+            compiler uuagc from UUAG to Haskell in i686-windows
+        on
+            platform i686-windows
         end
-    on
-        interpreter hugs for 2 in i7
     end
 on
-    platform i7
+    interpreter hugs for Haskell in i6866-windows
 end
