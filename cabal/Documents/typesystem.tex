@@ -1,0 +1,472 @@
+\documentclass[landscape, 8pt]{report}
+\usepackage{bussproofs}
+\usepackage{extsizes}
+\usepackage[landscape, top=1in,bottom=1in,left=0.0in,right=1.25in]{geometry}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{blindtext}
+ 
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}{Lemma}
+
+\title{Formal typesytem description}
+\author{Ferdinand van Walree(3874389) and Matthew Swart(5597250) }
+\date{\today}
+
+\begin{document}
+
+\maketitle
+ 
+
+\section{Typesystem}
+
+In this document we define a formal specification of the types and typerules of our typesystem. The typerules describe what combinations of types are ill-typed. That is, if we were to encounter those types in our program, then our program would produce an error. We have chosen to leave out all well-typed rules, because we felt these weren't necessary, afterall we do not ever check whether a specific combination of types is allowed. We only check whether such combinations are not allowed.
+
+\hfill \break
+
+We aren't too familiar with writing proofs such as you will find in this document, therefore we have also taken some liberty in writing the proofs. In otherwords, the proofs might not be well written, but they should be understandable.
+
+\section{TyCons}
+
+TyCons represents the type that a diag can be. First we'll define the different TyCons, then we'll define the TyCons for each diagram.
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-ProgTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Prog : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-InterpTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Interp : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-CompTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Comp : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-PlatfTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ PlatF : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-ExecutedTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Executed : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-CompiledTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Compiled : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-FrameworkTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Framework : TyCons}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(t-RunnableTyCons)}
+\UnaryInfC{$\Gamma\Vdash$ Runnable : TyCons}
+\DisplayProof
+
+\hfill \break
+
+Some TyCons also have a TyCons type
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-prog-runn)}
+\UnaryInfC{$\Gamma \Vdash$ Prog : Runnable}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-interp-runn)}
+\UnaryInfC{$\Gamma \Vdash$ Interp : Runnable}
+\DisplayProof
+
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-comp-runn)}
+\UnaryInfC{$\Gamma \Vdash$ Comp : Runnable}
+\DisplayProof
+
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-platf-frame)}
+\UnaryInfC{$\Gamma \Vdash$ PlatF : Framework}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-Interp-frame)}
+\UnaryInfC{$\Gamma \Vdash$ Interp : Framework}
+\DisplayProof
+
+
+\hfill \break
+
+The following proofs determine the TyCons for each diagram
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-prog)}
+\UnaryInfC{$\Gamma \Vdash$ Program p l : Prog}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-interp)}
+\UnaryInfC{$\Gamma \Vdash$ Interper i l m : Interp}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-comp)}
+\UnaryInfC{$\Gamma \Vdash$ Compilerc l1 l2 ml : Comp}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-platf)}
+\UnaryInfC{$\Gamma \Vdash$ Platform m : Platf}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-execute)}
+\UnaryInfC{$\Gamma \Vdash$ Execute d1 d2 : Executed}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(tyCons-compile)}
+\UnaryInfC{$\Gamma \Vdash$ Compile d1 d2 : Compiled}
+\DisplayProof
+
+\hfill \break
+
+\section{Recursive}
+
+The recursive datatype is used to represent whether a Compile is recursively nested within another compile.
+Given a compile of the following form: compile L with R end. If there was a Compile in L, then it would be left recursive.
+If there was a compile in R, then it would be right recursive. If there are no Compiles, then they are not recursive.
+
+\hfill \break
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-not)}
+\UnaryInfC{$\Gamma \Vdash$ Not\_recursive : Recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-left)}
+\UnaryInfC{$\Gamma \Vdash$ Left\_recursive : Recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-right)}
+\UnaryInfC{$\Gamma \Vdash$ Right\_recursive : Recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-prog)}
+\UnaryInfC{$\Gamma \Vdash$ Program p l : Not\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-interp)}
+\UnaryInfC{$\Gamma \Vdash$ Interpreter i l m : Not\_recursive}
+\DisplayProof
+
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-comp)}
+\UnaryInfC{$\Gamma \Vdash$ Compiler c l1 l2 m : Not\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-plat)}
+\UnaryInfC{$\Gamma \Vdash$ Platform m : Not\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(recurse-execute)}
+\UnaryInfC{$\Gamma \Vdash$ Execute d1 d2 : Not\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Compile d1 d2}
+\RightLabel{\scriptsize(recurse-compile)}
+\UnaryInfC{$\Gamma \Vdash$ d1 : Left\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Compile d1 d2}
+\RightLabel{\scriptsize(recurse-compile)}
+\UnaryInfC{$\Gamma \Vdash$ d2 : Right\_recursive}
+\DisplayProof
+
+\hfill \break
+
+\section{Ty}
+The Ty is a datatype that contains all the information about the type itself. It contains the TyCons of the diagram,
+the source language, target language and the platform. They are contained in Maybes, because not all diagrams contain all information
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(ty-prog)}
+\UnaryInfC{$\Gamma \Vdash$ Program p l : (Ty Prog (just l) Nothing Nothing)}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(ty-interp)}
+\UnaryInfC{$\Gamma\Vdash$ Interpreter i l m : (Ty Interp (Just l) Nothing (Just m)) }
+\DisplayProof
+
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(ty-comp)}
+\UnaryInfC{$\Gamma\Vdash$  Compiler c l1 l2 m : (Ty Comp (Just l1) (Just l2) (Just m)) }
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{}
+\RightLabel{\scriptsize(ty-platf)}
+\UnaryInfC{$\Gamma \Vdash$ Platform m : (Ty PlatF Nothing Nothing (Just m)) }
+\DisplayProof
+
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Execute d1 : Ty d2 : Ty}
+\RightLabel{\scriptsize(ty-execute)}
+\UnaryInfC{$\Gamma\Vdash$ d2 : Ty}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Prog s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
+\RightLabel{\scriptsize(ty-compile-prog)}
+\UnaryInfC{$\Gamma \Vdash$ (Ty Prog t2 t1 m1) : Ty}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Interp s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
+\RightLabel{\scriptsize(ty-compile-interp)}
+\UnaryInfC{$\Gamma \Vdash$ (Ty Interp s1 t1 t2) : Ty}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Comp s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
+\RightLabel{\scriptsize(ty-compile-comp)}
+\UnaryInfC{$\Gamma \Vdash$ (Ty Comp s1 t1 t2) : Ty}
+\DisplayProof
+
+\hfill \break
+
+\section{checkRunnable}
+CheckRunnable checks whether a platform is being executed or compiled.
+In otherwords, if the first argument is a PlatF, then it is ill-typed.
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t1 : PlatF  t2 : TyCons}
+\RightLabel{\scriptsize(checkrunnable-False)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\section{checkComp}
+The checkComp is used to only accept a compiler when its type is Comp, because a Compile needs a compiler to compile.
+
+\hfill \break
+
+\AxiomC{$\Gamma$ $\Vdash$ t1 : TyCons  t2 : $\neg$Comp}
+\RightLabel{\scriptsize(checkComp-False)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed }
+\DisplayProof
+
+\hfill \break
+
+\section{checkExeInComp}
+The checkExeInComp is used to refuse when a executed is in the compiler.   
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t1 : Executed $\bigvee$ t2 : Executed}
+\RightLabel{\scriptsize(checkExeInComp-True)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\section{checkExeOrComp}
+The checkExeOrComp is used to refuse an execution on a compilation or another execution
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t1 : TyCons (t2 : Executed  $\bigvee$  t2 : Compiled)}
+\RightLabel{\scriptsize(checkExeOrComp-false)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+
+\section{checkFramework}
+The checkFramework is used to only accept an execution on a Interpreter or Platform
+
+\hfill \break
+
+\AxiomC{$\Gamma \Vdash$  t1 : TyCons t2 : $\neg$Framework}
+\RightLabel{\scriptsize(checkFramework-False)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\section{Checkifmatch}
+In the checkmatch we check on each type combination if it’s being executed, compiled or interpreted on the same language as the source, target or platform. We use the matchInfo for this.
+
+\hfill \break
+
+
+\AxiomC{$\Gamma\Vdash$ t1 : (Ty Prog s1 t1 m1) t2 : (Ty Interp $\neg$s1 t2 m2)}
+\RightLabel{\scriptsize(checkifmatch-prog-interp-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+
+\hfill \break
+
+
+\AxiomC{$\Gamma\Vdash$ t1: (Ty c s1 t1 m1) t2 : (Ty Interp $\neg$m1 t2 m2)}
+\RightLabel{\scriptsize(checkifmatch-unknown-interp-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+
+\AxiomC{$\Gamma\Vdash$ t1 : (Ty Prog s1 t1 m1)  t2 : (Ty PlatF s2 t2 $\neg$s1)}
+\RightLabel{\scriptsize(checkifmatch-prog-platf-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+
+\AxiomC{$\Gamma\Vdash$ t1 : (Ty c s1 t1 m1) t2 : (Ty PlatF s2 t2 $\neg$m1)}
+\RightLabel{\scriptsize(checkifmatch-unknown-platf-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t1 : (Ty Prog s1 t1 m1) t2 : (Ty Comp $\neg$s1 t2 m2)}
+\RightLabel{\scriptsize(checkifmatch-prog-comp-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+
+\AxiomC{$\Gamma\Vdash$ t1 : (Ty c s1 t1 m2)  t2 : (Ty comp $\neg$m1 t2 m2)}
+\RightLabel{\scriptsize(checkifmatch-unkown-comp-ill)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\section{checkLandRrecurs}
+
+Both subdiagrams of a compile cannot be Right\_recursive and Left\_recursive at the same time. 
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t1 : Left\_recursive t2 : Right\_recursive}
+\RightLabel{\scriptsize(checklandr)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\section{checkLeftRightRecurs}
+
+Diagram d1 of a compile is not allowed to have a left recursive compilation within. Likewise a diagram d2 of a compile
+is not allowed to have a right recursive compilation within. 
+
+\hfill \break
+
+Variable t is the recursion of the parent of t1
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t : Left\_recursive t1 : Right\_recursive}
+\RightLabel{\scriptsize(checklr)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\hfill \break
+
+\AxiomC{$\Gamma\Vdash$ t : Right\_recursive t1 : Left\_recursive}
+\RightLabel{\scriptsize(checklr)}
+\UnaryInfC{$\Gamma \Vdash$ ill-typed}
+\DisplayProof
+
+\end{document}

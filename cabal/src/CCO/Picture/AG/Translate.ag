@@ -1,0 +1,288 @@
+----------------------------------------
+
+data DiagCons
+    | Plat
+    | Interp
+    | Comp
+    | Prog
+
+{
+type Pos = (Double,Double)
+-- | The Ejoint is used to determine the position of the d2 in an Execute.
+type Ejoint = (Double, Double)
+-- | The Cjoint is used to determine the position of the d2 in a Compile.
+type Cjoint = (Double, Double)
+type Height = Double
+type Length = Double
+type TotalLength = Double
+type BlockLength = Double
+type CompLength = Double
+type Depth = Double
+type Width = Double
+}
+data Pic
+    | Pic d :: Diag
+
+attr Pic
+  syn pic :: {Picture}
+
+sem Pic
+  | Pic lhs.pic = Picture (@d.w,@d.h) (@d.cmd ++ frame (@d.w,@d.h)) --Wrap the commands and the dimension inside a Picture
+         d.pos = (-100,@d.h) --We start at the left side of the page (hence -100)
+         d.blen = 50 --size of a block
+
+
+{
+-- | We draw a frame around our diagram to show, that everything neatly
+--fits in the dimensions. Note the use of '-100' is for the same reason as above
+frame :: (Double,Double) -> [Command]
+frame (dx,dy) = [
+  Put (-100,0) $ Line (1, 0) dx,
+  Put (-100,0) $ Line (0, 1) dy,
+  Put (dx-100,dy) $ Line (-1,0) dx,
+  Put (dx-100,dy) $ Line (0,-1) dy
+  ]
+}
+
+attr Diag Diag_
+    inh blen :: {BlockLength} --Length of a 'block'. For example Interpreter has the width of 1 block
+    inh pos :: {Pos} --Position of a given diagram
+    syn cmd use {++} {[]} :: {[Command]} --Diagrams written as a list of commands
+    syn diag :: self
+    syn dcons :: {DiagCons} --We have some data constructors for each diag_, which are easier to use
+    syn w :: {Width} --Width of the whole diagram. Used for the dimension
+    syn h :: {Height} --Height of the whole diagram. Used for the dimension
+    syn tlen :: {TotalLength} --Length of a compile diagram. (Its also defined in the other diagrams, but only actually used in Compile)
+    syn cjoint :: {Cjoint} --Position for a compiler that is used to compile some diagram
+    syn ejoint :: {Ejoint} --Position for an interpreter or platform that is used to execute some diagram on
+    syn wdepth :: {Depth} --Depth of a compile tree by continually going left (into the with) into the tree
+    syn cdepth :: {Depth} --Depth of a compile tree by continually going right (into what is being compiled) into the tree
+    syn edepth :: {Depth} 
+
+sem Diag_
+    | Platform lhs.cmd = platform @lhs.pos @lhs.blen @m
+               lhs.dcons = Plat
+               lhs.tlen = @lhs.blen - 7.5
+               lhs.h = 30
+               lhs.w = @lhs.blen
+               lhs.cjoint = cJoint Plat @lhs.pos @lhs.blen
+               lhs.ejoint = eJoint Plat @lhs.pos @lhs.blen
+               lhs.wdepth = 0
+               lhs.cdepth = 0
+               lhs.edepth = 1
+    | Program lhs.cmd = program @lhs.pos @lhs.blen @p @l
+              lhs.dcons = Prog
+              lhs.tlen = @lhs.blen
+              lhs.h = 30
+              lhs.w = @lhs.blen + 15
+              lhs.cjoint = cJoint Prog @lhs.pos @lhs.blen
+              lhs.ejoint = eJoint Prog @lhs.pos @lhs.blen
+              lhs.wdepth = 0
+              lhs.cdepth = 0
+              lhs.edepth = 1
+    | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.blen @i @l @m
+                  lhs.dcons = Interp
+                  lhs.h = 30
+                  lhs.w = @lhs.blen
+                  lhs.tlen = @lhs.blen
+                  lhs.cjoint = cJoint Interp @lhs.pos @lhs.blen
+                  lhs.ejoint = eJoint Interp @lhs.pos @lhs.blen
+                  lhs.wdepth = 0
+                  lhs.cdepth = 0
+                  lhs.edepth = 1
+    | Compiler lhs.cmd = compiler @lhs.pos @lhs.blen @c @l1 @l2 @m
+               lhs.dcons = Comp
+               lhs.h = 30
+               lhs.w = 3 * @lhs.blen
+               lhs.tlen = 2 * @lhs.blen
+               lhs.cjoint = cJoint Comp @lhs.pos @lhs.blen
+               lhs.ejoint = eJoint Comp @lhs.pos @lhs.blen
+               lhs.wdepth = 0
+               lhs.cdepth = 0
+               lhs.edepth = 1
+    | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
+              lhs.dcons = @d2.dcons
+              d1.pos = @lhs.pos
+              d2.pos = @d1.ejoint
+              d1.blen = @lhs.blen
+              d2.blen = @lhs.blen
+              lhs.h = max @d1.h (@d1.edepth * 30 + 30)
+              lhs.w = max @d1.w @d2.w
+              lhs.tlen = @d1.tlen + @d2.tlen
+              lhs.cjoint = @d2.cjoint
+              lhs.ejoint = @d2.ejoint
+              lhs.wdepth = 0
+              lhs.cdepth = 0
+              lhs.edepth = 1 + @d1.edepth
+    | Compile loc.cpos = rightPos @d1.dcons (fst @loc.d1pos + @d1.tlen, snd @loc.d1pos) @lhs.blen
+              loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
+              lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.blen
+              lhs.dcons = @d1.dcons
+              loc.d1pos = d1Pos @d1.cdepth @d2.wdepth @lhs.pos @lhs.blen @d1.dcons
+              loc.d2pos = d2Pos @d1.cdepth @d2.wdepth @lhs.pos @lhs.blen @d1.cjoint
+              d1.pos = @loc.d1pos
+              d2.pos = @loc.d2pos
+              d1.blen = @lhs.blen
+              d2.blen = @lhs.blen
+              lhs.h = compileHeight @d1.cdepth @d1.h @d2.h
+              lhs.w = compileWidth @d2.wdepth @d1.dcons @lhs.blen @d1.w @d2.w
+              lhs.tlen = @d1.tlen + (3 * @lhs.blen) + @lhs.blen
+              lhs.cjoint = cJoint @d1.dcons @loc.cpos @lhs.blen
+              lhs.ejoint = eJoint @d1.dcons @loc.cpos @lhs.blen
+              lhs.wdepth = 1 + @d2.wdepth
+              lhs.cdepth = 1 + @d1.cdepth
+              lhs.edepth = @d1.edepth
+
+{
+-- | executeHeight @d1.diag @d1.cdepth @d1.wdepth @d1.h @d2.h
+--We have to know whether there is a compile inside the execute
+--and if so we have to remove some heigth
+executeHeight :: Diag -> Depth -> Depth -> Height -> Height -> Height
+executeHeight (Diag _ (Compile _ _)) cdepth wdepth h1 h2
+      | wdepth > cdepth = max h1 (30 + h2)
+      | otherwise = h1 - 20 + h2
+executeHeight _ _ _ h1 h2 = h1 + h2
+
+-- | Between what is being compiled and the compiler
+compileHeight :: Depth -> Height -> Height -> Height
+compileHeight cdepth d1h d2h
+  | cdepth > 0 = d1h
+  | otherwise = d1h + d2h - 10
+
+-- | Every level of left recursion in a compilation tree adds the compLength of a compiler
+--to the width. The top level adds it twice. 
+compileWidth :: Depth -> DiagCons -> BlockLength -> Width -> Width -> Width
+compileWidth wdepth d1c blen d1w d2w
+  | wdepth > 0 = d2w + (d1w - actualLength d1c blen + compLength d1c blen)
+  | otherwise = d2w + (d1w - actualLength d1c blen + 2 * compLength d1c blen) 
+
+-- | Determines where diagram d1 should be positioned. We have two cases,
+--if we are doing a right recursive compilation, then d1 is the first diagram.
+--Otherwise it is not and we have to move it a certain amount to the right
+d1Pos :: Depth -> Depth -> Pos -> BlockLength -> DiagCons -> Pos
+d1Pos cdepth wdepth (x,y) blen cons
+  | cdepth >= wdepth = (x,y)
+  | otherwise = (x + (3 * blen) + (wdepth - 1) * (2 * blen) - fittToDiag cons blen,y)
+
+-- | Determines where diagram d2 should be positioned. We have two cases,
+--if we are doing a left recursive compilation, then d2 is the first diagram,
+--but also the lowest. Otherwise it should simply be connected to d1 using d1's cjoint
+d2Pos :: Depth -> Depth -> Pos -> BlockLength -> Cjoint -> Pos
+d2Pos cdepth wdepth (x,y) blen (cx,cy)
+  | wdepth > cdepth = (x,cy)
+  | otherwise = (cx,cy)
+
+-- | We have to move diagrams to the left sometimes
+fittToDiag :: DiagCons -> BlockLength -> Double
+fittToDiag Prog _ = 7.5
+fittToDiag Interp _ = 0
+fittToDiag Plat _ = 0
+fittToDiag Comp blen = blen
+
+-- | In compilation the complete length of a diagram is possibly not used
+compLength :: DiagCons -> BlockLength -> Double
+compLength Prog blen = blen + 7.5
+compLength Interp blen = blen
+compLength Comp blen = blen * 2
+compLength Plat blen = blen
+
+-- | Computes the actual length of a diag block
+actualLength :: DiagCons -> BlockLength -> Double
+actualLength Prog blen = blen + 15
+actualLength Interp blen = blen
+actualLength Comp blen = blen * 3
+actualLength Plat blen = blen 
+
+-- | We need to determine the ejoint of the compiled diag, but as we then do not know what diag it is we have to do pattern matching.
+eJoint :: DiagCons -> Pos -> BlockLength -> Ejoint
+eJoint Prog   (x,y) _    = (x + 7.5 , y - 30)
+eJoint Interp (x,y) _    = (x       , y - 30)
+eJoint Comp   (x,y) blen = (x + blen, y - 30)
+
+-- | We need to determine the cjoint of the compiled diag, but as we then do not know what diag it is we have to do pattern matching.
+cJoint :: DiagCons -> Pos -> BlockLength -> Cjoint
+cJoint Prog   (x,y) blen = (x +      blen + 7.5, y - 20)
+cJoint Interp (x,y) blen = (x +      blen      , y - 20)
+cJoint Comp   (x,y) blen = (x + (2 * blen)     , y - 20)
+
+-- | Simply moves diagrams to the right of a compiler
+rightPos :: DiagCons -> Pos -> BlockLength -> Pos
+rightPos Prog (x,y) blen = (x + (blen * 3), y)
+rightPos Interp (x,y) blen = (x + (blen * 3), y)
+rightPos Comp (x,y) blen = (x + (blen * 2), y)
+
+-- | Gets the Diag_ from a Diag
+dtd_ :: Diag -> Diag_
+dtd_ (Diag _ d) = d
+
+-- | We have to compile d1, but because we are using the actual diag of d1
+--it can still contain compiles and executes. So we'll have to recurse through
+--them and determine what will eventually be the returning diagram
+compile :: Diag_ -> Diag_ -> Diag_
+compile dg (Compile d1 d2) = compile dg (compile (dtd_ d1) (dtd_ d2))
+compile (Program p _) (Compiler _ _ t _) = Program p t
+compile (Interpreter i l _) (Compiler _ _ t _) = Interpreter i l t
+compile (Compiler c l1 l2 _) (Compiler _ _ t _) = Compiler c l1 l2 t
+compile (Execute d1 d2) dg = compile (dtd_ d2) dg
+compile (Compile d1 d2) dg = compile (compile (dtd_ d1) (dtd_ d2)) dg
+compile d1 _ = d1
+
+-- | Get the list of commands for the compiled diagram
+compiled :: Diag_ -> Pos -> BlockLength -> [Command]
+compiled (Program p l) pos blen = program pos blen p l
+compiled (Interpreter i l m) pos blen = interpreter pos blen i l m
+compiled (Compiler c l1 l2 t) pos blen = compiler pos blen c l1 l2 t
+compiled _ _ _= []
+
+
+-- | Defines the template for the basic platform
+platform :: Pos -> BlockLength -> String -> [Command]
+platform (x,y) blen m = [
+            Put (x, y - 15) $ Line (5, -3) 25,
+            Put (x + blen / 2,y - 30) $ Line (5, 3) 25,
+            Put (x, y - 15) $ Line (0, 1) 15,
+            Put (x, y)  $ Line (1, 0) 50,
+            Put (x + blen, y) $ Line (0,-1) 15,
+            Put (x, y - 15) $ Makebox (50, 15) m
+        ]
+
+-- | Defines the template for the basic program
+program :: Pos -> BlockLength -> String -> String -> [Command]
+program (x,y) blen p l = [
+                Put (x + 7.5, y - 30) $ Line (1,0) blen,
+                Put (x + 7.5, y - 30) $ Line (0,1) 15,
+                Put (x + 7.5, y - 15) $ Line (-1, 2) 7.5,
+                Put (x + blen + 7.5, y - 15) $ Line (1, 2) 7.5,
+                Put (x + blen + 7.5, y - 30) $ Line (0,1) 15,
+                Put (x, y) $ Line (1,0) (blen + 15),
+                Put (x + 7.5, y - 15) $ Makebox (blen, 15) p,
+                Put (x + 7.5, y - 30) $ Makebox (blen, 15) l
+            ]
+
+-- | Defines the template for the basic interpreter
+interpreter :: Pos -> BlockLength -> String -> String -> String -> [Command]
+interpreter (x,y) blen i l m = [ 
+                        Put (x, y - 30) $ Framebox (blen, 30) "",
+                        Put (x, y - 10) $ Makebox (blen, 10) l,
+                        Put (x, y - 20) $ Makebox (blen, 10) i,
+                        Put (x, y - 30) $ Makebox (blen,10) m
+                    ]
+
+-- | Defines the template for the basic compiler
+compiler :: Pos -> BlockLength -> String -> String -> String -> String -> [Command] 
+compiler (x,y) blen c l1 l2 m = [
+                        Put (x + blen, y - 30) $ Line (0, 1) 20,
+                        Put (x + blen, y - 10) $ Line (-1, 0) blen,
+                        Put (x, y - 10) $ Line (0, 1) 10,
+                        Put (x, y) $ Line (1, 0) (3 * blen),
+                        Put (x + (3 * blen), y) $ Line (0,-1) 10,
+                        Put (x + (3 * blen), y - 10) $ Line (-1,0) blen,
+                        Put (x + (2 * blen), y - 10) $ Line (0,-1) 20,
+                        Put (x + (2 * blen), y - 30) $ Line (-1, 0) blen,
+                        Put (x, y - 10) $ Makebox (blen,10) l1,
+                        Put (x + blen, y - 10) $ Makebox (blen,10) "$\\longrightarrow$",
+                        Put (x + (2 * blen), y - 10) $ Makebox (blen,10) l2,
+                        Put (x + blen, y - 20) $ Makebox (blen,10) c,
+                        Put (x + blen, y - 30) $ Makebox (blen,10) m
+                    ]
+}
