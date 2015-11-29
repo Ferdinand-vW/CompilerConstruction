@@ -110,8 +110,8 @@ sem Diag_
               d2.recurs = Not_recursive
     | Compile lhs.ty = translate @d1.ty @d2.ty
               lhs.tycons = Compiled
-              loc.d1r = rightRecursion @d1.tycons
-              loc.d2r = leftRecursion @d2.tycons
+              loc.d1r = leftRecursion @d1.tycons
+              loc.d2r = rightRecursion @d2.tycons
               d1.recurs = @loc.d1r
               d2.recurs = @loc.d2r
 
@@ -176,8 +176,8 @@ checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Execut
 -- | The checkLandRecurs checks if within a compile there is not a left recursive and right compilation at the same time 
 checkLandRrecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
 checkLandRrecurs pos ty1 ty2
-    | ty1 == Right_recursive && ty2 == Left_recursive 
-            = [TyErr pos descr (show Right_recursive ++ " !AND " ++ show Left_recursive) (show Right_recursive ++ " AND " ++ show Left_recursive)]
+    | ty1 == Left_recursive && ty2 == Right_recursive 
+            = [TyErr pos descr (show Left_recursive ++ " !AND " ++ show Right_recursive) (show Left_recursive ++ " AND " ++ show Right_recursive)]
     | otherwise = []
     where
         descr = "Cannot have left recursive and right recursive compilations within a compile at the same time" 
