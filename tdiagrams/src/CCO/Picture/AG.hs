@@ -1,12 +1,12 @@
 
 
--- UUAGC 0.9.52.1 (AG.ag)
+-- UUAGC 0.9.52.1 (Ag.ag)
 module CCO.Picture.AG where
 
 {-# LINE 2 "AG\\Printing.ag" #-}
 
 import CCO.Printing
-{-# LINE 10 "AG.hs" #-}
+{-# LINE 10 "Ag.hs" #-}
 
 {-# LINE 2 "..\\Diag.ag" #-}
 
@@ -17,14 +17,14 @@ import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
 import Data.Maybe
-{-# LINE 21 "AG.hs" #-}
+{-# LINE 21 "Ag.hs" #-}
 
 {-# LINE 2 "AG\\Base.ag" #-}
 
 import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
-{-# LINE 28 "AG.hs" #-}
+{-# LINE 28 "Ag.hs" #-}
 {-# LINE 34 "AG\\Printing.ag" #-}
 
 ppCall :: Show a => String -> (a, a) -> Doc -> Doc
@@ -36,51 +36,98 @@ ppCall cmd args body = singleLine >//< multiLine
 
 ppPair :: Show a => (a, a) -> Doc
 ppPair (i, j) = parens (showable i >|< comma >|< showable j)
-{-# LINE 40 "AG.hs" #-}
+{-# LINE 40 "Ag.hs" #-}
 
-{-# LINE 78 "AG\\Translate.ag" #-}
+{-# LINE 9 "AG\\Translate.ag" #-}
 
-type Position = (Double,Double)
+type Pos = (Double,Double)
+type Ejoint = (Double, Double)
+type Cjoint = (Double, Double)
+type Height = Double
+type Length = Double
+type TotalLength = Double
+type BlockLength = Double
+type CompLength = Double
+type Depth = Double
+type Width = Double
+{-# LINE 54 "Ag.hs" #-}
 
-wordLength :: String -> Double
-wordLength s = fromIntegral (length s) * 5
+{-# LINE 33 "AG\\Translate.ag" #-}
 
-maxLength :: Diag_ -> Double
-maxLength (Platform m) = wordLength m
-maxLength (Program p l) = max (wordLength p) (wordLength l)
-maxLength (Interpreter i l m) = maximum [wordLength i, wordLength l, wordLength m]
-maxLength (Compiler c l1 l2 m) = maximum [wordLength c, wordLength l1, wordLength l2, wordLength m]
+--We draw a frame around our diagram to show, that everything neatly
+--fits in the dimensions. Note the use of '-100' is for the same reason as above
+frame :: (Double,Double) -> [Command]
+frame (dx,dy) = [
+  Put (-100,0) $ Line (1, 0) dx,
+  Put (-100,0) $ Line (0, 1) dy,
+  Put (dx-100,dy) $ Line (-1,0) dx,
+  Put (dx-100,dy) $ Line (0,-1) dy
+  ]
+{-# LINE 67 "Ag.hs" #-}
 
-dimension :: Diag_ -> Double -> (Double, Double)
-dimension (Platform _) len = (len, 30)
-dimension (Program _ _) len = (len + 15, 30)
-dimension (Interpreter _ _ _) len = (len, 30)
-dimension (Compiler _ _ _ _) len = (len * 3, 30)
-dimension _ _ = (0,0)
+{-# LINE 128 "AG\\Translate.ag" #-}
 
-joinDimensions :: Diag_  -> (Double, Double) -> (Double, Double) -> (Double, Double)
-joinDimensions (Execute _ _) (x1,y1) (x2,y2) = (max x1 x2, y1 + y2)
-joinDimensions (Compile _ _) (x1,y1) (x2,y2) = (x1 + x2, y1 + y2 - 10)
+
+executeHeight :: Diag -> Height -> Height -> Height
+executeHeight (Diag _ (Compile _ _)) h1 h2 = h1 - 20 + h2
+executeHeight _ h1 h2 = h1 + h2
+
+compileHeight :: Depth -> Height -> Height -> Height
+compileHeight cdepth d1h d2h
+  | cdepth > 0 = d1h
+  | otherwise = d1h + d2h - 10
+
+compileWidth :: Depth -> DiagCons -> BlockLength -> Width -> Width -> Width
+compileWidth wdepth d1c blen d1w d2w
+  | wdepth > 0 = d2w + (d1w - actualLength d1c blen + compLength d1c blen)
+  | otherwise = d2w + (d1w - actualLength d1c blen + 2 * compLength d1c blen) 
+
+d1Pos :: Depth -> Depth -> Pos -> BlockLength -> DiagCons -> Pos
+d1Pos cdepth wdepth (x,y) blen cons
+  | cdepth >= wdepth = (x,y)
+  | otherwise = (x + (3 * blen) + (wdepth - 1) * (2 * blen) - fittToDiag cons blen,y)
+
+d2Pos :: Depth -> Depth -> Pos -> BlockLength -> Cjoint -> Pos
+d2Pos cdepth wdepth (x,y) blen (cx,cy)
+  | wdepth > cdepth = (x,(wdepth * 20) + 30)
+  | otherwise = (cx,cy)
+
+fittToDiag :: DiagCons -> BlockLength -> Double
+fittToDiag Prog _ = 7.5
+fittToDiag Interp _ = 0
+fittToDiag Comp blen = blen
+
+compLength :: DiagCons -> BlockLength -> Double
+compLength Prog blen = blen + 7.5
+compLength Interp blen = blen
+compLength Comp blen = blen * 2
+compLength Plat blen = blen
+
+actualLength :: DiagCons -> BlockLength -> Double
+actualLength Prog blen = blen + 15
+actualLength Interp blen = blen
+actualLength Comp blen = blen * 3
+actualLength Plat blen = blen 
 
 --These are necessary, because we need to determine the ejoint and cjoint of the compiled
 --diag, but as we then do not know what diag it is we have to do pattern matching.
-eJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-eJoint (Program _ _) (x,y) _= (x + 7.5, y - 30)
-eJoint (Interpreter _ _ _) (x, y) _= (x, y - 30)
-eJoint (Compiler _ _ _ _) (x, y) len = (x + len, y - 30)
+eJoint :: DiagCons -> Pos -> BlockLength -> Ejoint
+eJoint Prog   (x,y) _    = (x + 7.5 , y - 30)
+eJoint Interp (x,y) _    = (x       , y - 30)
+eJoint Comp   (x,y) blen = (x + blen, y - 30)
 
-cJoint :: Diag_ -> (Double,Double) -> Double -> (Double,Double)
-cJoint (Program _ _) (x, y) len = (x + len + 7.5, y - 20)
-cJoint (Interpreter _ _ _) (x, y) len = (x + len, y - 20)
-cJoint (Compiler _ _ _ _) (x, y) len = (x + (2 * len), y - 20)
+cJoint :: DiagCons -> Pos -> BlockLength -> Cjoint
+cJoint Prog   (x,y) blen = (x +      blen + 7.5, y - 20)
+cJoint Interp (x,y) blen = (x +      blen      , y - 20)
+cJoint Comp   (x,y) blen = (x + (2 * blen)     , y - 20)
 
-rightPos :: Diag_ -> Position -> Double -> Position
-rightPos (Program _ _) (x, y) len = (x + (len * 4), y)
-rightPos (Interpreter _ _ _) (x, y) len = (x + (len * 4), y)
-rightPos (Compiler _ _ _ _) (x, y) len = (x + (len * 4), y)
+rightPos :: DiagCons -> Pos -> BlockLength -> Pos
+rightPos Prog (x,y) blen = (x + (blen * 3), y)
+rightPos Interp (x,y) blen = (x + (blen * 3), y)
+rightPos Comp (x,y) blen = (x + (blen * 2), y)
 
 dtd_ :: Diag -> Diag_
-dtd_ (Diag p d) = d
+dtd_ (Diag _ d) = d
 
 --First we still have to do some translation
 compile :: Diag_ -> Diag_ -> Diag_
@@ -93,67 +140,65 @@ compile (Compile d1 d2) dg = compile (compile (dtd_ d1) (dtd_ d2)) dg
 compile d1 _ = d1
 
 --Given the translated diag and a position, convert it to a list of commands
-compiled :: Diag_ -> (Double, Double) -> Double -> [Command]
-compiled (Program p l) pos len = program pos len p l
-compiled (Interpreter i l m) pos len = interpreter pos len i l m
-compiled (Compiler c l1 l2 t) pos len = compiler pos len c l1 l2 t
+compiled :: Diag_ -> Pos -> BlockLength -> [Command]
+compiled (Program p l) pos blen = program pos blen p l
+compiled (Interpreter i l m) pos blen = interpreter pos blen i l m
+compiled (Compiler c l1 l2 t) pos blen = compiler pos blen c l1 l2 t
 compiled _ _ _= []
 
-platform :: (Double, Double) -> Double -> String -> [Command]
-platform (x,y) len m = [
+platform :: Pos -> BlockLength -> String -> [Command]
+platform (x,y) blen m = [
             Put (x, y - 15) $ Line (5, -3) 25,
-            Put (x + len / 2,y - 30) $ Line (5, 3) 25,
+            Put (x + blen / 2,y - 30) $ Line (5, 3) 25,
             Put (x, y - 15) $ Line (0, 1) 15,
             Put (x, y)  $ Line (1, 0) 50,
-            Put (x + len, y) $ Line (0,-1) 15,
+            Put (x + blen, y) $ Line (0,-1) 15,
             Put (x, y - 15) $ Makebox (50, 15) m
         ]
 
-program ::  (Double, Double) -> Double -> String -> String -> [Command]
-program (x,y) len p l = [
-                Put (x + 7.5, y - 30) $ Line (1,0) len,
+program :: Pos -> BlockLength -> String -> String -> [Command]
+program (x,y) blen p l = [
+                Put (x + 7.5, y - 30) $ Line (1,0) blen,
                 Put (x + 7.5, y - 30) $ Line (0,1) 15,
                 Put (x + 7.5, y - 15) $ Line (-1, 2) 7.5,
-                Put (x + len + 7.5, y - 15) $ Line (1, 2) 7.5,
-                Put (x + len + 7.5, y - 30) $ Line (0,1) 15,
-                Put (x, y) $ Line (1,0) (len + 15),
-                Put (x + 7.5, y - 15) $ Makebox (len, 15) p,
-                Put (x + 7.5, y - 30) $ Makebox (len, 15) l
+                Put (x + blen + 7.5, y - 15) $ Line (1, 2) 7.5,
+                Put (x + blen + 7.5, y - 30) $ Line (0,1) 15,
+                Put (x, y) $ Line (1,0) (blen + 15),
+                Put (x + 7.5, y - 15) $ Makebox (blen, 15) p,
+                Put (x + 7.5, y - 30) $ Makebox (blen, 15) l
             ]
 
 
-interpreter :: (Double, Double) -> Double -> String -> String -> String -> [Command]
-interpreter (x,y) len i l m = [ 
-                        Put (x, y - 30) $ Framebox (len, 30) "", 
-                        Put (x, y - 10) $ Makebox (len, 10) i,
-                        Put (x, y - 20) $ Makebox (len, 10) l,
-                        Put (x, y - 30) $ Makebox (len,10) m
+interpreter :: Pos -> BlockLength -> String -> String -> String -> [Command]
+interpreter (x,y) blen i l m = [ 
+                        Put (x, y - 30) $ Framebox (blen, 30) "",
+                        Put (x, y - 10) $ Makebox (blen, 10) l,
+                        Put (x, y - 20) $ Makebox (blen, 10) i,
+                        Put (x, y - 30) $ Makebox (blen,10) m
                     ]
 
-compiler :: (Double, Double) -> Double -> String -> String -> String -> String -> [Command] 
-compiler (x,y) len c l1 l2 m = [
-                        Put (x + len, y - 30) $ Line (0, 1) 20,
-                        Put (x + len, y - 10) $ Line (-1, 0) len,
+compiler :: Pos -> BlockLength -> String -> String -> String -> String -> [Command] 
+compiler (x,y) blen c l1 l2 m = [
+                        Put (x + blen, y - 30) $ Line (0, 1) 20,
+                        Put (x + blen, y - 10) $ Line (-1, 0) blen,
                         Put (x, y - 10) $ Line (0, 1) 10,
-                        Put (x, y) $ Line (1, 0) (3 * len),
-                        Put (x + (3 * len), y) $ Line (0,-1) 10,
-                        Put (x + (3 * len), y - 10) $ Line (-1,0) len,
-                        Put (x + (2 * len), y - 10) $ Line (0,-1) 20,
-                        Put (x + (2 * len), y - 30) $ Line (-1, 0) len,
-                        Put (x, y - 10) $ Makebox (len,10) l1,
-                        Put (x + len, y - 10) $ Makebox (len,10) "$\\longrightarrow$",
-                        Put (x + (2 * len), y - 10) $ Makebox (len,10) l2,
-                        Put (x + len, y - 20) $ Makebox (len,10) c,
-                        Put (x + len, y - 30) $ Makebox (len,10) m
+                        Put (x, y) $ Line (1, 0) (3 * blen),
+                        Put (x + (3 * blen), y) $ Line (0,-1) 10,
+                        Put (x + (3 * blen), y - 10) $ Line (-1,0) blen,
+                        Put (x + (2 * blen), y - 10) $ Line (0,-1) 20,
+                        Put (x + (2 * blen), y - 30) $ Line (-1, 0) blen,
+                        Put (x, y - 10) $ Makebox (blen,10) l1,
+                        Put (x + blen, y - 10) $ Makebox (blen,10) "$\\longrightarrow$",
+                        Put (x + (2 * blen), y - 10) $ Makebox (blen,10) l2,
+                        Put (x + blen, y - 20) $ Makebox (blen,10) c,
+                        Put (x + blen, y - 30) $ Makebox (blen,10) m
                     ]
-
-
-{-# LINE 152 "AG.hs" #-}
+{-# LINE 197 "Ag.hs" #-}
 
 {-# LINE 16 "..\\Diag.ag" #-}
 
 type Ident = String
-{-# LINE 157 "AG.hs" #-}
+{-# LINE 202 "Ag.hs" #-}
 
 {-# LINE 35 "..\\Diag.ag" #-}
 
@@ -179,7 +224,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 183 "AG.hs" #-}
+{-# LINE 228 "Ag.hs" #-}
 
 {-# LINE 29 "AG\\Base.ag" #-}
 
@@ -200,7 +245,7 @@ instance Tree Command where
 instance Tree Picture where
   fromTree (Picture d cs) = App "Picture" [fromTree d, fromTree cs]
   toTree = parseTree [app "Picture" (Picture <$> arg <*> arg)]
-{-# LINE 204 "AG.hs" #-}
+{-# LINE 249 "Ag.hs" #-}
 -- Command -----------------------------------------------------
 data Command = Put (((Double, Double))) (Object)
 -- cata
@@ -227,7 +272,7 @@ sem_Command_Put pos_ obj_ =
          _lhsOpp =
              ({-# LINE 19 "AG\\Printing.ag" #-}
               ppCall "put" pos_ _objIpp
-              {-# LINE 231 "AG.hs" #-}
+              {-# LINE 276 "Ag.hs" #-}
               )
          ( _objIpp) =
              obj_
@@ -259,7 +304,7 @@ sem_Commands_Cons hd_ tl_ =
          _lhsOpp =
              ({-# LINE 23 "AG\\Printing.ag" #-}
               _hdIpp >-< _tlIpp
-              {-# LINE 263 "AG.hs" #-}
+              {-# LINE 308 "Ag.hs" #-}
               )
          ( _hdIpp) =
              hd_
@@ -272,7 +317,7 @@ sem_Commands_Nil =
          _lhsOpp =
              ({-# LINE 22 "AG\\Printing.ag" #-}
               empty
-              {-# LINE 276 "AG.hs" #-}
+              {-# LINE 321 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 -- Diag --------------------------------------------------------
@@ -283,92 +328,155 @@ sem_Diag :: Diag ->
 sem_Diag (Diag _pos _d) =
     (sem_Diag_Diag _pos (sem_Diag_ _d))
 -- semantic domain
-type T_Diag = ((Double)) ->
-              ((Double,Double)) ->
-              ( ((Double,Double)),([Command]),Diag,((Double,Double)),((Double,Double)),Double,((Double)))
-data Inh_Diag = Inh_Diag {len_Inh_Diag :: ((Double)),pos_Inh_Diag :: ((Double,Double))}
-data Syn_Diag = Syn_Diag {cjoint_Syn_Diag :: ((Double,Double)),cmd_Syn_Diag :: ([Command]),diag_Syn_Diag :: Diag,dim_Syn_Diag :: ((Double,Double)),ejoint_Syn_Diag :: ((Double,Double)),h_Syn_Diag :: Double,mlen_Syn_Diag :: ((Double))}
+type T_Diag = BlockLength ->
+              Pos ->
+              ( Depth,Cjoint,([Command]),DiagCons,Diag,Ejoint,Height,TotalLength,Width,Depth)
+data Inh_Diag = Inh_Diag {blen_Inh_Diag :: BlockLength,pos_Inh_Diag :: Pos}
+data Syn_Diag = Syn_Diag {cdepth_Syn_Diag :: Depth,cjoint_Syn_Diag :: Cjoint,cmd_Syn_Diag :: ([Command]),dcons_Syn_Diag :: DiagCons,diag_Syn_Diag :: Diag,ejoint_Syn_Diag :: Ejoint,h_Syn_Diag :: Height,tlen_Syn_Diag :: TotalLength,w_Syn_Diag :: Width,wdepth_Syn_Diag :: Depth}
 wrap_Diag :: T_Diag ->
              Inh_Diag ->
              Syn_Diag
-wrap_Diag sem (Inh_Diag _lhsIlen _lhsIpos) =
-    (let ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen) = sem _lhsIlen _lhsIpos
-     in  (Syn_Diag _lhsOcjoint _lhsOcmd _lhsOdiag _lhsOdim _lhsOejoint _lhsOh _lhsOmlen))
+wrap_Diag sem (Inh_Diag _lhsIblen _lhsIpos) =
+    (let ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth) = sem _lhsIblen _lhsIpos
+     in  (Syn_Diag _lhsOcdepth _lhsOcjoint _lhsOcmd _lhsOdcons _lhsOdiag _lhsOejoint _lhsOh _lhsOtlen _lhsOw _lhsOwdepth))
 sem_Diag_Diag :: SourcePos ->
                  T_Diag_ ->
                  T_Diag
 sem_Diag_Diag pos_ d_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
               _lhsOdiag :: Diag
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOdim :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _lhsOh :: Double
-              _lhsOmlen :: ((Double))
-              _dOlen :: ((Double))
-              _dOpos :: ((Double,Double))
-              _dIcjoint :: ((Double,Double))
+              _lhsOcdepth :: Depth
+              _lhsOcjoint :: Cjoint
+              _lhsOdcons :: DiagCons
+              _lhsOejoint :: Ejoint
+              _lhsOh :: Height
+              _lhsOtlen :: TotalLength
+              _lhsOw :: Width
+              _lhsOwdepth :: Depth
+              _dOblen :: BlockLength
+              _dOpos :: Pos
+              _dIcdepth :: Depth
+              _dIcjoint :: Cjoint
               _dIcmd :: ([Command])
+              _dIdcons :: DiagCons
               _dIdiag :: Diag_
-              _dIdim :: ((Double,Double))
-              _dIejoint :: ((Double,Double))
-              _dIh :: Double
-              _dImlen :: ((Double))
+              _dIejoint :: Ejoint
+              _dIh :: Height
+              _dItlen :: TotalLength
+              _dIw :: Width
+              _dIwdepth :: Depth
               _lhsOcmd =
-                  ({-# LINE 17 "AG\\Translate.ag" #-}
+                  ({-# LINE 48 "AG\\Translate.ag" #-}
                    _dIcmd
-                   {-# LINE 323 "AG.hs" #-}
+                   {-# LINE 374 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Diag pos_ _dIdiag
-                   {-# LINE 328 "AG.hs" #-}
+                   {-# LINE 379 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 333 "AG.hs" #-}
+                   {-# LINE 384 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 57 "AG\\Translate.ag" #-}
+                   _dIcdepth
+                   {-# LINE 389 "Ag.hs" #-}
                    )
               _lhsOcjoint =
-                  ({-# LINE 19 "AG\\Translate.ag" #-}
+                  ({-# LINE 54 "AG\\Translate.ag" #-}
                    _dIcjoint
-                   {-# LINE 338 "AG.hs" #-}
+                   {-# LINE 394 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 18 "AG\\Translate.ag" #-}
-                   _dIdim
-                   {-# LINE 343 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 50 "AG\\Translate.ag" #-}
+                   _dIdcons
+                   {-# LINE 399 "Ag.hs" #-}
                    )
               _lhsOejoint =
-                  ({-# LINE 20 "AG\\Translate.ag" #-}
+                  ({-# LINE 55 "AG\\Translate.ag" #-}
                    _dIejoint
-                   {-# LINE 348 "AG.hs" #-}
+                   {-# LINE 404 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 21 "AG\\Translate.ag" #-}
+                  ({-# LINE 52 "AG\\Translate.ag" #-}
                    _dIh
-                   {-# LINE 353 "AG.hs" #-}
+                   {-# LINE 409 "Ag.hs" #-}
                    )
-              _lhsOmlen =
-                  ({-# LINE 22 "AG\\Translate.ag" #-}
-                   _dImlen
-                   {-# LINE 358 "AG.hs" #-}
+              _lhsOtlen =
+                  ({-# LINE 53 "AG\\Translate.ag" #-}
+                   _dItlen
+                   {-# LINE 414 "Ag.hs" #-}
                    )
-              _dOlen =
-                  ({-# LINE 23 "AG\\Translate.ag" #-}
-                   _lhsIlen
-                   {-# LINE 363 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 51 "AG\\Translate.ag" #-}
+                   _dIw
+                   {-# LINE 419 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 56 "AG\\Translate.ag" #-}
+                   _dIwdepth
+                   {-# LINE 424 "Ag.hs" #-}
+                   )
+              _dOblen =
+                  ({-# LINE 46 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 429 "Ag.hs" #-}
                    )
               _dOpos =
-                  ({-# LINE 24 "AG\\Translate.ag" #-}
+                  ({-# LINE 47 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 368 "AG.hs" #-}
+                   {-# LINE 434 "Ag.hs" #-}
                    )
-              ( _dIcjoint,_dIcmd,_dIdiag,_dIdim,_dIejoint,_dIh,_dImlen) =
-                  d_ _dOlen _dOpos
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+              ( _dIcdepth,_dIcjoint,_dIcmd,_dIdcons,_dIdiag,_dIejoint,_dIh,_dItlen,_dIw,_dIwdepth) =
+                  d_ _dOblen _dOpos
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
+-- DiagCons ----------------------------------------------------
+data DiagCons = Plat
+              | Interp
+              | Comp
+              | Prog
+-- cata
+sem_DiagCons :: DiagCons ->
+                T_DiagCons
+sem_DiagCons (Plat) =
+    (sem_DiagCons_Plat)
+sem_DiagCons (Interp) =
+    (sem_DiagCons_Interp)
+sem_DiagCons (Comp) =
+    (sem_DiagCons_Comp)
+sem_DiagCons (Prog) =
+    (sem_DiagCons_Prog)
+-- semantic domain
+type T_DiagCons = ( )
+data Inh_DiagCons = Inh_DiagCons {}
+data Syn_DiagCons = Syn_DiagCons {}
+wrap_DiagCons :: T_DiagCons ->
+                 Inh_DiagCons ->
+                 Syn_DiagCons
+wrap_DiagCons sem (Inh_DiagCons) =
+    (let ( ) = sem
+     in  (Syn_DiagCons))
+sem_DiagCons_Plat :: T_DiagCons
+sem_DiagCons_Plat =
+    (let
+     in  ( ))
+sem_DiagCons_Interp :: T_DiagCons
+sem_DiagCons_Interp =
+    (let
+     in  ( ))
+sem_DiagCons_Comp :: T_DiagCons
+sem_DiagCons_Comp =
+    (let
+     in  ( ))
+sem_DiagCons_Prog :: T_DiagCons
+sem_DiagCons_Prog =
+    (let
+     in  ( ))
 -- Diag_ -------------------------------------------------------
 data Diag_ = Program (Ident) (Ident)
            | Platform (Ident)
@@ -392,447 +500,567 @@ sem_Diag_ (Execute _d1 _d2) =
 sem_Diag_ (Compile _d1 _d2) =
     (sem_Diag__Compile (sem_Diag _d1) (sem_Diag _d2))
 -- semantic domain
-type T_Diag_ = ((Double)) ->
-               ((Double,Double)) ->
-               ( ((Double,Double)),([Command]),Diag_,((Double,Double)),((Double,Double)),Double,((Double)))
-data Inh_Diag_ = Inh_Diag_ {len_Inh_Diag_ :: ((Double)),pos_Inh_Diag_ :: ((Double,Double))}
-data Syn_Diag_ = Syn_Diag_ {cjoint_Syn_Diag_ :: ((Double,Double)),cmd_Syn_Diag_ :: ([Command]),diag_Syn_Diag_ :: Diag_,dim_Syn_Diag_ :: ((Double,Double)),ejoint_Syn_Diag_ :: ((Double,Double)),h_Syn_Diag_ :: Double,mlen_Syn_Diag_ :: ((Double))}
+type T_Diag_ = BlockLength ->
+               Pos ->
+               ( Depth,Cjoint,([Command]),DiagCons,Diag_,Ejoint,Height,TotalLength,Width,Depth)
+data Inh_Diag_ = Inh_Diag_ {blen_Inh_Diag_ :: BlockLength,pos_Inh_Diag_ :: Pos}
+data Syn_Diag_ = Syn_Diag_ {cdepth_Syn_Diag_ :: Depth,cjoint_Syn_Diag_ :: Cjoint,cmd_Syn_Diag_ :: ([Command]),dcons_Syn_Diag_ :: DiagCons,diag_Syn_Diag_ :: Diag_,ejoint_Syn_Diag_ :: Ejoint,h_Syn_Diag_ :: Height,tlen_Syn_Diag_ :: TotalLength,w_Syn_Diag_ :: Width,wdepth_Syn_Diag_ :: Depth}
 wrap_Diag_ :: T_Diag_ ->
               Inh_Diag_ ->
               Syn_Diag_
-wrap_Diag_ sem (Inh_Diag_ _lhsIlen _lhsIpos) =
-    (let ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen) = sem _lhsIlen _lhsIpos
-     in  (Syn_Diag_ _lhsOcjoint _lhsOcmd _lhsOdiag _lhsOdim _lhsOejoint _lhsOh _lhsOmlen))
+wrap_Diag_ sem (Inh_Diag_ _lhsIblen _lhsIpos) =
+    (let ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth) = sem _lhsIblen _lhsIpos
+     in  (Syn_Diag_ _lhsOcdepth _lhsOcjoint _lhsOcmd _lhsOdcons _lhsOdiag _lhsOejoint _lhsOh _lhsOtlen _lhsOw _lhsOwdepth))
 sem_Diag__Program :: Ident ->
                      Ident ->
                      T_Diag_
 sem_Diag__Program p_ l_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOejoint :: ((Double,Double))
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _lhsOtlen :: TotalLength
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
               _lhsOcmd =
-                  ({-# LINE 34 "AG\\Translate.ag" #-}
-                   program _lhsIpos _lhsIlen p_ l_
-                   {-# LINE 423 "AG.hs" #-}
+                  ({-# LINE 69 "AG\\Translate.ag" #-}
+                   program _lhsIpos _lhsIblen p_ l_
+                   {-# LINE 534 "Ag.hs" #-}
                    )
-              _lhsOejoint =
-                  ({-# LINE 35 "AG\\Translate.ag" #-}
-                   eJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 428 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 70 "AG\\Translate.ag" #-}
+                   Prog
+                   {-# LINE 539 "Ag.hs" #-}
                    )
-              _lhsOcjoint =
-                  ({-# LINE 36 "AG\\Translate.ag" #-}
-                   cJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 433 "AG.hs" #-}
-                   )
-              _lhsOmlen =
-                  ({-# LINE 37 "AG\\Translate.ag" #-}
-                   maxLength _diag
-                   {-# LINE 438 "AG.hs" #-}
+              _lhsOtlen =
+                  ({-# LINE 71 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 544 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 38 "AG\\Translate.ag" #-}
+                  ({-# LINE 72 "AG\\Translate.ag" #-}
                    30
-                   {-# LINE 443 "AG.hs" #-}
+                   {-# LINE 549 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 39 "AG\\Translate.ag" #-}
-                   dimension _diag _lhsIlen
-                   {-# LINE 448 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 73 "AG\\Translate.ag" #-}
+                   _lhsIblen + 15
+                   {-# LINE 554 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 74 "AG\\Translate.ag" #-}
+                   cJoint Prog _lhsIpos _lhsIblen
+                   {-# LINE 559 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 75 "AG\\Translate.ag" #-}
+                   eJoint Prog _lhsIpos _lhsIblen
+                   {-# LINE 564 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 76 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 569 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 77 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 574 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Program p_ l_
-                   {-# LINE 453 "AG.hs" #-}
+                   {-# LINE 579 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 458 "AG.hs" #-}
+                   {-# LINE 584 "Ag.hs" #-}
                    )
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 sem_Diag__Platform :: Ident ->
                       T_Diag_
 sem_Diag__Platform m_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOejoint :: ((Double,Double))
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _lhsOtlen :: TotalLength
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
               _lhsOcmd =
-                  ({-# LINE 28 "AG\\Translate.ag" #-}
-                   platform _lhsIpos _lhsIlen m_
-                   {-# LINE 476 "AG.hs" #-}
+                  ({-# LINE 60 "AG\\Translate.ag" #-}
+                   platform _lhsIpos _lhsIblen m_
+                   {-# LINE 605 "Ag.hs" #-}
                    )
-              _lhsOejoint =
-                  ({-# LINE 29 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 481 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 61 "AG\\Translate.ag" #-}
+                   Plat
+                   {-# LINE 610 "Ag.hs" #-}
                    )
-              _lhsOcjoint =
-                  ({-# LINE 30 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 486 "AG.hs" #-}
-                   )
-              _lhsOmlen =
-                  ({-# LINE 31 "AG\\Translate.ag" #-}
-                   maxLength _diag
-                   {-# LINE 491 "AG.hs" #-}
+              _lhsOtlen =
+                  ({-# LINE 62 "AG\\Translate.ag" #-}
+                   _lhsIblen - 7.5
+                   {-# LINE 615 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 32 "AG\\Translate.ag" #-}
+                  ({-# LINE 63 "AG\\Translate.ag" #-}
                    30
-                   {-# LINE 496 "AG.hs" #-}
+                   {-# LINE 620 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 33 "AG\\Translate.ag" #-}
-                   dimension _diag _lhsIlen
-                   {-# LINE 501 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 64 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 625 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 65 "AG\\Translate.ag" #-}
+                   cJoint Plat _lhsIpos _lhsIblen
+                   {-# LINE 630 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 66 "AG\\Translate.ag" #-}
+                   eJoint Plat _lhsIpos _lhsIblen
+                   {-# LINE 635 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 67 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 640 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 68 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 645 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Platform m_
-                   {-# LINE 506 "AG.hs" #-}
+                   {-# LINE 650 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 511 "AG.hs" #-}
+                   {-# LINE 655 "Ag.hs" #-}
                    )
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 sem_Diag__Interpreter :: Ident ->
                          Ident ->
                          Ident ->
                          T_Diag_
 sem_Diag__Interpreter i_ l_ m_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOejoint :: ((Double,Double))
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOtlen :: TotalLength
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
               _lhsOcmd =
-                  ({-# LINE 40 "AG\\Translate.ag" #-}
-                   interpreter _lhsIpos _lhsIlen i_ l_ m_
-                   {-# LINE 531 "AG.hs" #-}
+                  ({-# LINE 78 "AG\\Translate.ag" #-}
+                   interpreter _lhsIpos _lhsIblen i_ l_ m_
+                   {-# LINE 678 "Ag.hs" #-}
                    )
-              _lhsOejoint =
-                  ({-# LINE 41 "AG\\Translate.ag" #-}
-                   eJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 536 "AG.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 42 "AG\\Translate.ag" #-}
-                   cJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 541 "AG.hs" #-}
-                   )
-              _lhsOmlen =
-                  ({-# LINE 43 "AG\\Translate.ag" #-}
-                   maxLength _diag
-                   {-# LINE 546 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 79 "AG\\Translate.ag" #-}
+                   Interp
+                   {-# LINE 683 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 44 "AG\\Translate.ag" #-}
+                  ({-# LINE 80 "AG\\Translate.ag" #-}
                    30
-                   {-# LINE 551 "AG.hs" #-}
+                   {-# LINE 688 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 45 "AG\\Translate.ag" #-}
-                   dimension _diag _lhsIlen
-                   {-# LINE 556 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 81 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 693 "Ag.hs" #-}
+                   )
+              _lhsOtlen =
+                  ({-# LINE 82 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 698 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 83 "AG\\Translate.ag" #-}
+                   cJoint Interp _lhsIpos _lhsIblen
+                   {-# LINE 703 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 84 "AG\\Translate.ag" #-}
+                   eJoint Interp _lhsIpos _lhsIblen
+                   {-# LINE 708 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 85 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 713 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 86 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 718 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Interpreter i_ l_ m_
-                   {-# LINE 561 "AG.hs" #-}
+                   {-# LINE 723 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 566 "AG.hs" #-}
+                   {-# LINE 728 "Ag.hs" #-}
                    )
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 sem_Diag__Compiler :: Ident ->
                       Ident ->
                       Ident ->
                       Ident ->
                       T_Diag_
 sem_Diag__Compiler c_ l1_ l2_ m_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOejoint :: ((Double,Double))
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOtlen :: TotalLength
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
               _lhsOcmd =
-                  ({-# LINE 46 "AG\\Translate.ag" #-}
-                   compiler _lhsIpos _lhsIlen c_ l1_ l2_ m_
-                   {-# LINE 587 "AG.hs" #-}
+                  ({-# LINE 87 "AG\\Translate.ag" #-}
+                   compiler _lhsIpos _lhsIblen c_ l1_ l2_ m_
+                   {-# LINE 752 "Ag.hs" #-}
                    )
-              _lhsOejoint =
-                  ({-# LINE 47 "AG\\Translate.ag" #-}
-                   eJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 592 "AG.hs" #-}
-                   )
-              _lhsOcjoint =
-                  ({-# LINE 48 "AG\\Translate.ag" #-}
-                   cJoint _diag _lhsIpos _lhsIlen
-                   {-# LINE 597 "AG.hs" #-}
-                   )
-              _lhsOmlen =
-                  ({-# LINE 49 "AG\\Translate.ag" #-}
-                   maxLength _diag
-                   {-# LINE 602 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 88 "AG\\Translate.ag" #-}
+                   Comp
+                   {-# LINE 757 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 50 "AG\\Translate.ag" #-}
+                  ({-# LINE 89 "AG\\Translate.ag" #-}
                    30
-                   {-# LINE 607 "AG.hs" #-}
+                   {-# LINE 762 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 51 "AG\\Translate.ag" #-}
-                   dimension _diag _lhsIlen
-                   {-# LINE 612 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 90 "AG\\Translate.ag" #-}
+                   3 * _lhsIblen
+                   {-# LINE 767 "Ag.hs" #-}
+                   )
+              _lhsOtlen =
+                  ({-# LINE 91 "AG\\Translate.ag" #-}
+                   2 * _lhsIblen
+                   {-# LINE 772 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 92 "AG\\Translate.ag" #-}
+                   cJoint Comp _lhsIpos _lhsIblen
+                   {-# LINE 777 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 93 "AG\\Translate.ag" #-}
+                   eJoint Comp _lhsIpos _lhsIblen
+                   {-# LINE 782 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 94 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 787 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 95 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 792 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Compiler c_ l1_ l2_ m_
-                   {-# LINE 617 "AG.hs" #-}
+                   {-# LINE 797 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 622 "AG.hs" #-}
+                   {-# LINE 802 "Ag.hs" #-}
                    )
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 sem_Diag__Execute :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Execute d1_ d2_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _d1Opos :: ((Double,Double))
-              _d2Opos :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _d1Olen :: ((Double))
-              _d2Olen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _d1Opos :: Pos
+              _d2Opos :: Pos
+              _d1Oblen :: BlockLength
+              _d2Oblen :: BlockLength
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOtlen :: TotalLength
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
-              _d1Icjoint :: ((Double,Double))
+              _d1Icdepth :: Depth
+              _d1Icjoint :: Cjoint
               _d1Icmd :: ([Command])
+              _d1Idcons :: DiagCons
               _d1Idiag :: Diag
-              _d1Idim :: ((Double,Double))
-              _d1Iejoint :: ((Double,Double))
-              _d1Ih :: Double
-              _d1Imlen :: ((Double))
-              _d2Icjoint :: ((Double,Double))
+              _d1Iejoint :: Ejoint
+              _d1Ih :: Height
+              _d1Itlen :: TotalLength
+              _d1Iw :: Width
+              _d1Iwdepth :: Depth
+              _d2Icdepth :: Depth
+              _d2Icjoint :: Cjoint
               _d2Icmd :: ([Command])
+              _d2Idcons :: DiagCons
               _d2Idiag :: Diag
-              _d2Idim :: ((Double,Double))
-              _d2Iejoint :: ((Double,Double))
-              _d2Ih :: Double
-              _d2Imlen :: ((Double))
+              _d2Iejoint :: Ejoint
+              _d2Ih :: Height
+              _d2Itlen :: TotalLength
+              _d2Iw :: Width
+              _d2Iwdepth :: Depth
               _lhsOcmd =
-                  ({-# LINE 52 "AG\\Translate.ag" #-}
+                  ({-# LINE 96 "AG\\Translate.ag" #-}
                    _d1Icmd ++ _d2Icmd
-                   {-# LINE 659 "AG.hs" #-}
+                   {-# LINE 848 "Ag.hs" #-}
                    )
-              _lhsOcjoint =
-                  ({-# LINE 53 "AG\\Translate.ag" #-}
-                   _d2Icjoint
-                   {-# LINE 664 "AG.hs" #-}
-                   )
-              _lhsOejoint =
-                  ({-# LINE 54 "AG\\Translate.ag" #-}
-                   _d2Iejoint
-                   {-# LINE 669 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 97 "AG\\Translate.ag" #-}
+                   _d2Idcons
+                   {-# LINE 853 "Ag.hs" #-}
                    )
               _d1Opos =
-                  ({-# LINE 55 "AG\\Translate.ag" #-}
+                  ({-# LINE 98 "AG\\Translate.ag" #-}
                    _lhsIpos
-                   {-# LINE 674 "AG.hs" #-}
+                   {-# LINE 858 "Ag.hs" #-}
                    )
               _d2Opos =
-                  ({-# LINE 56 "AG\\Translate.ag" #-}
+                  ({-# LINE 99 "AG\\Translate.ag" #-}
                    _d1Iejoint
-                   {-# LINE 679 "AG.hs" #-}
+                   {-# LINE 863 "Ag.hs" #-}
                    )
-              _lhsOmlen =
-                  ({-# LINE 57 "AG\\Translate.ag" #-}
-                   max _d1Imlen _d2Imlen
-                   {-# LINE 684 "AG.hs" #-}
+              _d1Oblen =
+                  ({-# LINE 100 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 868 "Ag.hs" #-}
                    )
-              _d1Olen =
-                  ({-# LINE 58 "AG\\Translate.ag" #-}
-                   _lhsIlen
-                   {-# LINE 689 "AG.hs" #-}
-                   )
-              _d2Olen =
-                  ({-# LINE 59 "AG\\Translate.ag" #-}
-                   _lhsIlen
-                   {-# LINE 694 "AG.hs" #-}
+              _d2Oblen =
+                  ({-# LINE 101 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 873 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 60 "AG\\Translate.ag" #-}
-                   _d1Ih + _d2Ih
-                   {-# LINE 699 "AG.hs" #-}
+                  ({-# LINE 102 "AG\\Translate.ag" #-}
+                   executeHeight _d1Idiag _d1Ih _d2Ih
+                   {-# LINE 878 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 61 "AG\\Translate.ag" #-}
-                   joinDimensions _diag _d1Idim _d2Idim
-                   {-# LINE 704 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 103 "AG\\Translate.ag" #-}
+                   max _d1Iw _d2Iw
+                   {-# LINE 883 "Ag.hs" #-}
+                   )
+              _lhsOtlen =
+                  ({-# LINE 104 "AG\\Translate.ag" #-}
+                   _d1Itlen + _d2Itlen
+                   {-# LINE 888 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 105 "AG\\Translate.ag" #-}
+                   _d2Icjoint
+                   {-# LINE 893 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 106 "AG\\Translate.ag" #-}
+                   _d2Iejoint
+                   {-# LINE 898 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 107 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 903 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 108 "AG\\Translate.ag" #-}
+                   0
+                   {-# LINE 908 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Execute _d1Idiag _d2Idiag
-                   {-# LINE 709 "AG.hs" #-}
+                   {-# LINE 913 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 714 "AG.hs" #-}
+                   {-# LINE 918 "Ag.hs" #-}
                    )
-              ( _d1Icjoint,_d1Icmd,_d1Idiag,_d1Idim,_d1Iejoint,_d1Ih,_d1Imlen) =
-                  d1_ _d1Olen _d1Opos
-              ( _d2Icjoint,_d2Icmd,_d2Idiag,_d2Idim,_d2Iejoint,_d2Ih,_d2Imlen) =
-                  d2_ _d2Olen _d2Opos
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+              ( _d1Icdepth,_d1Icjoint,_d1Icmd,_d1Idcons,_d1Idiag,_d1Iejoint,_d1Ih,_d1Itlen,_d1Iw,_d1Iwdepth) =
+                  d1_ _d1Oblen _d1Opos
+              ( _d2Icdepth,_d2Icjoint,_d2Icmd,_d2Idcons,_d2Idiag,_d2Iejoint,_d2Ih,_d2Itlen,_d2Iw,_d2Iwdepth) =
+                  d2_ _d2Oblen _d2Opos
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 sem_Diag__Compile :: T_Diag ->
                      T_Diag ->
                      T_Diag_
 sem_Diag__Compile d1_ d2_ =
-    (\ _lhsIlen
+    (\ _lhsIblen
        _lhsIpos ->
          (let _lhsOcmd :: ([Command])
-              _lhsOcjoint :: ((Double,Double))
-              _lhsOejoint :: ((Double,Double))
-              _d1Opos :: ((Double,Double))
-              _d2Opos :: ((Double,Double))
-              _lhsOmlen :: ((Double))
-              _d1Olen :: ((Double))
-              _d2Olen :: ((Double))
-              _lhsOh :: Double
-              _lhsOdim :: ((Double,Double))
+              _lhsOdcons :: DiagCons
+              _d1Opos :: Pos
+              _d2Opos :: Pos
+              _d1Oblen :: BlockLength
+              _d2Oblen :: BlockLength
+              _lhsOh :: Height
+              _lhsOw :: Width
+              _lhsOtlen :: TotalLength
+              _lhsOcjoint :: Cjoint
+              _lhsOejoint :: Ejoint
+              _lhsOwdepth :: Depth
+              _lhsOcdepth :: Depth
               _lhsOdiag :: Diag_
-              _d1Icjoint :: ((Double,Double))
+              _d1Icdepth :: Depth
+              _d1Icjoint :: Cjoint
               _d1Icmd :: ([Command])
+              _d1Idcons :: DiagCons
               _d1Idiag :: Diag
-              _d1Idim :: ((Double,Double))
-              _d1Iejoint :: ((Double,Double))
-              _d1Ih :: Double
-              _d1Imlen :: ((Double))
-              _d2Icjoint :: ((Double,Double))
+              _d1Iejoint :: Ejoint
+              _d1Ih :: Height
+              _d1Itlen :: TotalLength
+              _d1Iw :: Width
+              _d1Iwdepth :: Depth
+              _d2Icdepth :: Depth
+              _d2Icjoint :: Cjoint
               _d2Icmd :: ([Command])
+              _d2Idcons :: DiagCons
               _d2Idiag :: Diag
-              _d2Idim :: ((Double,Double))
-              _d2Iejoint :: ((Double,Double))
-              _d2Ih :: Double
-              _d2Imlen :: ((Double))
+              _d2Iejoint :: Ejoint
+              _d2Ih :: Height
+              _d2Itlen :: TotalLength
+              _d2Iw :: Width
+              _d2Iwdepth :: Depth
               _cpos =
-                  ({-# LINE 62 "AG\\Translate.ag" #-}
-                   rightPos _cmpl     _lhsIpos _lhsIlen
-                   {-# LINE 755 "AG.hs" #-}
+                  ({-# LINE 109 "AG\\Translate.ag" #-}
+                   rightPos _d1Idcons (fst _d1pos     + _d1Itlen, snd _d1pos    ) _lhsIblen
+                   {-# LINE 968 "Ag.hs" #-}
                    )
               _cmpl =
-                  ({-# LINE 63 "AG\\Translate.ag" #-}
+                  ({-# LINE 110 "AG\\Translate.ag" #-}
                    compile (dtd_ _d1Idiag) (dtd_ _d2Idiag)
-                   {-# LINE 760 "AG.hs" #-}
+                   {-# LINE 973 "Ag.hs" #-}
                    )
               _lhsOcmd =
-                  ({-# LINE 64 "AG\\Translate.ag" #-}
-                   _d1Icmd ++ _d2Icmd ++ compiled _cmpl     _cpos     _lhsIlen
-                   {-# LINE 765 "AG.hs" #-}
+                  ({-# LINE 111 "AG\\Translate.ag" #-}
+                   _d1Icmd ++ _d2Icmd ++ compiled _cmpl     _cpos     _lhsIblen
+                   {-# LINE 978 "Ag.hs" #-}
                    )
-              _lhsOcjoint =
-                  ({-# LINE 65 "AG\\Translate.ag" #-}
-                   cJoint _cmpl     _cpos     _lhsIlen
-                   {-# LINE 770 "AG.hs" #-}
+              _lhsOdcons =
+                  ({-# LINE 112 "AG\\Translate.ag" #-}
+                   _d1Idcons
+                   {-# LINE 983 "Ag.hs" #-}
                    )
-              _lhsOejoint =
-                  ({-# LINE 66 "AG\\Translate.ag" #-}
-                   eJoint _cmpl     _cpos     _lhsIlen
-                   {-# LINE 775 "AG.hs" #-}
+              _d1pos =
+                  ({-# LINE 113 "AG\\Translate.ag" #-}
+                   d1Pos _d1Icdepth _d2Iwdepth _lhsIpos _lhsIblen _d1Idcons
+                   {-# LINE 988 "Ag.hs" #-}
+                   )
+              _d2pos =
+                  ({-# LINE 114 "AG\\Translate.ag" #-}
+                   d2Pos _d1Icdepth _d2Iwdepth _lhsIpos _lhsIblen _d1Icjoint
+                   {-# LINE 993 "Ag.hs" #-}
                    )
               _d1Opos =
-                  ({-# LINE 67 "AG\\Translate.ag" #-}
-                   _lhsIpos
-                   {-# LINE 780 "AG.hs" #-}
+                  ({-# LINE 115 "AG\\Translate.ag" #-}
+                   _d1pos
+                   {-# LINE 998 "Ag.hs" #-}
                    )
               _d2Opos =
-                  ({-# LINE 68 "AG\\Translate.ag" #-}
-                   _d1Icjoint
-                   {-# LINE 785 "AG.hs" #-}
+                  ({-# LINE 116 "AG\\Translate.ag" #-}
+                   _d2pos
+                   {-# LINE 1003 "Ag.hs" #-}
                    )
-              _lhsOmlen =
-                  ({-# LINE 69 "AG\\Translate.ag" #-}
-                   max _d1Imlen _d2Imlen
-                   {-# LINE 790 "AG.hs" #-}
+              _d1Oblen =
+                  ({-# LINE 117 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 1008 "Ag.hs" #-}
                    )
-              _d1Olen =
-                  ({-# LINE 70 "AG\\Translate.ag" #-}
-                   _lhsIlen
-                   {-# LINE 795 "AG.hs" #-}
-                   )
-              _d2Olen =
-                  ({-# LINE 71 "AG\\Translate.ag" #-}
-                   _lhsIlen
-                   {-# LINE 800 "AG.hs" #-}
-                   )
-              _h =
-                  ({-# LINE 72 "AG\\Translate.ag" #-}
-                   _d1Ih + _d2Ih - 10
-                   {-# LINE 805 "AG.hs" #-}
+              _d2Oblen =
+                  ({-# LINE 118 "AG\\Translate.ag" #-}
+                   _lhsIblen
+                   {-# LINE 1013 "Ag.hs" #-}
                    )
               _lhsOh =
-                  ({-# LINE 73 "AG\\Translate.ag" #-}
-                   _d1Ih
-                   {-# LINE 810 "AG.hs" #-}
+                  ({-# LINE 119 "AG\\Translate.ag" #-}
+                   compileHeight _d1Icdepth _d1Ih _d2Ih
+                   {-# LINE 1018 "Ag.hs" #-}
                    )
-              _dim =
-                  ({-# LINE 74 "AG\\Translate.ag" #-}
-                   (joinDimensions _diag (fst _d1Idim, _d1Ih) _d2Idim)
-                   {-# LINE 815 "AG.hs" #-}
+              _lhsOw =
+                  ({-# LINE 120 "AG\\Translate.ag" #-}
+                   compileWidth _d2Iwdepth _d1Idcons _lhsIblen _d1Iw _d2Iw
+                   {-# LINE 1023 "Ag.hs" #-}
                    )
-              _lhsOdim =
-                  ({-# LINE 75 "AG\\Translate.ag" #-}
-                   (fst $ joinDimensions _diag (dimension _cmpl     _lhsIlen) _dim    , snd _dim    )
-                   {-# LINE 820 "AG.hs" #-}
+              _lhsOtlen =
+                  ({-# LINE 121 "AG\\Translate.ag" #-}
+                   _d1Itlen + (3 * _lhsIblen) + _lhsIblen
+                   {-# LINE 1028 "Ag.hs" #-}
+                   )
+              _lhsOcjoint =
+                  ({-# LINE 122 "AG\\Translate.ag" #-}
+                   cJoint _d1Idcons _cpos     _lhsIblen
+                   {-# LINE 1033 "Ag.hs" #-}
+                   )
+              _lhsOejoint =
+                  ({-# LINE 123 "AG\\Translate.ag" #-}
+                   eJoint _d1Idcons _cpos     _lhsIblen
+                   {-# LINE 1038 "Ag.hs" #-}
+                   )
+              _lhsOwdepth =
+                  ({-# LINE 124 "AG\\Translate.ag" #-}
+                   1 + _d2Iwdepth
+                   {-# LINE 1043 "Ag.hs" #-}
+                   )
+              _lhsOcdepth =
+                  ({-# LINE 125 "AG\\Translate.ag" #-}
+                   1 + _d1Icdepth
+                   {-# LINE 1048 "Ag.hs" #-}
                    )
               _diag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    Compile _d1Idiag _d2Idiag
-                   {-# LINE 825 "AG.hs" #-}
+                   {-# LINE 1053 "Ag.hs" #-}
                    )
               _lhsOdiag =
-                  ({-# LINE 16 "AG\\Translate.ag" #-}
+                  ({-# LINE 49 "AG\\Translate.ag" #-}
                    _diag
-                   {-# LINE 830 "AG.hs" #-}
+                   {-# LINE 1058 "Ag.hs" #-}
                    )
-              ( _d1Icjoint,_d1Icmd,_d1Idiag,_d1Idim,_d1Iejoint,_d1Ih,_d1Imlen) =
-                  d1_ _d1Olen _d1Opos
-              ( _d2Icjoint,_d2Icmd,_d2Idiag,_d2Idim,_d2Iejoint,_d2Ih,_d2Imlen) =
-                  d2_ _d2Olen _d2Opos
-          in  ( _lhsOcjoint,_lhsOcmd,_lhsOdiag,_lhsOdim,_lhsOejoint,_lhsOh,_lhsOmlen)))
+              ( _d1Icdepth,_d1Icjoint,_d1Icmd,_d1Idcons,_d1Idiag,_d1Iejoint,_d1Ih,_d1Itlen,_d1Iw,_d1Iwdepth) =
+                  d1_ _d1Oblen _d1Opos
+              ( _d2Icdepth,_d2Icjoint,_d2Icmd,_d2Idcons,_d2Idiag,_d2Iejoint,_d2Ih,_d2Itlen,_d2Iw,_d2Iwdepth) =
+                  d2_ _d2Oblen _d2Opos
+          in  ( _lhsOcdepth,_lhsOcjoint,_lhsOcmd,_lhsOdcons,_lhsOdiag,_lhsOejoint,_lhsOh,_lhsOtlen,_lhsOw,_lhsOwdepth)))
 -- Object ------------------------------------------------------
 data Object = Line (((Int, Int))) (Double)
             | Makebox (((Double, Double))) (String)
@@ -864,7 +1092,7 @@ sem_Object_Line slope_ len_ =
          _lhsOpp =
              ({-# LINE 14 "AG\\Printing.ag" #-}
               ppCall "line"     slope_ (showable len_)
-              {-# LINE 868 "AG.hs" #-}
+              {-# LINE 1096 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Makebox :: ((Double, Double)) ->
@@ -875,7 +1103,7 @@ sem_Object_Makebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 15 "AG\\Printing.ag" #-}
               ppCall "makebox"  dim_   (text body_)
-              {-# LINE 879 "AG.hs" #-}
+              {-# LINE 1107 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 sem_Object_Framebox :: ((Double, Double)) ->
@@ -886,7 +1114,7 @@ sem_Object_Framebox dim_ body_ =
          _lhsOpp =
              ({-# LINE 16 "AG\\Printing.ag" #-}
               ppCall "framebox" dim_   (text body_)
-              {-# LINE 890 "AG.hs" #-}
+              {-# LINE 1118 "Ag.hs" #-}
               )
      in  ( _lhsOpp))
 -- Pic ---------------------------------------------------------
@@ -910,32 +1138,35 @@ sem_Pic_Pic :: T_Diag ->
                T_Pic
 sem_Pic_Pic d_ =
     (let _lhsOpic :: Picture
-         _dOpos :: ((Double,Double))
-         _dOlen :: ((Double))
-         _dIcjoint :: ((Double,Double))
+         _dOpos :: Pos
+         _dOblen :: BlockLength
+         _dIcdepth :: Depth
+         _dIcjoint :: Cjoint
          _dIcmd :: ([Command])
+         _dIdcons :: DiagCons
          _dIdiag :: Diag
-         _dIdim :: ((Double,Double))
-         _dIejoint :: ((Double,Double))
-         _dIh :: Double
-         _dImlen :: ((Double))
+         _dIejoint :: Ejoint
+         _dIh :: Height
+         _dItlen :: TotalLength
+         _dIw :: Width
+         _dIwdepth :: Depth
          _lhsOpic =
-             ({-# LINE 10 "AG\\Translate.ag" #-}
-              Picture _dIdim _dIcmd
-              {-# LINE 926 "AG.hs" #-}
+             ({-# LINE 28 "AG\\Translate.ag" #-}
+              Picture (_dIw,_dIh) (_dIcmd ++ frame (_dIw,_dIh))
+              {-# LINE 1157 "Ag.hs" #-}
               )
          _dOpos =
-             ({-# LINE 11 "AG\\Translate.ag" #-}
-              (0,snd _dIdim)
-              {-# LINE 931 "AG.hs" #-}
+             ({-# LINE 29 "AG\\Translate.ag" #-}
+              (-100,_dIh)
+              {-# LINE 1162 "Ag.hs" #-}
               )
-         _dOlen =
-             ({-# LINE 12 "AG\\Translate.ag" #-}
-              max _dImlen 50
-              {-# LINE 936 "AG.hs" #-}
+         _dOblen =
+             ({-# LINE 30 "AG\\Translate.ag" #-}
+              50
+              {-# LINE 1167 "Ag.hs" #-}
               )
-         ( _dIcjoint,_dIcmd,_dIdiag,_dIdim,_dIejoint,_dIh,_dImlen) =
-             d_ _dOlen _dOpos
+         ( _dIcdepth,_dIcjoint,_dIcmd,_dIdcons,_dIdiag,_dIejoint,_dIh,_dItlen,_dIw,_dIwdepth) =
+             d_ _dOblen _dOpos
      in  ( _lhsOpic))
 -- Picture -----------------------------------------------------
 data Picture = Picture (((Double, Double))) (Commands)
@@ -965,7 +1196,7 @@ sem_Picture_Picture dim_ cmds_ =
               text "\\begin{picture}" >|< ppPair dim_ >-<
               indent 2 _cmdsIpp >-<
               text "\\end{picture}"
-              {-# LINE 969 "AG.hs" #-}
+              {-# LINE 1200 "Ag.hs" #-}
               )
          ( _cmdsIpp) =
              cmds_
