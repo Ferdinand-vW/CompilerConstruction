@@ -41,11 +41,36 @@ Unfortunately we had to place some more restrictions on the diagrams that we all
 	\item Compiling an executed program, interpreter or compiler
 	\item Compiling a program, interpreter, or compiler on an executed compiler
 	\item Compiling a compiled program, interpreter or compiler using a compiled compiler
-	\item Compiling a program, interpreter, or compiler using a left and right recursive compilation
-	\item Compiling a left and right recursive compilation using a compiled
+	\item Compiling a program, interpreter, or compiler using a left recursive compilation
+	\item Compiling a right recursive compilation using a compiler
 \end{itemize}
 
 Now the last two items probably won't make a lot of sense just yet. So let us explain. If we are given the input Compile L with R end,
-where L and R are diagrams. If L is a Compile, then we say that Compile L with R end is left recursive. likewise if R is a Compile, then we say that it is right recursive. 
+where L and R are diagrams. If L is a Compile, then we say that Compile L with R end is left recursive. likewise if R is a Compile, then we say that it is right recursive.
+So the third-last diagram: Compiling a compiled program, interpreter or compiler using a compiled compiler, basically says that we do not allow a compile to be both left recursive and right recursive at the same time. The second-last diagram says that we cannot Compile some diagrams using a compilation that contains left recursive compilation. In otherwords, we cannot compile some diagram using a compiled compiler that was compiled using another compiler. The last diagram says that we cannot Compile a right recursive compilation using a compiler.
+In other words, the diagram that we are trying to compile must not have been compiled with a compiled compiler.
+
+\hfill \break
+
+We have a formal specification of our typesystem, which you can find in typesystem.pdf.
+
+\section{Implementation}
+
+\begin{subsection}{TypeCDiag}
+
+
+\begin{subsubsection}{AG Attributes}
+\end{subsubsection}
+
+\begin{subsubsection}{Type checking}
+\end{subsubsection}
+\end{subsection}
+
+\begin{subsection}{TDiag2Picture}
+\begin{subsubsection}{AG Attributes}
+\end{subsubsection}
+\begin{subsubsection}{Translation}
+\end{subsubsection}
+\end{subsection}
 
 \end{document}
