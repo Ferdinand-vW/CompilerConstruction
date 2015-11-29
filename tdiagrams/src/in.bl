@@ -1,5 +1,21 @@
-compile
-    interpreter hugs for Haskell in i6
-with
-    compiler C3 from i6 to Test in i7
+execute
+    execute
+        compile
+            compile
+                compile
+                    compiler C5 from 5 to 6 in UUAG
+                with
+                    compiler C1 from UUAG to Haskell in i7
+                end
+            with
+                compiler C2 from Haskell to 1 in ee8
+            end
+        with
+            compiler C3 from 1 to 2 in i6
+        end
+    on
+        interpreter hugs for 2 in i7
+    end
+on
+    platform i7
 end
