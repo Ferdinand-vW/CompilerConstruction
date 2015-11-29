@@ -1,12 +1,12 @@
 
 
--- UUAGC 0.9.52.1 (AG.ag)
+-- UUAGC 0.9.52.1 (Ag.ag)
 module CCO.Diag.AG where
 
 {-# LINE 2 "AG\\Pos.ag" #-}
 
 import CCO.SourcePos
-{-# LINE 10 "AG.hs" #-}
+{-# LINE 10 "Ag.hs" #-}
 
 {-# LINE 2 "..\\Diag.ag" #-}
 
@@ -17,7 +17,7 @@ import CCO.Tree             (ATerm (App), Tree (fromTree, toTree))
 import CCO.Tree.Parser      (parseTree, app, arg)
 import Control.Applicative  (Applicative ((<*>)), (<$>))
 import Data.Maybe
-{-# LINE 21 "AG.hs" #-}
+{-# LINE 21 "Ag.hs" #-}
 {-# LINE 3 "AG\\Typing.ag" #-}
 
 data TyCons = Prog
@@ -103,7 +103,7 @@ leftRecursion :: TyCons -> Recursive
 leftRecursion Compiled = Left_recursive
 leftRecursion _ = Not_recursive
 
-{-# LINE 107 "AG.hs" #-}
+{-# LINE 107 "Ag.hs" #-}
 
 {-# LINE 126 "AG\\Typing.ag" #-}
 
@@ -121,14 +121,14 @@ checkFramework pos ty | match ty Framework = []
     where
         nonFrame = "Cannot execute on non-Framework"
 
--- | CheckExeorCompile is used to rejects a type of Executed or Compiled in an Execute.
+-- | CheckExeorCompile rejects a type of Executed or Compiled in an Execute.
 checkExeOrCompile :: SourcePos -> TyCons -> [TyErr]
 checkExeOrCompile pos ty
     | match ty Executed || match ty Compiled = [TyErr pos descr (show Framework) (show ty)]
     | otherwise = []
     where
         descr = "Cannot execute runnable on a compilation or execution"
-{-# LINE 132 "AG.hs" #-}
+{-# LINE 132 "Ag.hs" #-}
 
 {-# LINE 161 "AG\\Typing.ag" #-}
 
@@ -139,7 +139,7 @@ checkComp pos ty | match ty Comp = []
     where
         nonComp = "Must be compiled using a compiler"
 
--- | This function is used to rejects an Executed in the Compile.   
+-- | This function rejects an Executed in the Compile.   
 checkExeInCompile :: SourcePos -> TyCons -> [TyErr]
 checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Executed) (show ty)]
                          | otherwise = []
@@ -149,8 +149,8 @@ checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Execut
 -- | The checkLandRecurs checks if within a compile there is not a left recursive and right compilation at the same time 
 checkLandRrecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
 checkLandRrecurs pos ty1 ty2
-    | ty1 == Right_recursive && ty2 == Left_recursive 
-            = [TyErr pos descr (show Right_recursive ++ " !AND " ++ show Left_recursive) (show Right_recursive ++ " AND " ++ show Left_recursive)]
+    | ty1 == Left_recursive && ty2 == Right_recursive 
+            = [TyErr pos descr (show Left_recursive ++ " !AND " ++ show Right_recursive) (show Left_recursive ++ " AND " ++ show Right_recursive)]
     | otherwise = []
     where
         descr = "Cannot have left recursive and right recursive compilations within a compile at the same time" 
@@ -187,7 +187,7 @@ genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyErr]
 genTyInfoErr pos mi mj = [TyErr pos descr (show' mi) (show' mj)]
     where
         descr = "Cannot execute or compile runnable on a non-matching platform or interpreter"
-{-# LINE 191 "AG.hs" #-}
+{-# LINE 191 "Ag.hs" #-}
 
 {-# LINE 221 "AG\\Typing.ag" #-}
 
@@ -195,7 +195,7 @@ data TyErr = TyErr SourcePos String String String
 
 instance Printable TyErr where
     pp = ppTyErr
-{-# LINE 199 "AG.hs" #-}
+{-# LINE 199 "Ag.hs" #-}
 
 {-# LINE 229 "AG\\Typing.ag" #-}
 
@@ -212,7 +212,7 @@ ppErr msg pos descr a b =
                     describeSourcePos pos ++ ": " ++ msg ++ ": " ++ descr ++ "."
         ppExpected = text "? expected : " >|< text a
         ppInferred = text "? inferred : " >|< text b
-{-# LINE 216 "AG.hs" #-}
+{-# LINE 216 "Ag.hs" #-}
 
 {-# LINE 22 "AG\\Pos.ag" #-}
 
@@ -227,12 +227,12 @@ describeSourcePos (SourcePos (File file) EOF)    = file ++
 describeSourcePos (SourcePos Stdin (Pos ln col)) = "line " ++ show ln ++
                                                    ":column " ++ show col
 describeSourcePos (SourcePos Stdin EOF)          = "<at end of input>"
-{-# LINE 231 "AG.hs" #-}
+{-# LINE 231 "Ag.hs" #-}
 
 {-# LINE 16 "..\\Diag.ag" #-}
 
 type Ident = String
-{-# LINE 236 "AG.hs" #-}
+{-# LINE 236 "Ag.hs" #-}
 
 {-# LINE 35 "..\\Diag.ag" #-}
 
@@ -258,7 +258,7 @@ instance Tree Diag_ where
              , app "Execute"     (Execute     <$> arg <*> arg                )
              , app "Compile"     (Compile     <$> arg <*> arg                )
              ]
-{-# LINE 262 "AG.hs" #-}
+{-# LINE 262 "Ag.hs" #-}
 -- Diag --------------------------------------------------------
 data Diag = Diag (SourcePos) (Diag_)
 -- cata
@@ -294,32 +294,32 @@ sem_Diag_Diag pos_ d_ =
               _lhsOpos =
                   ({-# LINE 14 "AG\\Pos.ag" #-}
                    pos_
-                   {-# LINE 298 "AG.hs" #-}
+                   {-# LINE 298 "Ag.hs" #-}
                    )
               _dOpos =
                   ({-# LINE 20 "AG\\Pos.ag" #-}
                    pos_
-                   {-# LINE 303 "AG.hs" #-}
+                   {-# LINE 303 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
                    _dItyErrs
-                   {-# LINE 308 "AG.hs" #-}
+                   {-# LINE 308 "Ag.hs" #-}
                    )
               _lhsOty =
                   ({-# LINE 95 "AG\\Typing.ag" #-}
                    _dIty
-                   {-# LINE 313 "AG.hs" #-}
+                   {-# LINE 313 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 93 "AG\\Typing.ag" #-}
                    _dItycons
-                   {-# LINE 318 "AG.hs" #-}
+                   {-# LINE 318 "Ag.hs" #-}
                    )
               _dOrecurs =
                   ({-# LINE 94 "AG\\Typing.ag" #-}
                    _lhsIrecurs
-                   {-# LINE 323 "AG.hs" #-}
+                   {-# LINE 323 "Ag.hs" #-}
                    )
               ( _dIty,_dItyErrs,_dItycons) =
                   d_ _dOpos _dOrecurs
@@ -370,17 +370,17 @@ sem_Diag__Program p_ l_ =
               _lhsOty =
                   ({-# LINE 99 "AG\\Typing.ag" #-}
                    Ty Prog (Just l_) Nothing Nothing
-                   {-# LINE 374 "AG.hs" #-}
+                   {-# LINE 374 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 100 "AG\\Typing.ag" #-}
                    Prog
-                   {-# LINE 379 "AG.hs" #-}
+                   {-# LINE 379 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 384 "AG.hs" #-}
+                   {-# LINE 384 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtycons)))
 sem_Diag__Platform :: Ident ->
@@ -394,17 +394,17 @@ sem_Diag__Platform m_ =
               _lhsOty =
                   ({-# LINE 105 "AG\\Typing.ag" #-}
                    Ty PlatF Nothing Nothing (Just m_)
-                   {-# LINE 398 "AG.hs" #-}
+                   {-# LINE 398 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 106 "AG\\Typing.ag" #-}
                    PlatF
-                   {-# LINE 403 "AG.hs" #-}
+                   {-# LINE 403 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 408 "AG.hs" #-}
+                   {-# LINE 408 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtycons)))
 sem_Diag__Interpreter :: Ident ->
@@ -420,17 +420,17 @@ sem_Diag__Interpreter i_ l_ m_ =
               _lhsOty =
                   ({-# LINE 101 "AG\\Typing.ag" #-}
                    Ty Interp (Just l_) Nothing (Just m_)
-                   {-# LINE 424 "AG.hs" #-}
+                   {-# LINE 424 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 102 "AG\\Typing.ag" #-}
                    Interp
-                   {-# LINE 429 "AG.hs" #-}
+                   {-# LINE 429 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 434 "AG.hs" #-}
+                   {-# LINE 434 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtycons)))
 sem_Diag__Compiler :: Ident ->
@@ -447,17 +447,17 @@ sem_Diag__Compiler c_ l1_ l2_ m_ =
               _lhsOty =
                   ({-# LINE 103 "AG\\Typing.ag" #-}
                    Ty Comp (Just l1_) (Just l2_) (Just m_)
-                   {-# LINE 451 "AG.hs" #-}
+                   {-# LINE 451 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 104 "AG\\Typing.ag" #-}
                    Comp
-                   {-# LINE 456 "AG.hs" #-}
+                   {-# LINE 456 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 96 "AG\\Typing.ag" #-}
                    []
-                   {-# LINE 461 "AG.hs" #-}
+                   {-# LINE 461 "Ag.hs" #-}
                    )
           in  ( _lhsOty,_lhsOtyErrs,_lhsOtycons)))
 sem_Diag__Execute :: T_Diag ->
@@ -482,22 +482,22 @@ sem_Diag__Execute d1_ d2_ =
               _lhsOty =
                   ({-# LINE 107 "AG\\Typing.ag" #-}
                    _d2Ity
-                   {-# LINE 486 "AG.hs" #-}
+                   {-# LINE 486 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 108 "AG\\Typing.ag" #-}
                    Executed
-                   {-# LINE 491 "AG.hs" #-}
+                   {-# LINE 491 "Ag.hs" #-}
                    )
               _d1Orecurs =
                   ({-# LINE 109 "AG\\Typing.ag" #-}
                    Not_recursive
-                   {-# LINE 496 "AG.hs" #-}
+                   {-# LINE 496 "Ag.hs" #-}
                    )
               _d2Orecurs =
                   ({-# LINE 110 "AG\\Typing.ag" #-}
                    Not_recursive
-                   {-# LINE 501 "AG.hs" #-}
+                   {-# LINE 501 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 120 "AG\\Typing.ag" #-}
@@ -506,7 +506,7 @@ sem_Diag__Execute d1_ d2_ =
                    checkFramework _d2Ipos (cons _d2Ity) ++
                    checkIfMatches _d1Ipos _d1Ity _d2Ity ++
                    checkExeOrCompile _d2Ipos _d2Itycons
-                   {-# LINE 510 "AG.hs" #-}
+                   {-# LINE 510 "Ag.hs" #-}
                    )
               ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1Itycons) =
                   d1_ _d1Orecurs
@@ -535,32 +535,32 @@ sem_Diag__Compile d1_ d2_ =
               _lhsOty =
                   ({-# LINE 111 "AG\\Typing.ag" #-}
                    translate _d1Ity _d2Ity
-                   {-# LINE 539 "AG.hs" #-}
+                   {-# LINE 539 "Ag.hs" #-}
                    )
               _lhsOtycons =
                   ({-# LINE 112 "AG\\Typing.ag" #-}
                    Compiled
-                   {-# LINE 544 "AG.hs" #-}
+                   {-# LINE 544 "Ag.hs" #-}
                    )
               _d1r =
                   ({-# LINE 113 "AG\\Typing.ag" #-}
-                   rightRecursion _d1Itycons
-                   {-# LINE 549 "AG.hs" #-}
+                   leftRecursion _d1Itycons
+                   {-# LINE 549 "Ag.hs" #-}
                    )
               _d2r =
                   ({-# LINE 114 "AG\\Typing.ag" #-}
-                   leftRecursion _d2Itycons
-                   {-# LINE 554 "AG.hs" #-}
+                   rightRecursion _d2Itycons
+                   {-# LINE 554 "Ag.hs" #-}
                    )
               _d1Orecurs =
                   ({-# LINE 115 "AG\\Typing.ag" #-}
                    _d1r
-                   {-# LINE 559 "AG.hs" #-}
+                   {-# LINE 559 "Ag.hs" #-}
                    )
               _d2Orecurs =
                   ({-# LINE 116 "AG\\Typing.ag" #-}
                    _d2r
-                   {-# LINE 564 "AG.hs" #-}
+                   {-# LINE 564 "Ag.hs" #-}
                    )
               _lhsOtyErrs =
                   ({-# LINE 151 "AG\\Typing.ag" #-}
@@ -573,7 +573,7 @@ sem_Diag__Compile d1_ d2_ =
                    checkLandRrecurs _lhsIpos _d1r     _d2r     ++
                    checkLeftRightRecurs _d1Ipos _d1r     _lhsIrecurs ++
                    checkLeftRightRecurs _d2Ipos _d2r     _lhsIrecurs
-                   {-# LINE 577 "AG.hs" #-}
+                   {-# LINE 577 "Ag.hs" #-}
                    )
               ( _d1Ipos,_d1Ity,_d1ItyErrs,_d1Itycons) =
                   d1_ _d1Orecurs
