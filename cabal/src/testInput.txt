@@ -1,0 +1,5 @@
+compile
+    program hello in UUAG
+with
+    compiler uuagc from UUAG to Haskell in i686-windows
+end

@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+-- |
+-- Module      :  CCO.Picture.AG
+-- Copyright   :  (c) 2008 Utrecht University
+-- License     :  All rights reserved
+--
+-- Maintainer  :  stefan@cs.uu.nl
+-- Stability   :  provisional
+-- Portability :  portable
+--
+-- Attribute grammar for LaTeX pictures.
+--
+-------------------------------------------------------------------------------
+
+module {CCO.Picture.AG}{}{}
+
+include "AG/Base.ag"
+include "../Diag.ag"
+include "AG/Translate.ag"
+include "AG/Printing.ag"

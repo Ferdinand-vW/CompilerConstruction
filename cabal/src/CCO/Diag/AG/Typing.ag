@@ -1,0 +1,243 @@
+-------------------Syntax-----------------
+
+{
+data TyCons = Prog
+        | Interp
+        | Comp
+        | PlatF
+        | Runnable
+        | Framework
+        | Executed
+        | Compiled
+        | Not_Executed
+        deriving (Eq,Show)
+
+data Recursive = Left_recursive
+        | Right_recursive
+        | Not_recursive
+         deriving (Eq, Show)
+
+-- | The Ty contains all the information about the type.
+data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)  
+
+instance Tree Ty where
+    fromTree (Ty c s t p) = App "Ty" [fromTree c, fromTree s, fromTree t, fromTree p]
+    toTree = parseTree [ app "Ty" (Ty <$> arg <*> arg <*> arg <*> arg)]
+
+instance Tree TyCons where
+    fromTree Prog = App "Prog" []
+    fromTree Interp = App "Interp" []
+    fromTree Comp = App "Comp" []
+    fromTree PlatF = App "PlatF" []
+    fromTree Runnable = App "Runnable" []
+    fromTree Framework = App "Framework" []
+
+    toTree = parseTree [ app "Prog" (pure Prog),
+                         app "Interp" (pure Interp),
+                         app "Comp" (pure Comp),
+                         app "PlatF" (pure PlatF),
+                         app "Runnable" (pure Runnable),
+                         app "Framework" (pure Framework)
+                       ]
+
+-- | The show' function is used to show Maybe a
+show' :: Maybe String -> String
+show' (Just x) = show x
+show' Nothing  = "" 
+
+-- | The match function is used to check if the combination of two types is possible. If True then well-typed; otherwise ill-typed
+match :: TyCons -> TyCons -> Bool
+match Prog Runnable       = True
+match Interp Runnable     = True
+match Comp Runnable       = True
+match Interp Framework    = True
+match PlatF Framework     = True
+match ty1 ty2             = ty1 == ty2
+
+-- | Checks if the recursion is just going in one way.
+matchR :: Recursive -> Recursive -> Bool
+matchR Left_recursive Not_recursive = True
+matchR Right_recursive Not_recursive = True
+matchR Not_recursive Left_recursive = True
+matchR Not_recursive Right_recursive = True
+matchR r1 r2 = r1 == r2
+
+-- | matchInfo is used to compare two values, so we can tell if a source, platform or target language are equal.
+matchInfo :: Maybe Ident -> Maybe Ident -> Bool
+matchInfo (Just i) (Just j) = i == j
+matchInfo _ _ = True
+
+-- | The translate function is used to translate a Compile to the correct type
+translate :: Ty -> Ty -> Ty
+translate (Ty Prog s1 t1 m1) (Ty Comp s2 t2 m2)   = Ty Prog t2 t1 m1
+translate (Ty Interp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Interp s1 t1 t2
+translate (Ty Comp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Comp s1 t1 t2
+translate tyinfo1 _ = tyinfo1
+
+-- | If the right type is of type Compiled; It will return a right_recursive. Otherwise it is not recursive.
+rightRecursion :: TyCons -> Recursive
+rightRecursion Compiled = Right_recursive
+rightRecursion _ = Not_recursive
+
+-- | If the left type is Compiled; It will return a left_recursive. Otherwise it is not recursive.
+leftRecursion :: TyCons -> Recursive 
+leftRecursion Compiled = Left_recursive
+leftRecursion _ = Not_recursive
+
+}
+
+
+
+-----------------------Typing-----------------
+attr Diag Diag_
+    syn tycons :: {TyCons}
+    inh recurs :: {Recursive}
+    syn ty :: {Ty}
+    syn tyErrs use {++} {[]} :: {[TyErr]}
+
+sem Diag_
+    | Program lhs.ty =  Ty Prog (Just @l) Nothing Nothing
+              lhs.tycons = Prog
+    | Interpreter lhs.ty = Ty Interp (Just @l) Nothing (Just @m)
+                  lhs.tycons = Interp
+    | Compiler lhs.ty = Ty Comp (Just @l1) (Just @l2) (Just @m)
+               lhs.tycons = Comp
+    | Platform lhs.ty = Ty PlatF Nothing Nothing (Just @m)
+               lhs.tycons = PlatF
+    | Execute lhs.ty = @d2.ty
+              lhs.tycons = Executed
+              d1.recurs = Not_recursive
+              d2.recurs = Not_recursive
+    | Compile lhs.ty = translate @d1.ty @d2.ty
+              lhs.tycons = Compiled
+              loc.d1r = leftRecursion @d1.tycons
+              loc.d2r = rightRecursion @d2.tycons
+              d1.recurs = @loc.d1r
+              d2.recurs = @loc.d2r
+
+
+sem Diag_
+    | Execute lhs.tyErrs =  @d1.tyErrs ++ @d2.tyErrs ++
+                            checkRunnable @d1.pos (cons @d1.ty) ++
+                            checkFramework @d2.pos (cons @d2.ty) ++
+                            checkIfMatches @d1.pos @d1.ty @d2.ty ++
+                            checkExeOrCompile @d2.pos @d2.tycons
+
+{
+-- | Checks if the second type of an Execute or Compile are of type Runnable. If this is not the case it is ill-typed
+checkRunnable :: SourcePos -> TyCons -> [TyErr]
+checkRunnable pos ty | match ty Runnable = []
+                     | otherwise          = [TyErr pos nonExe (show Runnable) (show ty)]
+    where
+        nonExe = "Cannot execute or compile a non-runnable"
+
+-- | Checks if the second type of the Execute is a Framework. Otherwise it is ill-typed
+checkFramework :: SourcePos -> TyCons -> [TyErr]
+checkFramework pos ty | match ty Framework = []
+                          | otherwise          = [TyErr pos nonFrame (show Framework) (show ty)]
+    where
+        nonFrame = "Cannot execute on non-Framework"
+
+-- | CheckExeorCompile rejects a type of Executed or Compiled in an Execute.
+checkExeOrCompile :: SourcePos -> TyCons -> [TyErr]
+checkExeOrCompile pos ty
+    | match ty Executed || match ty Compiled = [TyErr pos descr (show Framework) (show ty)]
+    | otherwise = []
+    where
+        descr = "Cannot execute runnable on a compilation or execution"
+}
+
+sem Diag_
+    | Compile lhs.tyErrs =  @d1.tyErrs  ++ @d2.tyErrs ++
+                            checkRunnable  @d1.pos (cons @d1.ty) ++
+                            checkComp      @d2.pos (cons @d2.ty) ++
+                            checkIfMatches @d1.pos @d1.ty @d2.ty ++
+                            checkExeInCompile @d1.pos @d1.tycons ++
+                            checkExeInCompile @d2.pos @d2.tycons ++
+                            checkLandRrecurs @lhs.pos @loc.d1r @loc.d2r ++
+                            checkLeftRightRecurs @d1.pos @loc.d1r @lhs.recurs ++
+                            checkLeftRightRecurs @d2.pos @loc.d2r @lhs.recurs
+
+{
+-- | Checks in the Compile if the second type is of type Comp, otherwise it is ill-typed.
+checkComp :: SourcePos -> TyCons -> [TyErr]
+checkComp pos ty | match ty Comp = []
+                 | otherwise = [TyErr pos nonComp (show Comp) (show ty)]
+    where
+        nonComp = "Must be compiled using a compiler"
+
+-- | This function rejects an Executed in the Compile.   
+checkExeInCompile :: SourcePos -> TyCons -> [TyErr]
+checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Executed) (show ty)]
+                         | otherwise = []
+    where
+        descr = "Cannot have an execution within a compilation"
+
+-- | The checkLandRecurs checks if within a compile there is not a left recursive and right compilation at the same time 
+checkLandRrecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
+checkLandRrecurs pos ty1 ty2
+    | ty1 == Left_recursive && ty2 == Right_recursive 
+            = [TyErr pos descr (show Left_recursive ++ " !AND " ++ show Right_recursive) (show Left_recursive ++ " AND " ++ show Right_recursive)]
+    | otherwise = []
+    where
+        descr = "Cannot have left recursive and right recursive compilations within a compile at the same time" 
+
+-- | In the checkLeftRightRecurs checks if a recursion is just going one way. For example a left recursive compilation must not contain a right recursive compilation
+checkLeftRightRecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
+checkLeftRightRecurs pos child par 
+    | matchR par child = []
+    | otherwise = [TyErr pos (descr par) (show par ++ " OR " ++ show Not_recursive) (show child)]
+    where
+        descr Left_recursive = "Cannot have right recursive compilation in a left recursive compilation"
+        descr Right_recursive = "Cannot have left recursive compilation in a right recursive compilation"
+
+
+-- | In this function we pattern match on several cases to check if the type runs on a compatible language.
+checkIfMatches :: SourcePos -> Ty -> Ty -> [TyErr]
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty Interp s2 _ m2) | matchInfo s1 s2 = []
+                                                         | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty Interp s2 _ m2) | matchInfo m1 s2 = []
+                                                         | otherwise = genTyInfoErr pos m1 s2
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty PlatF  s2 _ m2) | matchInfo s1 m2 = []
+                                                         | otherwise = genTyInfoErr pos s1 m2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty PlatF  s2 _ m2) | matchInfo m1 m2 = []
+                                                         | otherwise = genTyInfoErr pos m1 m2
+checkIfMatches pos (Ty Prog s1 _ m1) (Ty Comp   s2 _ m2) | matchInfo s1 s2 = []
+                                                         | otherwise = genTyInfoErr pos s1 s2
+checkIfMatches pos (Ty _    s1 _ m1) (Ty Comp   s2 _ m2) | matchInfo m1 s2 = []
+                                                         | otherwise = genTyInfoErr pos m1 s2
+checkIfMatches _ _ _ = [] --Type error has occurred so we cannot match type infos
+
+
+-- | Generate error message
+genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyErr]
+genTyInfoErr pos mi mj = [TyErr pos descr (show' mi) (show' mj)]
+    where
+        descr = "Cannot execute or compile runnable on a non-matching platform or interpreter"
+}
+
+--------------------Type Errors-----------------------
+
+{
+data TyErr = TyErr SourcePos String String String
+
+instance Printable TyErr where
+    pp = ppTyErr
+}
+
+-----------------Print type errors--------------------
+{
+-- | Pretty prints a type error message.
+ppTyErr :: TyErr -> Doc
+ppTyErr (TyErr pos descr expected inferred)
+  = ppErr "Type error" pos descr expected inferred
+
+ppErr :: String -> SourcePos -> String -> String -> String -> Doc
+ppErr msg pos descr a b =
+    above [ppHeader, text " ", ppExpected, ppInferred]
+    where
+        ppHeader = wrapped $
+                    describeSourcePos pos ++ ": " ++ msg ++ ": " ++ descr ++ "."
+        ppExpected = text "? expected : " >|< text a
+        ppInferred = text "? inferred : " >|< text b
+}
