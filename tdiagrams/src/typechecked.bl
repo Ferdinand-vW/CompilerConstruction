@@ -1,1 +1,0 @@
-Diag(SourcePos(Stdin, Pos(2, 9)), Interpreter("hugs", "Haskell", "i6"))

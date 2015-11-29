@@ -25,7 +25,7 @@ import CCO.Feedback
 import CCO.Printing
 
 checkTy :: Diag -> Feedback Diag
-checkTy t = do let syn = wrap_Diag (sem_Diag t) Inh_Diag
+checkTy t = do let syn = wrap_Diag (sem_Diag t) (Inh_Diag Not_recursive)
                messages [Error (pp tyErr) | tyErr <- tyErrs_Syn_Diag syn]
                return t
 --(ty_Syn_Diag syn)

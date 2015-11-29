@@ -10,6 +10,9 @@ data TyCons = Prog
         | Executed
         | Compiled
         | Not_Executed
+        | Left_recursive
+        | Right_recursive
+        | Not_recursive
          deriving (Eq, Show)
 
 data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)
@@ -44,7 +47,11 @@ match Interp Runnable     = True
 match Comp Runnable       = True
 match Interp Framework    = True
 match PlatF Framework     = True
-match ty1 ty2             = ty1 == ty2 
+match Left_recursive Not_recursive = True
+match Right_recursive Not_recursive = True
+match Not_recursive Left_recursive = True
+match Not_recursive Right_recursive = True
+match ty1 ty2             = ty1 == ty2
 
 
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
@@ -57,6 +64,19 @@ translate (Ty Interp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Interp s1 t1 t2
 translate (Ty Comp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Comp s1 t1 t2
 translate tyinfo1 _ = tyinfo1
 
+compileRecursion :: TyCons -> TyCons -> TyCons
+compileRecursion Left_recursive _ = Left_recursive
+compileRecursion _ Right_recursive = Right_recursive
+compileRecursion _ _ = Not_recursive
+
+rightRecursion :: TyCons -> TyCons
+rightRecursion Compiled = Right_recursive
+rightRecursion _ = Not_recursive
+
+leftRecursion :: TyCons -> TyCons 
+leftRecursion Compiled = Left_recursive
+leftRecursion _ = Not_recursive
+
 }
 
 
@@ -64,6 +84,7 @@ translate tyinfo1 _ = tyinfo1
 -----------------------Typing-----------------
 attr Diag Diag_
     syn tycons :: {TyCons}
+    inh recurs :: {TyCons}
     syn ty :: {Ty}
     syn tyErrs use {++} {[]} :: {[TyErr]}
 
@@ -78,8 +99,14 @@ sem Diag_
                lhs.tycons = PlatF
     | Execute lhs.ty = @d2.ty
               lhs.tycons = Executed
+              d1.recurs = Not_recursive
+              d2.recurs = Not_recursive
     | Compile lhs.ty = translate @d1.ty @d2.ty
               lhs.tycons = Compiled
+              loc.d1r = rightRecursion @d1.tycons
+              loc.d2r = leftRecursion @d2.tycons
+              d1.recurs = @loc.d1r
+              d2.recurs = @loc.d2r
 
 
 sem Diag_
@@ -116,7 +143,10 @@ sem Diag_
                             checkComp      @d2.pos (cons @d2.ty) ++
                             checkIfMatches @d1.pos @d1.ty @d2.ty ++
                             checkExeInCompile @d1.pos @d1.tycons ++
-                            checkExeInCompile @d2.pos @d2.tycons
+                            checkExeInCompile @d2.pos @d2.tycons ++
+                            checkLandRrecurs @lhs.pos @loc.d1r @loc.d2r ++
+                            checkLeftRightRecurs @d1.pos @loc.d1r @lhs.recurs ++
+                            checkLeftRightRecurs @d2.pos @loc.d2r @lhs.recurs
 
 {
 checkComp :: SourcePos -> TyCons -> [TyErr]
@@ -130,6 +160,22 @@ checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Execut
                          | otherwise = []
     where
         descr = "Cannot have an execution within a compilation"
+
+checkLandRrecurs :: SourcePos -> TyCons -> TyCons -> [TyErr]
+checkLandRrecurs pos ty1 ty2
+    | ty1 == Right_recursive && ty2 == Left_recursive 
+            = [TyErr pos descr (show Right_recursive ++ " !AND " ++ show Left_recursive) (show Right_recursive ++ " AND " ++ show Left_recursive)]
+    | otherwise = []
+    where
+        descr = "Cannot have left recursive and right recursive compilations within a compile at the same time" 
+
+checkLeftRightRecurs :: SourcePos -> TyCons -> TyCons -> [TyErr]
+checkLeftRightRecurs pos child par 
+    | match par child = []
+    | otherwise = [TyErr pos (descr par) (show par ++ " OR " ++ show Not_recursive) (show child)]
+    where
+        descr Left_recursive = "Cannot have right recursive compilation in a left recursive compilation"
+        descr Right_recursive = "Cannot have left recursive compilation in a right recursive compilation"
 
 checkIfMatches :: SourcePos -> Ty -> Ty -> [TyErr]
 checkIfMatches pos (Ty Prog s1 _ m1) (Ty Interp s2 _ m2) | matchInfo s1 s2 = []
