@@ -17,11 +17,8 @@ data Recursive = Left_recursive
         | Not_recursive
          deriving (Eq, Show)
 
-data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)
-
-show' :: Maybe String -> String
-show' (Just x) = show x
-show' Nothing  = ""   
+-- | The Ty contains all the information about the type.
+data Ty = Ty {cons :: TyCons, source :: Maybe Ident, target :: Maybe Ident, platform :: Maybe Ident}deriving (Show, Eq)  
 
 instance Tree Ty where
     fromTree (Ty c s t p) = App "Ty" [fromTree c, fromTree s, fromTree t, fromTree p]
@@ -43,6 +40,12 @@ instance Tree TyCons where
                          app "Framework" (pure Framework)
                        ]
 
+-- | The show' function is used to show Maybe a
+show' :: Maybe String -> String
+show' (Just x) = show x
+show' Nothing  = "" 
+
+-- | The match function is used to check if the combination of two types is possible. If True then well-typed; otherwise ill-typed
 match :: TyCons -> TyCons -> Bool
 match Prog Runnable       = True
 match Interp Runnable     = True
@@ -51,6 +54,7 @@ match Interp Framework    = True
 match PlatF Framework     = True
 match ty1 ty2             = ty1 == ty2
 
+-- | Checks if the recursion is just going in one way.
 matchR :: Recursive -> Recursive -> Bool
 matchR Left_recursive Not_recursive = True
 matchR Right_recursive Not_recursive = True
@@ -58,20 +62,24 @@ matchR Not_recursive Left_recursive = True
 matchR Not_recursive Right_recursive = True
 matchR r1 r2 = r1 == r2
 
+-- | matchInfo is used to compare two values, so we can tell if a source, platform or target language are equal.
 matchInfo :: Maybe Ident -> Maybe Ident -> Bool
 matchInfo (Just i) (Just j) = i == j
 matchInfo _ _ = True
 
+-- | The translate function is used to translate a Compile to the correct type
 translate :: Ty -> Ty -> Ty
 translate (Ty Prog s1 t1 m1) (Ty Comp s2 t2 m2)   = Ty Prog t2 t1 m1
 translate (Ty Interp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Interp s1 t1 t2
 translate (Ty Comp s1 t1 m1) (Ty Comp s2 t2 m2) = Ty Comp s1 t1 t2
 translate tyinfo1 _ = tyinfo1
 
+-- | If the right type is of type Compiled; It will return a right_recursive. Otherwise it is not recursive.
 rightRecursion :: TyCons -> Recursive
 rightRecursion Compiled = Right_recursive
 rightRecursion _ = Not_recursive
 
+-- | If the left type is Compiled; It will return a left_recursive. Otherwise it is not recursive.
 leftRecursion :: TyCons -> Recursive 
 leftRecursion Compiled = Left_recursive
 leftRecursion _ = Not_recursive
@@ -116,18 +124,21 @@ sem Diag_
                             checkExeOrCompile @d2.pos @d2.tycons
 
 {
+-- | Checks if the second type of an Execute or Compile are of type Runnable. If this is not the case it is ill-typed
 checkRunnable :: SourcePos -> TyCons -> [TyErr]
 checkRunnable pos ty | match ty Runnable = []
                      | otherwise          = [TyErr pos nonExe (show Runnable) (show ty)]
     where
         nonExe = "Cannot execute or compile a non-runnable"
 
+-- | Checks if the second type of the Execute is a Framework. Otherwise it is ill-typed
 checkFramework :: SourcePos -> TyCons -> [TyErr]
 checkFramework pos ty | match ty Framework = []
                           | otherwise          = [TyErr pos nonFrame (show Framework) (show ty)]
     where
         nonFrame = "Cannot execute on non-Framework"
 
+-- | CheckExeorCompile rejects a type of Executed or Compiled in an Execute.
 checkExeOrCompile :: SourcePos -> TyCons -> [TyErr]
 checkExeOrCompile pos ty
     | match ty Executed || match ty Compiled = [TyErr pos descr (show Framework) (show ty)]
@@ -148,18 +159,21 @@ sem Diag_
                             checkLeftRightRecurs @d2.pos @loc.d2r @lhs.recurs
 
 {
+-- | Checks in the Compile if the second type is of type Comp, otherwise it is ill-typed.
 checkComp :: SourcePos -> TyCons -> [TyErr]
 checkComp pos ty | match ty Comp = []
                  | otherwise = [TyErr pos nonComp (show Comp) (show ty)]
     where
         nonComp = "Must be compiled using a compiler"
 
+-- | This function rejects an Executed in the Compile.   
 checkExeInCompile :: SourcePos -> TyCons -> [TyErr]
 checkExeInCompile pos ty | match ty Executed = [TyErr pos descr (show Not_Executed) (show ty)]
                          | otherwise = []
     where
         descr = "Cannot have an execution within a compilation"
 
+-- | The checkLandRecurs checks if within a compile there is not a left recursive and right compilation at the same time 
 checkLandRrecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
 checkLandRrecurs pos ty1 ty2
     | ty1 == Right_recursive && ty2 == Left_recursive 
@@ -168,6 +182,7 @@ checkLandRrecurs pos ty1 ty2
     where
         descr = "Cannot have left recursive and right recursive compilations within a compile at the same time" 
 
+-- | In the checkLeftRightRecurs checks if a recursion is just going one way. For example a left recursive compilation must not contain a right recursive compilation
 checkLeftRightRecurs :: SourcePos -> Recursive -> Recursive -> [TyErr]
 checkLeftRightRecurs pos child par 
     | matchR par child = []
@@ -176,6 +191,8 @@ checkLeftRightRecurs pos child par
         descr Left_recursive = "Cannot have right recursive compilation in a left recursive compilation"
         descr Right_recursive = "Cannot have left recursive compilation in a right recursive compilation"
 
+
+-- | In this function we pattern match on several cases to check if the type runs on a compatible language.
 checkIfMatches :: SourcePos -> Ty -> Ty -> [TyErr]
 checkIfMatches pos (Ty Prog s1 _ m1) (Ty Interp s2 _ m2) | matchInfo s1 s2 = []
                                                          | otherwise = genTyInfoErr pos s1 s2
@@ -192,6 +209,7 @@ checkIfMatches pos (Ty _    s1 _ m1) (Ty Comp   s2 _ m2) | matchInfo m1 s2 = []
 checkIfMatches _ _ _ = [] --Type error has occurred so we cannot match type infos
 
 
+-- | Generate error message
 genTyInfoErr :: SourcePos -> Maybe Ident -> Maybe Ident -> [TyErr]
 genTyInfoErr pos mi mj = [TyErr pos descr (show' mi) (show' mj)]
     where
