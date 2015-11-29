@@ -19,14 +19,18 @@
 
 \maketitle
  
-\section{Introduction}
-This document serves as a formal description of the typesystem developed by Ferdinand van Walree en Matthew Swart. 
 
 \section{Typesystem}
 
+In this document we define a formal specification of the types and typerules of our typesystem. The typerules describe what combinations of types are ill-typed. That is, if we were to encounter those types in our program, then our program would produce an error. We have chosen to leave out all well-typed rules, because we felt these weren't necessary, afterall we do not ever check whether a specific combination of types is allowed. We only check whether such combinations are not allowed.
+
+\hfill \break
+
+We aren't too familiar with writing proofs such as you will find in this document, therefore we have also taken some liberty in writing the proofs. In otherwords, the proofs might not be well written, but they should be understandable.
+
 \section{TyCons}
 
-TyCons represents all the different type constructors
+TyCons represents the type that a diag can be. First we'll define the different TyCons, then we'll define the TyCons for each diagram.
 
 \hfill \break
 
@@ -86,7 +90,7 @@ TyCons represents all the different type constructors
 
 \hfill \break
 
-We also have that some TyCons also are of another TyCons
+Some TyCons also have a TyCons type
 
 \hfill \break
 
@@ -176,11 +180,11 @@ The following proofs determine the TyCons for each diagram
 
 \section{Recursive}
 
-\hfill \break
 The recursive datatype is used to represent whether a Compile is recursively nested within another compile.
-Given a compile of the following form: end L with R compile. If there was a Compile in L, then it would be left recursive.
+Given a compile of the following form: compile L with R end. If there was a Compile in L, then it would be left recursive.
 If there was a compile in R, then it would be right recursive. If there are no Compiles, then they are not recursive.
 
+\hfill \break
 \AxiomC{}
 \RightLabel{\scriptsize(recurse-not)}
 \UnaryInfC{$\Gamma \Vdash$ Not\_recursive : Recursive}
@@ -240,20 +244,21 @@ If there was a compile in R, then it would be right recursive. If there are no C
 
 \AxiomC{$\Gamma \Vdash$ Compile d1 d2}
 \RightLabel{\scriptsize(recurse-compile)}
-\UnaryInfC{$\Gamma \Vdash$ d1 : Right\_recursive}
+\UnaryInfC{$\Gamma \Vdash$ d1 : Left\_recursive}
 \DisplayProof
 
 \hfill \break
 
 \AxiomC{$\Gamma \Vdash$ Compile d1 d2}
 \RightLabel{\scriptsize(recurse-compile)}
-\UnaryInfC{$\Gamma \Vdash$ d2 : Left\_recursive}
+\UnaryInfC{$\Gamma \Vdash$ d2 : Right\_recursive}
 \DisplayProof
 
 \hfill \break
 
 \section{Ty}
-The Ty is a datatype that contains all the information about the type itself. 
+The Ty is a datatype that contains all the information about the type itself. It contains the TyCons of the diagram,
+the source language, target language and the platform. They are contained in Maybes, because not all diagrams contain all information
 
 \hfill \break
 
@@ -294,21 +299,21 @@ The Ty is a datatype that contains all the information about the type itself.
 
 \hfill \break
 
-\AxiomC{$\Gamma \Vdash$ Compile (Ty Prog s1 t1 m1) : Ty (Ty Comp s2 t2 m2) : Ty}
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Prog s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
 \RightLabel{\scriptsize(ty-compile-prog)}
 \UnaryInfC{$\Gamma \Vdash$ (Ty Prog t2 t1 m1) : Ty}
 \DisplayProof
 
 \hfill \break
 
-\AxiomC{$\Gamma \Vdash$ Compile (Ty Interp s1 t1 m1) : Ty (Ty Comp s2 t2 m2) : Ty}
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Interp s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
 \RightLabel{\scriptsize(ty-compile-interp)}
 \UnaryInfC{$\Gamma \Vdash$ (Ty Interp s1 t1 t2) : Ty}
 \DisplayProof
 
 \hfill \break
 
-\AxiomC{$\Gamma \Vdash$ Compile (Ty Comp s1 t1 m1) : Ty (Ty Comp s2 t2 m2) : Ty}
+\AxiomC{$\Gamma \Vdash$ Compile d1 : (Ty Comp s1 t1 m1) d2 : (Ty Comp s2 t2 m2)}
 \RightLabel{\scriptsize(ty-compile-comp)}
 \UnaryInfC{$\Gamma \Vdash$ (Ty Comp s1 t1 t2) : Ty}
 \DisplayProof
@@ -317,11 +322,11 @@ The Ty is a datatype that contains all the information about the type itself.
 
 \section{checkRunnable}
 CheckRunnable checks whether a platform is being executed or compiled.
-In otherwords the first argument cannot be a platform.
+In otherwords, if the first argument is a PlatF, then it is ill-typed.
 
 \hfill \break
 
-\AxiomC{$\Gamma\Vdash$ t1 : Platf  t2 : TyCons}
+\AxiomC{$\Gamma\Vdash$ t1 : PlatF  t2 : TyCons}
 \RightLabel{\scriptsize(checkrunnable-False)}
 \UnaryInfC{$\Gamma \Vdash$ ill-typed}
 \DisplayProof
@@ -357,7 +362,7 @@ The checkExeOrComp is used to refuse an execution on a compilation or another ex
 
 \hfill \break
 
-\AxiomC{$\Gamma\Vdash$ t1 : TyCons ($\Gamma\Vdash$  t2 : Executed  $\bigvee \Gamma\Vdash$  t2 : Compiled)}
+\AxiomC{$\Gamma\Vdash$ t1 : TyCons (t2 : Executed  $\bigvee$  t2 : Compiled)}
 \RightLabel{\scriptsize(checkExeOrComp-false)}
 \UnaryInfC{$\Gamma \Vdash$ ill-typed}
 \DisplayProof
@@ -366,7 +371,7 @@ The checkExeOrComp is used to refuse an execution on a compilation or another ex
 
 
 \section{checkFramework}
-The checkFramework is used to only accept in the Execute a Interpeter or a Platform.
+The checkFramework is used to only accept an execution on a Interpreter or Platform
 
 \hfill \break
 
@@ -434,7 +439,7 @@ Both subdiagrams of a compile cannot be Right\_recursive and Left\_recursive at 
 
 \hfill \break
 
-\AxiomC{$\Gamma\Vdash$ t1 : Right\_recursive t2 : Left\_recursive}
+\AxiomC{$\Gamma\Vdash$ t1 : Left\_recursive t2 : Right\_recursive}
 \RightLabel{\scriptsize(checklandr)}
 \UnaryInfC{$\Gamma \Vdash$ ill-typed}
 \DisplayProof
@@ -452,14 +457,14 @@ Variable t is the recursion of the parent of t1
 
 \hfill \break
 
-\AxiomC{$\Gamma\Vdash$ t : Right\_recursive t1 : Left\_recursive}
+\AxiomC{$\Gamma\Vdash$ t : Left\_recursive t1 : Right\_recursive}
 \RightLabel{\scriptsize(checklr)}
 \UnaryInfC{$\Gamma \Vdash$ ill-typed}
 \DisplayProof
 
 \hfill \break
 
-\AxiomC{$\Gamma\Vdash$ t : Left\_recursive t1 : Right\_recursive}
+\AxiomC{$\Gamma\Vdash$ t : Right\_recursive t1 : Left\_recursive}
 \RightLabel{\scriptsize(checklr)}
 \UnaryInfC{$\Gamma \Vdash$ ill-typed}
 \DisplayProof
