@@ -1,13 +1,2 @@
-execute
-    compile
-        program hello in UUAG
-    with
-        execute
-            compiler uuagc from UUAG to Haskell in i686-windows
-        on
-            platform i686-windows
-        end
-    end
-on
-    interpreter hugs for Haskell in i6866-windows
-end
+
+        interpreter hugs for Haskell in i6

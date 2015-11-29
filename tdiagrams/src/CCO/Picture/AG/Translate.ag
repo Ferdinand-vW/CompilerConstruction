@@ -55,6 +55,7 @@ attr Diag Diag_
     syn ejoint :: {Ejoint} --Position for an interpreter or platform that is used to execute some diagram on
     syn wdepth :: {Depth} --Depth of a compile tree by continually going left (into the with) into the tree
     syn cdepth :: {Depth} --Depth of a compile tree by continually going right (into what is being compiled) into the tree
+    syn edepth :: {Depth} 
 
 sem Diag_
     | Platform lhs.cmd = platform @lhs.pos @lhs.blen @m
@@ -66,6 +67,7 @@ sem Diag_
                lhs.ejoint = eJoint Plat @lhs.pos @lhs.blen
                lhs.wdepth = 0
                lhs.cdepth = 0
+               lhs.edepth = 1
     | Program lhs.cmd = program @lhs.pos @lhs.blen @p @l
               lhs.dcons = Prog
               lhs.tlen = @lhs.blen
@@ -75,6 +77,7 @@ sem Diag_
               lhs.ejoint = eJoint Prog @lhs.pos @lhs.blen
               lhs.wdepth = 0
               lhs.cdepth = 0
+              lhs.edepth = 1
     | Interpreter lhs.cmd = interpreter @lhs.pos @lhs.blen @i @l @m
                   lhs.dcons = Interp
                   lhs.h = 30
@@ -84,6 +87,7 @@ sem Diag_
                   lhs.ejoint = eJoint Interp @lhs.pos @lhs.blen
                   lhs.wdepth = 0
                   lhs.cdepth = 0
+                  lhs.edepth = 1
     | Compiler lhs.cmd = compiler @lhs.pos @lhs.blen @c @l1 @l2 @m
                lhs.dcons = Comp
                lhs.h = 30
@@ -93,19 +97,21 @@ sem Diag_
                lhs.ejoint = eJoint Comp @lhs.pos @lhs.blen
                lhs.wdepth = 0
                lhs.cdepth = 0
+               lhs.edepth = 1
     | Execute lhs.cmd = @d1.cmd ++ @d2.cmd
               lhs.dcons = @d2.dcons
               d1.pos = @lhs.pos
               d2.pos = @d1.ejoint
               d1.blen = @lhs.blen
               d2.blen = @lhs.blen
-              lhs.h = executeHeight @d1.diag @d1.h @d2.h
+              lhs.h = max @d1.h (@d1.edepth * 30 + 30)
               lhs.w = max @d1.w @d2.w
               lhs.tlen = @d1.tlen + @d2.tlen
               lhs.cjoint = @d2.cjoint
               lhs.ejoint = @d2.ejoint
               lhs.wdepth = 0
               lhs.cdepth = 0
+              lhs.edepth = 1 + @d1.edepth
     | Compile loc.cpos = rightPos @d1.dcons (fst @loc.d1pos + @d1.tlen, snd @loc.d1pos) @lhs.blen
               loc.cmpl = compile (dtd_ @d1.diag) (dtd_ @d2.diag)
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.blen
@@ -123,15 +129,17 @@ sem Diag_
               lhs.ejoint = eJoint @d1.dcons @loc.cpos @lhs.blen
               lhs.wdepth = 1 + @d2.wdepth
               lhs.cdepth = 1 + @d1.cdepth
-
+              lhs.edepth = @d1.edepth
 
 {
-
+--executeHeight @d1.diag @d1.cdepth @d1.wdepth @d1.h @d2.h
 --We have to know whether there is a compile inside the execute
 --and if so we have to remove some heigth
-executeHeight :: Diag -> Height -> Height -> Height
-executeHeight (Diag _ (Compile _ _)) h1 h2 = h1 - 20 + h2
-executeHeight _ h1 h2 = h1 + h2
+executeHeight :: Diag -> Depth -> Depth -> Height -> Height -> Height
+executeHeight (Diag _ (Compile _ _)) cdepth wdepth h1 h2
+      | wdepth > cdepth = max h1 (30 + h2)
+      | otherwise = h1 - 20 + h2
+executeHeight _ _ _ h1 h2 = h1 + h2
 
 --For each compiling we have to remove the overlap
 --between what is being compiled and the compiler
@@ -160,9 +168,9 @@ d1Pos cdepth wdepth (x,y) blen cons
 --but also the lowest. Otherwise it should simply be connected to d1 using d1's cjoint
 d2Pos :: Depth -> Depth -> Pos -> BlockLength -> Cjoint -> Pos
 d2Pos cdepth wdepth (x,y) blen (cx,cy)
-  | wdepth > cdepth = (x,(wdepth * 20) + 30)
+  | wdepth > cdepth = (x,cy)
   | otherwise = (cx,cy)
-
+--y - (wdepth * 20) + 20
 --We have to move diagrams to the left sometimes
 fittToDiag :: DiagCons -> BlockLength -> Double
 fittToDiag Prog _ = 7.5
