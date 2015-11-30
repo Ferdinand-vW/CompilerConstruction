@@ -57,15 +57,60 @@ We have a formal specification of our typesystem, which you can find in typesyst
 \section{Implementation}
 
 \begin{subsection}{TypeCDiag}
+The attribute grammar of TypeCDiag can be found in src:CCO/Diag/Ag/Typing.ag. The generated haskell file can be found in src:/CCO/Diag/Ag.ag
+
+\hfill \break
+
+The attribute grammar is used to type check a given Diag. This means that we return the same Diag that we were given. First we'll explain the attribute that is used in the attribute grammar. Afterwards we'll explain the type checking that we do and how we do it.
 \begin{subsubsection}{AG Attributes}
+We have an attribute for Diag and Diag\_. It contains the following synthesized and inherited attributes:
+	\begin{itemize}
+	\item syn tycons : The datatype TyCons is used to distinguish between basic diag constructs, between composite diad constructs and a group of basic diag constructs.
+	\item inh recurs: The datatype Recurs is used to distinguish between left recursive, right recursive and no recursive compilation.
+	\item ty: The datatype Ty contains the TyCons and all other information of the diag. As not all diags contain an equal amount of information we pack them in Maybes.
+	\item tyErrs: A concatenated list of errors in string format.
+	\end{itemize}
 \end{subsubsection}
 \begin{subsubsection}{Type checking}
+For each Diag\_ we will describe how we pass the values to its attributes. Sometimes it is self-explanatory and in that case we will simply skip it.
+
+\hfill \break
+
+\textbf{Program:} The Ty of Program simply contains a Prog of type TyCons and its implementation language packed in a Maybe as the source language of the TyInfo. For Interpreter, Compiler, and platform not a lot is different. Only what information is stored as what.
+
+\hfill \break
+
+\textbf{Interpreter:} A interpreter stores the code that it can interpreter as its source language, and its implementation language as its platform language.
+
+\hfill \break
+
+\textbf{Compiler:} A compiler stores its source language as its source language, target language as its target language, and its implementation language as its platform language.
+
+\hfill \break
+
+\textbf{Platform:} A platform simply stores its platform language as its platform language
+
+\hfill \break
+
+\textbf{Execute:} An Execute, just like the Compile, has two subdiagrams: d1 and d2. The ty of execute is the ty of d2. But the tycons is Executed. Furthermore both d1 and d2 are Not\_recursive.
+\textbf{tyErrs:} Here the actual type checking happens for an Execute. First of all we concatenate the tyErrs of d1 and d2. Next we'll do some typechecking and also concatenate any possible errors. In execute we use four functions, each doing some kind of type-checking:
+	\begin{itemize}
+	\item checkRunnable: We pass the tyCons of d1 to this function. Then we check if it is of type Runnable using a function called match. The match function establishes super-typing. That is the TyCons Prog, Interp and Comp are also of type Runnable. In otherwords, if the TyCons of d1 is not Prog, Interp or Comp, then the input is ill-typed and we generate an error. Basically this function checks that we are not executing a platform.
+	\item checkFramework: Similarly to checkRunnable, but now with d2 and we check whether its TyCons is of type Framework. Which Interp and PlatF are. Basically this function checks that we are not executing on a program or compiler.
+	\item checkIfMatches: This function checks for us whether we are executing d1 on a compatible platform d2. To do that we pass the ty's of d1 and d2 to this function, and then basically we compare implementation languages with source languages.
+	\item checkExeOrCompile: We do not allow an Execute to be executed on another execution or compilation. So now we need to use the tycons of d2 and check whether it is equal to Executed or Compiled. If so we generate an error.
+	\end{itemize}
+
+\hfill \break
+
+\textbf{Compile:} To determine the ty of Compile we have to do a translation of the ty of d1 using the ty of d2. For a Ty with TyCons Prog its source language becomes the target language of the ty of d2. For both Interp and Comp their implementation languages become the target language of the ty of d2. The tycons is simply Compiled. Given that recurs is an inherited attribute, we now define for d1 and d2 their recursion. If d1 is a compile then it is Left\_recursive and if d2 is a compile it is Right\_recursive, otherwise they are Not\_recursive. 
+\textbf{tyErrs:} Here the type checking of Compile occurs. First like Execute we'll do a checkRunnable. Next we have to check that d2 is in fact a compiler by using checkComp. Then we also use checkIfMatches to check that the source language of the compiler matches the implementation language of d1. As we do not allow an Execute inside of a Compile we have to check if the tycons of d1 and d2 match Executed. We still need to check for recursion in the Compile. Namely both d1 and d2 cannot both be left and right recursive at the same time. Also there cannot be left recursion in d2 and right recursion in d1.
 \end{subsubsection}
 \end{subsection}
 
 \begin{subsection}{TDiag2Picture}
-The attribute grammar of TDiag2Picture can be found in src:\/CCO/Picture/Ag/Translation.ag.
-The generates haskell file can be found in src:/CCO/Picture/Ag.ag
+The attribute grammar of TDiag2Picture can be found in src:/CCO/Picture/Ag/Translation.ag.
+The generated haskell file can be found in src:/CCO/Picture/Ag.ag
 
 \hfill \break
 
