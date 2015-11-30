@@ -6,14 +6,15 @@ This project uses the following compiler verions:
 - Haskell version: 7.10.2-a
 - uuagc-0.9.52.1
 To build the package it is necessary to execute the following instructions:
-- Unpack Lab1Tdiagrams.tar.gz
 - Go to the directory tdiagrams
 - Type in the console: "make"
 
 The design/documentation of our code and project can be found in the documentation folder.
-That includes generated haddock documentation, formal specification of our typesystem and the general
+That includes a formal specification of our typesystem and the general
 documentation of our implementation of generating T-diagrams. Which includes the design, implementation and
-a description of our type system.
+a description of our type system. 
+
+The generated haddock can be found at "dist\doc\html\CCO3874389N5597250CCO".
 
 To run our compiler you must first have completed the above steps. Then you can use the following command:
 "./compile.sh". This will prompt you for a file name. We have prepared 13 example inputs: example1-4.bl and error1-9.bl.
