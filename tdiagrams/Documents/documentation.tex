@@ -65,7 +65,7 @@ The attribute grammar is used to type check a given Diag. This means that we ret
 \begin{subsubsection}{AG Attributes}
 We have an attribute for Diag and Diag\_. It contains the following synthesized and inherited attributes:
 	\begin{itemize}
-	\item syn tycons : The datatype TyCons is used to distinguish between basic diag constructs, between composite diad constructs and a group of basic diag constructs.
+	\item syn tycons : The datatype TyCons is used to distinguish between basic diag constructs, between composite diag constructs and a group of basic diag constructs.
 	\item inh recurs: The datatype Recurs is used to distinguish between left recursive, right recursive and no recursive compilation.
 	\item ty: The datatype Ty contains the TyCons and all other information of the diag. As not all diags contain an equal amount of information we pack them in Maybes.
 	\item tyErrs: A concatenated list of errors in string format.
