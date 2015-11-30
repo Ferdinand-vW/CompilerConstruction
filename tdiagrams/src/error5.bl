@@ -1,0 +1,5 @@
+execute
+    program p in m
+on
+    compiler C1 from m to Haskell in i686-windows
+end

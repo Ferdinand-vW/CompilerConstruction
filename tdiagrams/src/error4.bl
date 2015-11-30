@@ -1,0 +1,5 @@
+compile
+    program p in m
+with
+    interpreter hugs for m in i686-windows
+end

@@ -1,0 +1,13 @@
+compile
+    program p in m
+with
+    compile
+        compile
+            compiler c2 from uuag to haskell in i686-windows
+        with
+            compiler c3 from i686-windows to i7 in i8
+        end
+    with
+        compiler c3 from i7 to i9 in i10
+    end
+end

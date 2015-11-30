@@ -1,0 +1,5 @@
+compile
+    platform m
+with
+    compiler c1 from m to m2 in m3
+end

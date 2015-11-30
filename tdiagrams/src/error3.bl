@@ -1,0 +1,5 @@
+execute
+    program p in m
+on
+    platform i686-windows
+end

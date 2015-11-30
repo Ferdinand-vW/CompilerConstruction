@@ -1,0 +1,13 @@
+compile
+    execute
+        program p in m
+    on
+        platform m
+    end
+with
+    execute
+        compiler c from m to Haskell in i686-windows
+    on
+        interpreter hugs for i686-windows in i686-windows
+    end
+end
