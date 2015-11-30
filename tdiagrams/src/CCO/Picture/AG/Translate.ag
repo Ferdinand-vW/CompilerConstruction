@@ -28,19 +28,19 @@ attr Pic
 
 sem Pic
   | Pic lhs.pic = Picture (@d.w,@d.h) (@d.cmd ++ frame (@d.w,@d.h)) --Wrap the commands and the dimension inside a Picture
-         d.pos = (-100,@d.h) --We start at the left side of the page (hence -100)
+         d.pos = (0,@d.h) --We start at the left side of the page (hence -100)
          d.blen = 50 --size of a block
 
 
 {
 -- | We draw a frame around our diagram to show, that everything neatly
---fits in the dimensions. Note the use of '-100' is for the same reason as above
+--fits in the dimensions.
 frame :: (Double,Double) -> [Command]
 frame (dx,dy) = [
-  Put (-100,0) $ Line (1, 0) dx,
-  Put (-100,0) $ Line (0, 1) dy,
-  Put (dx-100,dy) $ Line (-1,0) dx,
-  Put (dx-100,dy) $ Line (0,-1) dy
+  Put (0,0) $ Line (1, 0) dx,
+  Put (0,0) $ Line (0, 1) dy,
+  Put (dx,dy) $ Line (-1,0) dx,
+  Put (dx,dy) $ Line (0,-1) dy
   ]
 }
 
@@ -119,9 +119,8 @@ sem Diag_
               lhs.cmd = @d1.cmd ++ @d2.cmd ++ compiled @loc.cmpl @loc.cpos @lhs.blen
               lhs.dcons = @d1.dcons
               loc.d1pos = d1Pos @d1.cdepth @d2.wdepth @lhs.pos @lhs.blen @d1.dcons
-              loc.d2pos = d2Pos @d1.cdepth @d2.wdepth @lhs.pos @lhs.blen @d1.cjoint
               d1.pos = @loc.d1pos
-              d2.pos = @loc.d2pos
+              d2.pos = d2Pos @d1.cdepth @d2.wdepth @lhs.pos @d1.cjoint
               d1.blen = @lhs.blen
               d2.blen = @lhs.blen
               lhs.h = compileHeight @d1.cdepth @d1.h @d2.h
@@ -134,16 +133,8 @@ sem Diag_
               lhs.edepth = @d1.edepth
 
 {
--- | executeHeight @d1.diag @d1.cdepth @d1.wdepth @d1.h @d2.h
---We have to know whether there is a compile inside the execute
---and if so we have to remove some heigth
-executeHeight :: Diag -> Depth -> Depth -> Height -> Height -> Height
-executeHeight (Diag _ (Compile _ _)) cdepth wdepth h1 h2
-      | wdepth > cdepth = max h1 (30 + h2)
-      | otherwise = h1 - 20 + h2
-executeHeight _ _ _ h1 h2 = h1 + h2
-
--- | Between what is being compiled and the compiler
+-- | Computes the height of a compilation. For a left-recusive compilation we keep using the
+--height of d1, then at the end we add the height of the compiler minus the overlap in height.
 compileHeight :: Depth -> Height -> Height -> Height
 compileHeight cdepth d1h d2h
   | cdepth > 0 = d1h
@@ -166,13 +157,13 @@ d1Pos cdepth wdepth (x,y) blen cons
 
 -- | Determines where diagram d2 should be positioned. We have two cases,
 --if we are doing a left recursive compilation, then d2 is the first diagram,
---but also the lowest. Otherwise it should simply be connected to d1 using d1's cjoint
-d2Pos :: Depth -> Depth -> Pos -> BlockLength -> Cjoint -> Pos
-d2Pos cdepth wdepth (x,y) blen (cx,cy)
+--but at the height of the cjoint of d1. Otherwise it should simply be connected to d1 using d1's cjoint
+d2Pos :: Depth -> Depth -> Pos -> Cjoint -> Pos
+d2Pos cdepth wdepth (x,y) (cx,cy)
   | wdepth > cdepth = (x,cy)
   | otherwise = (cx,cy)
 
--- | We have to move diagrams to the left sometimes
+-- | We have to move diagrams to the left to make them possibly overlap.
 fittToDiag :: DiagCons -> BlockLength -> Double
 fittToDiag Prog _ = 7.5
 fittToDiag Interp _ = 0
