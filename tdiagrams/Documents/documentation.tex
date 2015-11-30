@@ -18,7 +18,7 @@ In this document we explain the design and implementation of a DSL for generatin
 
 \section{Design}
 
-This section gives a short eplanation of the pipeline of our 'compiler'. There are four programs that together form the pipeline. Those are ParseTDiag.hs, TypeCDiag.hs, TDiag2Picture.hs and PpPicture.hs. ParseTDiag.hs is responsible for parsing the DSL as defined in the project description. TypeCDiag.hs is our implemented typesystem and typechecks the generated ATerms given as output from ParseTDiag.hs. TypeCDiag simply returns the ATerms it receives from ParseTDiag.hs if the input has been considered well-typed. TDiag2Picture.hs receives it input from TypeCDiag.hs and translates the ATerms into a structure containing latex code for generating T-diagrams. Finally PpPicture.hs is passed ATerms from TDiag2Picture.hs and generates the latex code for generating T-diagrams.
+This section gives a short explanation of the pipeline of our 'compiler'. There are four programs that together form the pipeline. Those are ParseTDiag.hs, TypeCDiag.hs, TDiag2Picture.hs and PpPicture.hs. ParseTDiag.hs is responsible for parsing the DSL as defined in the project description. TypeCDiag.hs is our implemented typesystem and typechecks the generated ATerms given as output from ParseTDiag.hs. TypeCDiag simply returns the ATerms it receives from ParseTDiag.hs if the input has been considered well-typed. TDiag2Picture.hs receives it input from TypeCDiag.hs and translates the ATerms into a structure containing latex code for generating T-diagrams. Finally PpPicture.hs is passed ATerms from TDiag2Picture.hs and generates the latex code for generating T-diagrams.
 
 \section{Typing-system}
 
