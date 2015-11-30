@@ -1,7 +1,7 @@
 -------------------Syntax-----------------
 imports
 {
-import Control.Applicative  (Applicative ((<*>)), (<$>))
+import Control.Applicative  (Applicative ((<*>)), (<$>), pure)
 }
 {
 data TyCons = Prog
