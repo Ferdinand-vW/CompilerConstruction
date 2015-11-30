@@ -1,0 +1,21 @@
+execute
+    execute
+        compile
+            compile
+                compile
+                    program hello in UUAG
+                with
+                    compiler C1 from UUAG to Haskell in i686-windows
+                end
+            with
+                compiler C2 from Haskell to C in i686-windows
+            end
+        with
+            compiler C3 from C to Assembly in i8
+        end
+    on
+        interpreter hugs for Assembly in Binary
+    end
+on
+    platform Binary
+end

@@ -5,4 +5,4 @@ import CCO.Picture    (Picture)
 import CCO.Tree       (ATerm, Tree (toTree,fromTree), parser)
 import Control.Arrow  (Arrow (arr),(>>>))
 
-main = ioWrap (parser >>> (component toTree :: Component ATerm Diag) >>> component eval >>> arr fromTree >>> printer)
+main = ioWrap (parser >>> (component toTree :: Component ATerm Diag) >>> component translate >>> arr fromTree >>> printer)

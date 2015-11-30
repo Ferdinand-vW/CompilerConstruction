@@ -1,19 +1,26 @@
-Compiler Construction Project t-digram
+Compiler Construction Project T-diagram
 
 Ferdinand van Walree 3874389 and Matthew Swart 5597250
 
-To use our project, we recommend to use the following tools:
+This project uses the following compiler verions:
 - Haskell version: 7.10.2-a
 - uuagc-0.9.52.1
-- Winrar/7zip/tar
 To build the package it is necessary to execute the following instructions:
 - Unpack Lab1Tdiagrams.tar.gz
 - Go to the directory tdiagrams
 - Type in the console: "cabal install"
+- Go into the src folder and type: "./Build.sh" This will compile the programs
+necessary to run the compiler.
 
-Now cabal installs everything needed to execute our code.
-In the cabal package we included all the files.
-To use these package you need to be in the root of the folder Assignment1-0.1.0.0. 
-In this folder you can import the packages. Outside this directory it is not possible to use them, because we use a sandbox.
-The other theoretical assigments are included as extra-source-files.
------------------------------------------------------------------------------------
+The design/documentation of our code and project can be found in the documentation folder.
+That includes generated haddock documentation, formal specification of our typesystem and the general
+documentation of our implementation of generating T-diagrams. Which includes the design, implementation and
+a description of our type system.
+
+To run our compiler you must first have completed the above steps. Then you can use the following command:
+"./compile.sh". This will prompt you for a file name. We have prepared 4 example inputs: example1.bl, example2.bl
+example3.bl and example4.bl. These are located in the same folder, so just supplying the name with extension should
+be enough. When you compiled one of these inputs, the generated output will be located in printed.bl. Now you have to
+copy-paste what is inside printed.bl into printed.tex. Make sure to do so within the \begin{document} and \end{document}
+tags. You will need a program that can run a tex file, such as TexWorks. The output is generated in landscape mode. We
+also added a frame to show how the diagram neatly fits within the frame.

@@ -1,17 +1,21 @@
-compile
-    compile
-        program p in uuag
-    with
+execute
+    execute
         compile
-            compiler c2 from uuag to uuag in i8
+            program hello in UUAG
         with
-            compiler c3 from i8 to 1 in 2
+            compile
+                compiler C1 from UUAG to Haskell in C
+            with
+                compile
+                    compiler C2 from C to C++ in C++
+                with
+                    compiler C3 from C++ to C\# in C\#
+                end
+            end
         end
+    on
+        interpreter hugs for Haskell in Assembly
     end
-with
-    compile
-        compiler c from uuag to haskell in i8
-    with
-        compiler c4 from i8 to i9 in 10
-    end
+on
+    platform Assembly
 end
