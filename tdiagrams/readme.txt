@@ -6,8 +6,8 @@ This project uses the following compiler verions:
 - Haskell version: 7.10.2-a
 - uuagc-0.9.52.1
 To build the package it is necessary to execute the following instructions:
-- Go to the directory tdiagrams
 - Type in the console: "make"
+- Goto the "src" folder and type in the console "./build.sh"
 
 The design/documentation of our code and project can be found in the documentation folder.
 That includes a formal specification of our typesystem and the general
