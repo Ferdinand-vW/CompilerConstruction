@@ -8,7 +8,7 @@ This project uses the following compiler verions:
 To build the package it is necessary to execute the following instructions:
 - Unpack Lab1Tdiagrams.tar.gz
 - Go to the directory tdiagrams
-- Type in the console: "cabal install"
+- Type in the console: "make"
 - Go into the src folder and type: "./Build.sh" This will compile the programs
 necessary to run the compiler.
 
