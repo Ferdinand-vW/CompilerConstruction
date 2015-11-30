@@ -1,15 +1,13 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2015.11.26)  30 NOV 2015 03:29
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.11.21)  30 NOV 2015 03:49
 entering extended mode
-**"D:/Development/School/Compiler Construction/CompilerConstruction/tdiagrams/D
-ocuments/documentation.tex"
+**C:/Users/Ferdinand/CompilerConstruction/tdiagrams/Documents/documentation.tex
 
-("D:/Development/School/Compiler Construction/CompilerConstruction/tdiagrams/Do
-cuments/documentation.tex"
-LaTeX2e <2015/01/01> patch level 2
-Babel <3.9m> and hyphenation patterns for 69 languages loaded.
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\article.cls"
+(C:/Users/Ferdinand/CompilerConstruction/tdiagrams/Documents/documentation.tex
+LaTeX2e <2014/05/01>
+Babel <3.9l> and hyphenation patterns for 68 languages loaded.
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\article.cls"
 Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\size10.clo"
+("C:\Program Files\MiKTeX 2.9\tex\latex\base\size10.clo"
 File: size10.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
@@ -24,20 +22,20 @@ File: size10.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
 \belowcaptionskip=\skip42
 \bibindent=\dimen102
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\babel\babel.sty"
-Package: babel 2015/08/03 3.9m The Babel package
+("C:\Program Files\MiKTeX 2.9\tex\latex\babel\babel.sty"
+Package: babel 2014/09/25 3.9l The Babel package
 
 *************************************
 * Local config file bblopts.cfg used
 *
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\00miktex\bblopts.cfg"
+("C:\Program Files\MiKTeX 2.9\tex\latex\00miktex\bblopts.cfg"
 File: bblopts.cfg 2006/07/31 v1.0 MiKTeX 'babel' configuration
 )
-(C:\Users\Maffh\AppData\Roaming\MiKTeX\2.9\tex\latex\babel-english\english.ldf
+(C:\Users\Ferdinand\AppData\Roaming\MiKTeX\2.9\tex\latex\babel-english\english.
+ldf
 Language: english 2012/08/20 v3.3p English support from the babel system
-
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\babel\babel.def"
-File: babel.def 2015/08/03 3.9m Babel common definitions
+ ("C:\Program Files\MiKTeX 2.9\tex\latex\babel\babel.def"
+File: babel.def 2014/09/25 3.9l Babel common definitions
 \babel@savecnt=\count87
 \U@D=\dimen103
 )
@@ -65,14 +63,15 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 10.
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 29.
- ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+ ("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 29.
- [1
 
-{C:/Users/Maffh/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+[1
+
+{C:/Users/Ferdinand/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
 Underfull \hbox (badness 10000) in paragraph at lines 53--54
 
  []
@@ -118,13 +117,13 @@ Underfull \hbox (badness 10000) in paragraph at lines 104--105
 
  []
 
-
+[4]
 Overfull \hbox (68.50082pt too wide) in paragraph at lines 112--114
 \OT1/cmr/m/n/10 The at-tribute gram-mar of TDiag2Picture can be found in src:/C
 CO/Picture/Ag/Translation.ag.
  []
 
-[4]
+
 Underfull \hbox (badness 10000) in paragraph at lines 115--116
 
  []
@@ -149,33 +148,32 @@ Underfull \hbox (badness 10000) in paragraph at lines 159--160
 
  []
 
-
+[6]
 Underfull \hbox (badness 10000) in paragraph at lines 163--164
 
  []
 
-[6]
+
 Underfull \hbox (badness 10000) in paragraph at lines 167--168
 
  []
 
 [7] [8] (documentation.aux) ) 
 Here is how much of TeX's memory you used:
- 665 strings out of 493673
- 8447 string characters out of 3141529
- 69724 words of memory out of 3000000
- 4070 multiletter control sequences out of 15000+200000
+ 664 strings out of 493698
+ 8293 string characters out of 3144399
+ 69373 words of memory out of 3000000
+ 4047 multiletter control sequences out of 15000+200000
  7895 words of font info for 28 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 23i,6n,23p,888b,241s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/pub
-lic/amsfonts/cm/cmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/publi
-c/amsfonts/cm/cmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/
-amsfonts/cm/cmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/ams
-fonts/cm/cmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfon
-ts/cm/cmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/
-cm/cmsy10.pfb>
-Output written on documentation.pdf (8 pages, 101353 bytes).
+ 23i,6n,23p,861b,241s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
+sfonts/cm/cmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/c
+m/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.
+pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/P
+rogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Fi
+les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on documentation.pdf (8 pages, 101336 bytes).
 PDF statistics:
  53 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
