@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.11.21)  29 NOV 2015 23:56
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.11.21)  30 NOV 2015 01:35
 entering extended mode
 **C:/Users/Ferdinand/CompilerConstruction/tdiagrams/Documents/documentation.tex
 
@@ -76,24 +76,65 @@ Underfull \hbox (badness 10000) in paragraph at lines 53--54
 
  []
 
-[2] [3] (documentation.aux) ) 
+
+Overfull \hbox (63.50081pt too wide) in paragraph at lines 67--69
+\OT1/cmr/m/n/10 The at-tribute gram-mar of TDiag2Picture can be found in src:CC
+O/Picture/Ag/Translation.ag.
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 70--71
+
+ []
+
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 106--107
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 110--111
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 114--115
+
+ []
+
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 118--119
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 122--123
+
+ []
+
+[5] [6] (documentation.aux) ) 
 Here is how much of TeX's memory you used:
- 663 strings out of 493698
- 8275 string characters out of 3144399
+ 664 strings out of 493698
+ 8293 string characters out of 3144399
  68373 words of memory out of 3000000
- 4046 multiletter control sequences out of 15000+200000
+ 4047 multiletter control sequences out of 15000+200000
  7895 words of font info for 28 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 23i,6n,23p,860b,187s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 23i,6n,23p,860b,241s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
 sfonts/cm/cmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/c
 m/cmbx12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.
 pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/P
 rogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Fi
 les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on documentation.pdf (3 pages, 82323 bytes).
+Output written on documentation.pdf (6 pages, 95798 bytes).
 PDF statistics:
- 36 PDF objects out of 1000 (max. 8388607)
+ 45 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
