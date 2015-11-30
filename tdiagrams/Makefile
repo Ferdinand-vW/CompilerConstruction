@@ -13,5 +13,7 @@ src/CCO/Picture/AG.hs : src/CCO/Picture/AG.ag src/CCO/Picture/AG/Base.ag \
 haskell : src/CCO/Diag/AG.hs src/CCO/Picture/AG.hs
 	runhaskell Setup.lhs configure $(CABAL-CONFIGURE-FLAGS)
 	runhaskell Setup.lhs build $(CABAL-BUILD-FLAGS)
+	cabal haddock --executables
+
 
 .PHONY : haskell
