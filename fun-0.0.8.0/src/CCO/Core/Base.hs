@@ -22,9 +22,11 @@ module CCO.Core.Base (
   , ExpL
   , Bind (Bind)                         
   , BindL
-  , Mod (Mod)                           
+  , Mod (Mod)
+  , hm2cr                          
 ) where
 
+import CCO.Feedback
 import CCO.Core.AG
 import CCO.Tree                   (Tree (fromTree, toTree))
 import qualified CCO.Tree as T    (ATerm (App))
@@ -78,4 +80,8 @@ instance Tree Exp where
                      , app "Let"  (Let  <$> arg <*> arg)
                      , app "Dbg"  (Dbg  <$> arg        )
                      ]
+
+
+hm2cr :: Tm -> Feedback Mod
+hm2cr tm = undefined
 

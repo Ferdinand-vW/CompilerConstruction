@@ -1,6 +1,6 @@
 
 
--- UUAGC 0.9.52.1 (src/CCO/Core/AG.ag)
+-- UUAGC 0.9.52.1 (CCO/Core/AG.ag)
 module CCO.Core.AG where
 
 import UHC.Util.Pretty
@@ -8,23 +8,59 @@ import UHC.Light.Compiler.Base.API    (defaultEHCOpts)
 import UHC.Light.Compiler.CoreRun.API (printModule)
 import CCO.Component
 
-{-# LINE 2 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+{-# LINE 2 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
 
 import           UHC.Light.Compiler.Base.API
 import qualified UHC.Light.Compiler.CoreRun.API as CR
-{-# LINE 16 "src/CCO/Core/AG.hs" #-}
+{-# LINE 16 "CCO/Core/AG.hs" #-}
 
-{-# LINE 2 "src/CCO/Core/AG/Base.ag" #-}
+{-# LINE 2 "CCO\\Core\\..\\Ag\\HM.ag" #-}
+
+import CCO.SourcePos
+import CCO.Tree                   (Tree (fromTree, toTree))
+import qualified CCO.Tree as T    (ATerm (App))
+import CCO.Tree.Parser            (parseTree, app, arg)
+import Control.Applicative        (Applicative ((<*>)), (<$>))
+{-# LINE 25 "CCO/Core/AG.hs" #-}
+
+{-# LINE 2 "CCO\\Core\\..\\AG\\Core.ag" #-}
 
 import qualified UHC.Light.Compiler.CoreRun.API as CR
-{-# LINE 21 "src/CCO/Core/AG.hs" #-}
-{-# LINE 26 "src/CCO/Core/AG.ag" #-}
+{-# LINE 30 "CCO/Core/AG.hs" #-}
+{-# LINE 11 "CCO\\Core\\..\\Ag\\HM.ag" #-}
+
+instance Tree Tm where
+  fromTree (Tm pos t) = T.App "Tm" [fromTree pos, fromTree t]
+  toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
+
+instance Tree Tm_ where
+  fromTree (HNat x)       = T.App "HNat" [fromTree x]
+  fromTree (HVar x)       = T.App "HVar" [fromTree x]
+  fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
+  fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
+  fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
+
+  toTree = parseTree [ app "HNat" (HNat <$> arg                )
+                     , app "HVar" (HVar <$> arg                )
+                     , app "HLam" (HLam <$> arg <*> arg        )
+                     , app "HApp" (HApp <$> arg <*> arg        )
+                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+                     ]
+
+{-# LINE 51 "CCO/Core/AG.hs" #-}
+
+{-# LINE 36 "CCO\\Core\\..\\Ag\\HM.ag" #-}
+
+type Var = String    -- ^ Type of variables.
+{-# LINE 56 "CCO/Core/AG.hs" #-}
+
+{-# LINE 27 "CCO\\Core\\AG.ag" #-}
 
 crprinter :: Component Mod String
 crprinter = component $ \mod -> do
   let crmod = crmod_Syn_Mod (wrap_Mod (sem_Mod mod) Inh_Mod)
   return $ show $ printModule defaultEHCOpts crmod
-{-# LINE 28 "src/CCO/Core/AG.hs" #-}
+{-# LINE 64 "CCO/Core/AG.hs" #-}
 -- Bind --------------------------------------------------------
 data Bind = Bind (Ref) (Exp)
 -- cata
@@ -34,15 +70,15 @@ sem_Bind (Bind _x _xexp) =
     (sem_Bind_Bind (sem_Ref _x) (sem_Exp _xexp))
 -- semantic domain
 type T_Bind = Int ->
-              ( ([CR.Bind]),Bind,Int)
+              ( ([CR.Bind]),Int)
 data Inh_Bind = Inh_Bind {stkoff_Inh_Bind :: Int}
-data Syn_Bind = Syn_Bind {crbindl_Syn_Bind :: ([CR.Bind]),self_Syn_Bind :: Bind,stkoff_Syn_Bind :: Int}
+data Syn_Bind = Syn_Bind {crbindl_Syn_Bind :: ([CR.Bind]),stkoff_Syn_Bind :: Int}
 wrap_Bind :: T_Bind ->
              Inh_Bind ->
              Syn_Bind
 wrap_Bind sem (Inh_Bind _lhsIstkoff) =
-    (let ( _lhsOcrbindl,_lhsOself,_lhsOstkoff) = sem _lhsIstkoff
-     in  (Syn_Bind _lhsOcrbindl _lhsOself _lhsOstkoff))
+    (let ( _lhsOcrbindl,_lhsOstkoff) = sem _lhsIstkoff
+     in  (Syn_Bind _lhsOcrbindl _lhsOstkoff))
 sem_Bind_Bind :: T_Ref ->
                  T_Exp ->
                  T_Bind
@@ -51,36 +87,29 @@ sem_Bind_Bind x_ xexp_ =
          (let _lhsOcrbindl :: ([CR.Bind])
               _xexpOstkoff :: Int
               _lhsOstkoff :: Int
-              _lhsOself :: Bind
               _xIcrrefl :: ([CR.RRef])
-              _xIself :: Ref
               _xexpIcrexp :: (CR.Exp)
               _xexpIcrexpl :: ([CR.Exp])
-              _xexpIself :: Exp
               _lhsOcrbindl =
-                  ({-# LINE 46 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 46 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_xexpIcrexp]
-                   {-# LINE 64 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 97 "CCO/Core/AG.hs" #-}
                    )
               _xexpOstkoff =
-                  ({-# LINE 70 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 70 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    0
-                   {-# LINE 69 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 102 "CCO/Core/AG.hs" #-}
                    )
               _lhsOstkoff =
-                  ({-# LINE 71 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 71 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff + 1
-                   {-# LINE 74 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 107 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Bind _xIself _xexpIself
-              _lhsOself =
-                  _self
-              ( _xIcrrefl,_xIself) =
+              ( _xIcrrefl) =
                   x_
-              ( _xexpIcrexp,_xexpIcrexpl,_xexpIself) =
+              ( _xexpIcrexp,_xexpIcrexpl) =
                   xexp_ _xexpOstkoff
-          in  ( _lhsOcrbindl,_lhsOself,_lhsOstkoff)))
+          in  ( _lhsOcrbindl,_lhsOstkoff)))
 -- BindL -------------------------------------------------------
 type BindL = [Bind]
 -- cata
@@ -90,81 +119,69 @@ sem_BindL list =
     (Prelude.foldr sem_BindL_Cons sem_BindL_Nil (Prelude.map sem_Bind list))
 -- semantic domain
 type T_BindL = Int ->
-               ( ([CR.Bind]),BindL,Int)
+               ( ([CR.Bind]),Int)
 data Inh_BindL = Inh_BindL {stkoff_Inh_BindL :: Int}
-data Syn_BindL = Syn_BindL {crbindl_Syn_BindL :: ([CR.Bind]),self_Syn_BindL :: BindL,stkoff_Syn_BindL :: Int}
+data Syn_BindL = Syn_BindL {crbindl_Syn_BindL :: ([CR.Bind]),stkoff_Syn_BindL :: Int}
 wrap_BindL :: T_BindL ->
               Inh_BindL ->
               Syn_BindL
 wrap_BindL sem (Inh_BindL _lhsIstkoff) =
-    (let ( _lhsOcrbindl,_lhsOself,_lhsOstkoff) = sem _lhsIstkoff
-     in  (Syn_BindL _lhsOcrbindl _lhsOself _lhsOstkoff))
+    (let ( _lhsOcrbindl,_lhsOstkoff) = sem _lhsIstkoff
+     in  (Syn_BindL _lhsOcrbindl _lhsOstkoff))
 sem_BindL_Cons :: T_Bind ->
                   T_BindL ->
                   T_BindL
 sem_BindL_Cons hd_ tl_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrbindl :: ([CR.Bind])
-              _lhsOself :: BindL
               _lhsOstkoff :: Int
               _hdOstkoff :: Int
               _tlOstkoff :: Int
               _hdIcrbindl :: ([CR.Bind])
-              _hdIself :: Bind
               _hdIstkoff :: Int
               _tlIcrbindl :: ([CR.Bind])
-              _tlIself :: BindL
               _tlIstkoff :: Int
               _lhsOcrbindl =
-                  ({-# LINE 43 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 43 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _hdIcrbindl ++ _tlIcrbindl
-                   {-# LINE 122 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 148 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  (:) _hdIself _tlIself
-              _lhsOself =
-                  _self
               _lhsOstkoff =
-                  ({-# LINE 63 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _tlIstkoff
-                   {-# LINE 131 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 153 "CCO/Core/AG.hs" #-}
                    )
               _hdOstkoff =
-                  ({-# LINE 63 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 136 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 158 "CCO/Core/AG.hs" #-}
                    )
               _tlOstkoff =
-                  ({-# LINE 63 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _hdIstkoff
-                   {-# LINE 141 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 163 "CCO/Core/AG.hs" #-}
                    )
-              ( _hdIcrbindl,_hdIself,_hdIstkoff) =
+              ( _hdIcrbindl,_hdIstkoff) =
                   hd_ _hdOstkoff
-              ( _tlIcrbindl,_tlIself,_tlIstkoff) =
+              ( _tlIcrbindl,_tlIstkoff) =
                   tl_ _tlOstkoff
-          in  ( _lhsOcrbindl,_lhsOself,_lhsOstkoff)))
+          in  ( _lhsOcrbindl,_lhsOstkoff)))
 sem_BindL_Nil :: T_BindL
 sem_BindL_Nil =
     (\ _lhsIstkoff ->
          (let _lhsOcrbindl :: ([CR.Bind])
-              _lhsOself :: BindL
               _lhsOstkoff :: Int
               _lhsOcrbindl =
-                  ({-# LINE 43 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 43 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    []
-                   {-# LINE 157 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 178 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  []
-              _lhsOself =
-                  _self
               _lhsOstkoff =
-                  ({-# LINE 63 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 166 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 183 "CCO/Core/AG.hs" #-}
                    )
-          in  ( _lhsOcrbindl,_lhsOself,_lhsOstkoff)))
+          in  ( _lhsOcrbindl,_lhsOstkoff)))
 -- Exp ---------------------------------------------------------
 data Exp = SExp (SExp)
          | Lam (RefL) (Exp)
@@ -195,46 +212,40 @@ sem_Exp (Dbg _info) =
     (sem_Exp_Dbg _info)
 -- semantic domain
 type T_Exp = Int ->
-             ( (CR.Exp),([CR.Exp]),Exp)
+             ( (CR.Exp),([CR.Exp]))
 data Inh_Exp = Inh_Exp {stkoff_Inh_Exp :: Int}
-data Syn_Exp = Syn_Exp {crexp_Syn_Exp :: (CR.Exp),crexpl_Syn_Exp :: ([CR.Exp]),self_Syn_Exp :: Exp}
+data Syn_Exp = Syn_Exp {crexp_Syn_Exp :: (CR.Exp),crexpl_Syn_Exp :: ([CR.Exp])}
 wrap_Exp :: T_Exp ->
             Inh_Exp ->
             Syn_Exp
 wrap_Exp sem (Inh_Exp _lhsIstkoff) =
-    (let ( _lhsOcrexp,_lhsOcrexpl,_lhsOself) = sem _lhsIstkoff
-     in  (Syn_Exp _lhsOcrexp _lhsOcrexpl _lhsOself))
+    (let ( _lhsOcrexp,_lhsOcrexpl) = sem _lhsIstkoff
+     in  (Syn_Exp _lhsOcrexp _lhsOcrexpl))
 sem_Exp_SExp :: T_SExp ->
                 T_Exp
 sem_Exp_SExp sexp_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _sexpIcrsexpl :: ([CR.SExp])
-              _sexpIself :: SExp
               _crexp =
-                  ({-# LINE 30 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 30 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkExp (head _sexpIcrsexpl)
-                   {-# LINE 220 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 235 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 225 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 240 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  SExp _sexpIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 234 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 245 "CCO/Core/AG.hs" #-}
                    )
-              ( _sexpIcrsexpl,_sexpIself) =
+              ( _sexpIcrsexpl) =
                   sexp_
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Lam :: T_RefL ->
                T_Exp ->
                T_Exp
@@ -242,262 +253,217 @@ sem_Exp_Lam args_ body_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
               _bodyOstkoff :: Int
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _argsIcrrefl :: ([CR.RRef])
-              _argsIself :: RefL
               _bodyIcrexp :: (CR.Exp)
               _bodyIcrexpl :: ([CR.Exp])
-              _bodyIself :: Exp
               _crexp =
-                  ({-# LINE 31 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 31 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkLam (length _argsIcrrefl) 100 _bodyIcrexp
-                   {-# LINE 256 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 264 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 261 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 269 "CCO/Core/AG.hs" #-}
                    )
               _bodyOstkoff =
-                  ({-# LINE 74 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 74 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    length _argsIcrrefl
-                   {-# LINE 266 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 274 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Lam _argsIself _bodyIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 275 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 279 "CCO/Core/AG.hs" #-}
                    )
-              ( _argsIcrrefl,_argsIself) =
+              ( _argsIcrrefl) =
                   args_
-              ( _bodyIcrexp,_bodyIcrexpl,_bodyIself) =
+              ( _bodyIcrexp,_bodyIcrexpl) =
                   body_ _bodyOstkoff
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_App :: T_Exp ->
                T_SExpL ->
                T_Exp
 sem_Exp_App func_ args_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _funcOstkoff :: Int
               _funcIcrexp :: (CR.Exp)
               _funcIcrexpl :: ([CR.Exp])
-              _funcIself :: Exp
               _argsIcrsexpl :: ([CR.SExp])
-              _argsIself :: SExpL
               _crexp =
-                  ({-# LINE 32 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 32 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkApp _funcIcrexp _argsIcrsexpl
-                   {-# LINE 299 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 300 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 304 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 305 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  App _funcIself _argsIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 313 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 310 "CCO/Core/AG.hs" #-}
                    )
               _funcOstkoff =
-                  ({-# LINE 61 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 318 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 315 "CCO/Core/AG.hs" #-}
                    )
-              ( _funcIcrexp,_funcIcrexpl,_funcIself) =
+              ( _funcIcrexp,_funcIcrexpl) =
                   func_ _funcOstkoff
-              ( _argsIcrsexpl,_argsIself) =
+              ( _argsIcrsexpl) =
                   args_
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Prim :: String ->
                 T_SExpL ->
                 T_Exp
 sem_Exp_Prim func_ args_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _argsIcrsexpl :: ([CR.SExp])
-              _argsIself :: SExpL
               _crexp =
-                  ({-# LINE 33 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 33 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkFFI func_       _argsIcrsexpl
-                   {-# LINE 338 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 333 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 343 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 338 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Prim func_ _argsIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 352 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 343 "CCO/Core/AG.hs" #-}
                    )
-              ( _argsIcrsexpl,_argsIself) =
+              ( _argsIcrsexpl) =
                   args_
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Node :: Int ->
                 T_SExpL ->
                 T_Exp
 sem_Exp_Node tag_ args_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _argsIcrsexpl :: ([CR.SExp])
-              _argsIself :: SExpL
               _crexp =
-                  ({-# LINE 34 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 34 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkTup tag_        _argsIcrsexpl
-                   {-# LINE 370 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 359 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 375 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 364 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Node tag_ _argsIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 384 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 369 "CCO/Core/AG.hs" #-}
                    )
-              ( _argsIcrsexpl,_argsIself) =
+              ( _argsIcrsexpl) =
                   args_
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Case :: T_SExp ->
                 T_ExpL ->
                 T_Exp
 sem_Exp_Case sexp_ alts_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _sexpIcrsexpl :: ([CR.SExp])
-              _sexpIself :: SExp
               _altsIcrexpl :: ([CR.Exp])
-              _altsIself :: ExpL
               _crexp =
-                  ({-# LINE 35 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 35 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkCase (head _sexpIcrsexpl) _altsIcrexpl
-                   {-# LINE 404 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 386 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 409 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 391 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Case _sexpIself _altsIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 418 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 396 "CCO/Core/AG.hs" #-}
                    )
-              ( _sexpIcrsexpl,_sexpIself) =
+              ( _sexpIcrsexpl) =
                   sexp_
-              ( _altsIcrexpl,_altsIself) =
+              ( _altsIcrexpl) =
                   alts_
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Let :: T_Bind ->
                T_Exp ->
                T_Exp
 sem_Exp_Let bind_ body_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _bindOstkoff :: Int
               _bodyOstkoff :: Int
               _bindIcrbindl :: ([CR.Bind])
-              _bindIself :: Bind
               _bindIstkoff :: Int
               _bodyIcrexp :: (CR.Exp)
               _bodyIcrexpl :: ([CR.Exp])
-              _bodyIself :: Exp
               _crexp =
-                  ({-# LINE 36 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 36 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkLet _lhsIstkoff _bindIcrbindl _bodyIcrexp
-                   {-# LINE 444 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 419 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 449 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 424 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Let _bindIself _bodyIself
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 458 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 429 "CCO/Core/AG.hs" #-}
                    )
               _bindOstkoff =
-                  ({-# LINE 63 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 463 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 434 "CCO/Core/AG.hs" #-}
                    )
               _bodyOstkoff =
-                  ({-# LINE 61 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _bindIstkoff
-                   {-# LINE 468 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 439 "CCO/Core/AG.hs" #-}
                    )
-              ( _bindIcrbindl,_bindIself,_bindIstkoff) =
+              ( _bindIcrbindl,_bindIstkoff) =
                   bind_ _bindOstkoff
-              ( _bodyIcrexp,_bodyIcrexpl,_bodyIself) =
+              ( _bodyIcrexp,_bodyIcrexpl) =
                   body_ _bodyOstkoff
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 sem_Exp_Dbg :: String ->
                T_Exp
 sem_Exp_Dbg info_ =
     (\ _lhsIstkoff ->
          (let _lhsOcrexpl :: ([CR.Exp])
-              _lhsOself :: Exp
               _lhsOcrexp :: (CR.Exp)
               _crexp =
-                  ({-# LINE 37 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 37 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkDbg info_
-                   {-# LINE 485 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 455 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
-                  ({-# LINE 40 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 490 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 460 "CCO/Core/AG.hs" #-}
                    )
-              _self =
-                  Dbg info_
-              _lhsOself =
-                  _self
               _lhsOcrexp =
-                  ({-# LINE 25 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 499 "src/CCO/Core/AG.hs" #-}
+                   {-# LINE 465 "CCO/Core/AG.hs" #-}
                    )
-          in  ( _lhsOcrexp,_lhsOcrexpl,_lhsOself)))
+          in  ( _lhsOcrexp,_lhsOcrexpl)))
 -- ExpL --------------------------------------------------------
 type ExpL = [Exp]
 -- cata
@@ -506,60 +472,48 @@ sem_ExpL :: ExpL ->
 sem_ExpL list =
     (Prelude.foldr sem_ExpL_Cons sem_ExpL_Nil (Prelude.map sem_Exp list))
 -- semantic domain
-type T_ExpL = ( ([CR.Exp]),ExpL)
+type T_ExpL = ( ([CR.Exp]))
 data Inh_ExpL = Inh_ExpL {}
-data Syn_ExpL = Syn_ExpL {crexpl_Syn_ExpL :: ([CR.Exp]),self_Syn_ExpL :: ExpL}
+data Syn_ExpL = Syn_ExpL {crexpl_Syn_ExpL :: ([CR.Exp])}
 wrap_ExpL :: T_ExpL ->
              Inh_ExpL ->
              Syn_ExpL
 wrap_ExpL sem (Inh_ExpL) =
-    (let ( _lhsOcrexpl,_lhsOself) = sem
-     in  (Syn_ExpL _lhsOcrexpl _lhsOself))
+    (let ( _lhsOcrexpl) = sem
+     in  (Syn_ExpL _lhsOcrexpl))
 sem_ExpL_Cons :: T_Exp ->
                  T_ExpL ->
                  T_ExpL
 sem_ExpL_Cons hd_ tl_ =
     (let _lhsOcrexpl :: ([CR.Exp])
-         _lhsOself :: ExpL
          _hdOstkoff :: Int
          _hdIcrexp :: (CR.Exp)
          _hdIcrexpl :: ([CR.Exp])
-         _hdIself :: Exp
          _tlIcrexpl :: ([CR.Exp])
-         _tlIself :: ExpL
          _lhsOcrexpl =
-             ({-# LINE 27 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 27 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrexpl ++ _tlIcrexpl
-              {-# LINE 534 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 497 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             (:) _hdIself _tlIself
-         _lhsOself =
-             _self
          _hdOstkoff =
-             ({-# LINE 61 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               error "missing rule: ExpL.Cons.hd.stkoff"
-              {-# LINE 543 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 502 "CCO/Core/AG.hs" #-}
               )
-         ( _hdIcrexp,_hdIcrexpl,_hdIself) =
+         ( _hdIcrexp,_hdIcrexpl) =
              hd_ _hdOstkoff
-         ( _tlIcrexpl,_tlIself) =
+         ( _tlIcrexpl) =
              tl_
-     in  ( _lhsOcrexpl,_lhsOself))
+     in  ( _lhsOcrexpl))
 sem_ExpL_Nil :: T_ExpL
 sem_ExpL_Nil =
     (let _lhsOcrexpl :: ([CR.Exp])
-         _lhsOself :: ExpL
          _lhsOcrexpl =
-             ({-# LINE 27 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 27 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 557 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 515 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             []
-         _lhsOself =
-             _self
-     in  ( _lhsOcrexpl,_lhsOself))
+     in  ( _lhsOcrexpl))
 -- Mod ---------------------------------------------------------
 data Mod = Mod (Exp) (BindL)
 -- cata
@@ -568,15 +522,15 @@ sem_Mod :: Mod ->
 sem_Mod (Mod _main _binds) =
     (sem_Mod_Mod (sem_Exp _main) (sem_BindL _binds))
 -- semantic domain
-type T_Mod = ( (CR.Mod),Mod)
+type T_Mod = ( (CR.Mod))
 data Inh_Mod = Inh_Mod {}
-data Syn_Mod = Syn_Mod {crmod_Syn_Mod :: (CR.Mod),self_Syn_Mod :: Mod}
+data Syn_Mod = Syn_Mod {crmod_Syn_Mod :: (CR.Mod)}
 wrap_Mod :: T_Mod ->
             Inh_Mod ->
             Syn_Mod
 wrap_Mod sem (Inh_Mod) =
-    (let ( _lhsOcrmod,_lhsOself) = sem
-     in  (Syn_Mod _lhsOcrmod _lhsOself))
+    (let ( _lhsOcrmod) = sem
+     in  (Syn_Mod _lhsOcrmod))
 sem_Mod_Mod :: T_Exp ->
                T_BindL ->
                T_Mod
@@ -584,37 +538,30 @@ sem_Mod_Mod main_ binds_ =
     (let _lhsOcrmod :: (CR.Mod)
          _bindsOstkoff :: Int
          _mainOstkoff :: Int
-         _lhsOself :: Mod
          _mainIcrexp :: (CR.Exp)
          _mainIcrexpl :: ([CR.Exp])
-         _mainIself :: Exp
          _bindsIcrbindl :: ([CR.Bind])
-         _bindsIself :: BindL
          _bindsIstkoff :: Int
          _lhsOcrmod =
-             ({-# LINE 15 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 15 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               CR.mkMod (mkHNm "Main") Nothing (length _bindsIcrbindl + 100) _bindsIcrbindl _mainIcrexp
-              {-# LINE 598 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 549 "CCO/Core/AG.hs" #-}
               )
          _bindsOstkoff =
-             ({-# LINE 66 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 66 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               0
-              {-# LINE 603 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 554 "CCO/Core/AG.hs" #-}
               )
          _mainOstkoff =
-             ({-# LINE 67 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 67 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _bindsIstkoff
-              {-# LINE 608 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 559 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             Mod _mainIself _bindsIself
-         _lhsOself =
-             _self
-         ( _mainIcrexp,_mainIcrexpl,_mainIself) =
+         ( _mainIcrexp,_mainIcrexpl) =
              main_ _mainOstkoff
-         ( _bindsIcrbindl,_bindsIself,_bindsIstkoff) =
+         ( _bindsIcrbindl,_bindsIstkoff) =
              binds_ _bindsOstkoff
-     in  ( _lhsOcrmod,_lhsOself))
+     in  ( _lhsOcrmod))
 -- Ref ---------------------------------------------------------
 data Ref = Glob (Int)
          | Loc (Int) (Int)
@@ -626,46 +573,36 @@ sem_Ref (Glob _offset) =
 sem_Ref (Loc _levdiff _offset) =
     (sem_Ref_Loc _levdiff _offset)
 -- semantic domain
-type T_Ref = ( ([CR.RRef]),Ref)
+type T_Ref = ( ([CR.RRef]))
 data Inh_Ref = Inh_Ref {}
-data Syn_Ref = Syn_Ref {crrefl_Syn_Ref :: ([CR.RRef]),self_Syn_Ref :: Ref}
+data Syn_Ref = Syn_Ref {crrefl_Syn_Ref :: ([CR.RRef])}
 wrap_Ref :: T_Ref ->
             Inh_Ref ->
             Syn_Ref
 wrap_Ref sem (Inh_Ref) =
-    (let ( _lhsOcrrefl,_lhsOself) = sem
-     in  (Syn_Ref _lhsOcrrefl _lhsOself))
+    (let ( _lhsOcrrefl) = sem
+     in  (Syn_Ref _lhsOcrrefl))
 sem_Ref_Glob :: Int ->
                 T_Ref
 sem_Ref_Glob offset_ =
     (let _lhsOcrrefl :: ([CR.RRef])
-         _lhsOself :: Ref
          _lhsOcrrefl =
-             ({-# LINE 52 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 52 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkGlobRef 0 offset_]
-              {-# LINE 647 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 593 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             Glob offset_
-         _lhsOself =
-             _self
-     in  ( _lhsOcrrefl,_lhsOself))
+     in  ( _lhsOcrrefl))
 sem_Ref_Loc :: Int ->
                Int ->
                T_Ref
 sem_Ref_Loc levdiff_ offset_ =
     (let _lhsOcrrefl :: ([CR.RRef])
-         _lhsOself :: Ref
          _lhsOcrrefl =
-             ({-# LINE 53 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 53 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkLocDifRef levdiff_ offset_]
-              {-# LINE 663 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 604 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             Loc levdiff_ offset_
-         _lhsOself =
-             _self
-     in  ( _lhsOcrrefl,_lhsOself))
+     in  ( _lhsOcrrefl))
 -- RefL --------------------------------------------------------
 type RefL = [Ref]
 -- cata
@@ -674,53 +611,41 @@ sem_RefL :: RefL ->
 sem_RefL list =
     (Prelude.foldr sem_RefL_Cons sem_RefL_Nil (Prelude.map sem_Ref list))
 -- semantic domain
-type T_RefL = ( ([CR.RRef]),RefL)
+type T_RefL = ( ([CR.RRef]))
 data Inh_RefL = Inh_RefL {}
-data Syn_RefL = Syn_RefL {crrefl_Syn_RefL :: ([CR.RRef]),self_Syn_RefL :: RefL}
+data Syn_RefL = Syn_RefL {crrefl_Syn_RefL :: ([CR.RRef])}
 wrap_RefL :: T_RefL ->
              Inh_RefL ->
              Syn_RefL
 wrap_RefL sem (Inh_RefL) =
-    (let ( _lhsOcrrefl,_lhsOself) = sem
-     in  (Syn_RefL _lhsOcrrefl _lhsOself))
+    (let ( _lhsOcrrefl) = sem
+     in  (Syn_RefL _lhsOcrrefl))
 sem_RefL_Cons :: T_Ref ->
                  T_RefL ->
                  T_RefL
 sem_RefL_Cons hd_ tl_ =
     (let _lhsOcrrefl :: ([CR.RRef])
-         _lhsOself :: RefL
          _hdIcrrefl :: ([CR.RRef])
-         _hdIself :: Ref
          _tlIcrrefl :: ([CR.RRef])
-         _tlIself :: RefL
          _lhsOcrrefl =
-             ({-# LINE 49 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 49 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrrefl ++ _tlIcrrefl
-              {-# LINE 700 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 634 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             (:) _hdIself _tlIself
-         _lhsOself =
-             _self
-         ( _hdIcrrefl,_hdIself) =
+         ( _hdIcrrefl) =
              hd_
-         ( _tlIcrrefl,_tlIself) =
+         ( _tlIcrrefl) =
              tl_
-     in  ( _lhsOcrrefl,_lhsOself))
+     in  ( _lhsOcrrefl))
 sem_RefL_Nil :: T_RefL
 sem_RefL_Nil =
     (let _lhsOcrrefl :: ([CR.RRef])
-         _lhsOself :: RefL
          _lhsOcrrefl =
-             ({-# LINE 49 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 49 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 718 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 647 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             []
-         _lhsOself =
-             _self
-     in  ( _lhsOcrrefl,_lhsOself))
+     in  ( _lhsOcrrefl))
 -- SExp --------------------------------------------------------
 data SExp = Int (Int)
           | Var (Ref)
@@ -732,49 +657,38 @@ sem_SExp (Int _i) =
 sem_SExp (Var _x) =
     (sem_SExp_Var (sem_Ref _x))
 -- semantic domain
-type T_SExp = ( ([CR.SExp]),SExp)
+type T_SExp = ( ([CR.SExp]))
 data Inh_SExp = Inh_SExp {}
-data Syn_SExp = Syn_SExp {crsexpl_Syn_SExp :: ([CR.SExp]),self_Syn_SExp :: SExp}
+data Syn_SExp = Syn_SExp {crsexpl_Syn_SExp :: ([CR.SExp])}
 wrap_SExp :: T_SExp ->
              Inh_SExp ->
              Syn_SExp
 wrap_SExp sem (Inh_SExp) =
-    (let ( _lhsOcrsexpl,_lhsOself) = sem
-     in  (Syn_SExp _lhsOcrsexpl _lhsOself))
+    (let ( _lhsOcrsexpl) = sem
+     in  (Syn_SExp _lhsOcrsexpl))
 sem_SExp_Int :: Int ->
                 T_SExp
 sem_SExp_Int i_ =
     (let _lhsOcrsexpl :: ([CR.SExp])
-         _lhsOself :: SExp
          _lhsOcrsexpl =
-             ({-# LINE 21 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 21 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkInt' i_]
-              {-# LINE 753 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 677 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             Int i_
-         _lhsOself =
-             _self
-     in  ( _lhsOcrsexpl,_lhsOself))
+     in  ( _lhsOcrsexpl))
 sem_SExp_Var :: T_Ref ->
                 T_SExp
 sem_SExp_Var x_ =
     (let _lhsOcrsexpl :: ([CR.SExp])
-         _lhsOself :: SExp
          _xIcrrefl :: ([CR.RRef])
-         _xIself :: Ref
          _lhsOcrsexpl =
-             ({-# LINE 22 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 22 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkVar' $ head _xIcrrefl]
-              {-# LINE 770 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 688 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             Var _xIself
-         _lhsOself =
-             _self
-         ( _xIcrrefl,_xIself) =
+         ( _xIcrrefl) =
              x_
-     in  ( _lhsOcrsexpl,_lhsOself))
+     in  ( _lhsOcrsexpl))
 -- SExpL -------------------------------------------------------
 type SExpL = [SExp]
 -- cata
@@ -783,50 +697,119 @@ sem_SExpL :: SExpL ->
 sem_SExpL list =
     (Prelude.foldr sem_SExpL_Cons sem_SExpL_Nil (Prelude.map sem_SExp list))
 -- semantic domain
-type T_SExpL = ( ([CR.SExp]),SExpL)
+type T_SExpL = ( ([CR.SExp]))
 data Inh_SExpL = Inh_SExpL {}
-data Syn_SExpL = Syn_SExpL {crsexpl_Syn_SExpL :: ([CR.SExp]),self_Syn_SExpL :: SExpL}
+data Syn_SExpL = Syn_SExpL {crsexpl_Syn_SExpL :: ([CR.SExp])}
 wrap_SExpL :: T_SExpL ->
               Inh_SExpL ->
               Syn_SExpL
 wrap_SExpL sem (Inh_SExpL) =
-    (let ( _lhsOcrsexpl,_lhsOself) = sem
-     in  (Syn_SExpL _lhsOcrsexpl _lhsOself))
+    (let ( _lhsOcrsexpl) = sem
+     in  (Syn_SExpL _lhsOcrsexpl))
 sem_SExpL_Cons :: T_SExp ->
                   T_SExpL ->
                   T_SExpL
 sem_SExpL_Cons hd_ tl_ =
     (let _lhsOcrsexpl :: ([CR.SExp])
-         _lhsOself :: SExpL
          _hdIcrsexpl :: ([CR.SExp])
-         _hdIself :: SExp
          _tlIcrsexpl :: ([CR.SExp])
-         _tlIself :: SExpL
          _lhsOcrsexpl =
-             ({-# LINE 18 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 18 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrsexpl ++ _tlIcrsexpl
-              {-# LINE 809 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 720 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             (:) _hdIself _tlIself
-         _lhsOself =
-             _self
-         ( _hdIcrsexpl,_hdIself) =
+         ( _hdIcrsexpl) =
              hd_
-         ( _tlIcrsexpl,_tlIself) =
+         ( _tlIcrsexpl) =
              tl_
-     in  ( _lhsOcrsexpl,_lhsOself))
+     in  ( _lhsOcrsexpl))
 sem_SExpL_Nil :: T_SExpL
 sem_SExpL_Nil =
     (let _lhsOcrsexpl :: ([CR.SExp])
-         _lhsOself :: SExpL
          _lhsOcrsexpl =
-             ({-# LINE 18 "src/CCO/Core/AG/ToCoreRun.ag" #-}
+             ({-# LINE 18 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 827 "src/CCO/Core/AG.hs" #-}
+              {-# LINE 733 "CCO/Core/AG.hs" #-}
               )
-         _self =
-             []
-         _lhsOself =
-             _self
-     in  ( _lhsOcrsexpl,_lhsOself))
+     in  ( _lhsOcrsexpl))
+-- Tm ----------------------------------------------------------
+data Tm = Tm (SourcePos) (Tm_)
+-- cata
+sem_Tm :: Tm ->
+          T_Tm
+sem_Tm (Tm _pos _t) =
+    (sem_Tm_Tm _pos (sem_Tm_ _t))
+-- semantic domain
+type T_Tm = ( )
+data Inh_Tm = Inh_Tm {}
+data Syn_Tm = Syn_Tm {}
+wrap_Tm :: T_Tm ->
+           Inh_Tm ->
+           Syn_Tm
+wrap_Tm sem (Inh_Tm) =
+    (let ( ) = sem
+     in  (Syn_Tm))
+sem_Tm_Tm :: SourcePos ->
+             T_Tm_ ->
+             T_Tm
+sem_Tm_Tm pos_ t_ =
+    (let
+     in  ( ))
+-- Tm_ ---------------------------------------------------------
+data Tm_ = HNat (Int)
+         | HVar (Var)
+         | HLam (Var) (Tm)
+         | HApp (Tm) (Tm)
+         | HLet (Var) (Tm) (Tm)
+-- cata
+sem_Tm_ :: Tm_ ->
+           T_Tm_
+sem_Tm_ (HNat _i) =
+    (sem_Tm__HNat _i)
+sem_Tm_ (HVar _x) =
+    (sem_Tm__HVar _x)
+sem_Tm_ (HLam _x _t1) =
+    (sem_Tm__HLam _x (sem_Tm _t1))
+sem_Tm_ (HApp _t1 _t2) =
+    (sem_Tm__HApp (sem_Tm _t1) (sem_Tm _t2))
+sem_Tm_ (HLet _x _t1 _t2) =
+    (sem_Tm__HLet _x (sem_Tm _t1) (sem_Tm _t2))
+-- semantic domain
+type T_Tm_ = ( )
+data Inh_Tm_ = Inh_Tm_ {}
+data Syn_Tm_ = Syn_Tm_ {}
+wrap_Tm_ :: T_Tm_ ->
+            Inh_Tm_ ->
+            Syn_Tm_
+wrap_Tm_ sem (Inh_Tm_) =
+    (let ( ) = sem
+     in  (Syn_Tm_))
+sem_Tm__HNat :: Int ->
+                T_Tm_
+sem_Tm__HNat i_ =
+    (let
+     in  ( ))
+sem_Tm__HVar :: Var ->
+                T_Tm_
+sem_Tm__HVar x_ =
+    (let
+     in  ( ))
+sem_Tm__HLam :: Var ->
+                T_Tm ->
+                T_Tm_
+sem_Tm__HLam x_ t1_ =
+    (let
+     in  ( ))
+sem_Tm__HApp :: T_Tm ->
+                T_Tm ->
+                T_Tm_
+sem_Tm__HApp t1_ t2_ =
+    (let
+     in  ( ))
+sem_Tm__HLet :: Var ->
+                T_Tm ->
+                T_Tm ->
+                T_Tm_
+sem_Tm__HLet x_ t1_ t2_ =
+    (let
+     in  ( ))

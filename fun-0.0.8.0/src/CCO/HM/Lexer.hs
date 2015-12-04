@@ -26,7 +26,7 @@ module CCO.HM.Lexer (
   , spec       -- :: Char -> Parser Token Char
 ) where
 
-import CCO.HM.Base    (Var)
+import CCO.HM.AG    (Var)
 import CCO.Lexing hiding (satisfy)
 import CCO.Parsing    (Symbol (describe), Parser, satisfy, (<!>))
 import Control.Applicative

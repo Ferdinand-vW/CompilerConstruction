@@ -1,6 +1,32 @@
 imports
 {
 import CCO.SourcePos
+import CCO.Tree                   (Tree (fromTree, toTree))
+import qualified CCO.Tree as T    (ATerm (App))
+import CCO.Tree.Parser            (parseTree, app, arg)
+import Control.Applicative        (Applicative ((<*>)), (<$>))
+}
+
+
+{
+instance Tree Tm where
+  fromTree (Tm pos t) = T.App "Tm" [fromTree pos, fromTree t]
+  toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
+
+instance Tree Tm_ where
+  fromTree (HNat x)       = T.App "HNat" [fromTree x]
+  fromTree (HVar x)       = T.App "HVar" [fromTree x]
+  fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
+  fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
+  fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
+
+  toTree = parseTree [ app "HNat" (HNat <$> arg                )
+                     , app "HVar" (HVar <$> arg                )
+                     , app "HLam" (HLam <$> arg <*> arg        )
+                     , app "HApp" (HApp <$> arg <*> arg        )
+                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+                     ]
+
 }
 
 -------------------------------------------------------------------------------
@@ -15,8 +41,8 @@ data Tm
   | Tm  pos :: {SourcePos}  t :: Tm_
 
 data Tm_
-  | Nat  i :: {Int}
-  | Var  x :: {Var}
-  | Lam  x :: {Var}  t1 :: Tm
-  | App  t1 :: Tm  t2 :: Tm
-  | Let  x :: {Var}  t1 :: Tm  t2 :: Tm
+  | HNat  i :: {Int}
+  | HVar  x :: {Var}
+  | HLam  x :: {Var}  t1 :: Tm
+  | HApp  t1 :: Tm  t2 :: Tm
+  | HLet  x :: {Var}  t1 :: Tm  t2 :: Tm
