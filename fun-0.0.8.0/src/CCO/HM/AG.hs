@@ -1,16 +1,16 @@
 
 
--- UUAGC 0.9.52.1 (Ag.ag)
+-- UUAGC 0.9.52.1 (CCO/HM/AG.ag)
 module CCO.HM.AG where
 
-{-# LINE 2 "..\\AG\\HM.ag" #-}
+{-# LINE 2 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 import CCO.SourcePos
-{-# LINE 10 "Ag.hs" #-}
-{-# LINE 10 "..\\AG\\HM.ag" #-}
+{-# LINE 10 "CCO/HM/AG.hs" #-}
+{-# LINE 10 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 type Var = String    -- ^ Type of variables.
-{-# LINE 14 "Ag.hs" #-}
+{-# LINE 14 "CCO/HM/AG.hs" #-}
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
 -- cata
