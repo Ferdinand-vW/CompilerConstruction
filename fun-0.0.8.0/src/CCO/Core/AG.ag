@@ -20,7 +20,7 @@ import UHC.Light.Compiler.CoreRun.API (printModule)
 import CCO.Component
 }
 
-include "AG/Base.ag"
+include "../AG/Core.ag"
 include "AG/ToCoreRun.ag"
 
 {
