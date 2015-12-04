@@ -1,25 +1,25 @@
 Diag(
   SourcePos(Stdin, Pos(1, 1))
 , Compile(
-    Diag(SourcePos(Stdin, Pos(2, 5)), Program("p", "m"))
-  , Diag(
-      SourcePos(Stdin, Pos(4, 5))
+    Diag(
+      SourcePos(Stdin, Pos(2, 5))
     , Compile(
         Diag(
-          SourcePos(Stdin, Pos(5, 9))
+          SourcePos(Stdin, Pos(3, 9))
         , Compile(
-            Diag(
-              SourcePos(Stdin, Pos(6, 13))
-            , Compiler("c2", "uuag", "haskell", "i686-windows")
-            )
+            Diag(SourcePos(Stdin, Pos(4, 13)), Program("hello", "UUAG"))
           , Diag(
-              SourcePos(Stdin, Pos(8, 13))
-            , Compiler("c3", "i686-windows", "i7", "i8")
+              SourcePos(Stdin, Pos(6, 13))
+            , Compiler("C1", "UUAG", "Haskell", "i686-windows")
             )
           )
         )
-      , Diag(SourcePos(Stdin, Pos(11, 9)), Compiler("c3", "i7", "i9", "i10"))
+      , Diag(
+          SourcePos(Stdin, Pos(9, 9))
+        , Compiler("C2", "Haskell", "C", "i686-windows")
+        )
       )
     )
+  , Diag(SourcePos(Stdin, Pos(12, 5)), Compiler("C3", "C", "Assembly", "i8"))
   )
 )
