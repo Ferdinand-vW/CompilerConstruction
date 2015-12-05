@@ -54,7 +54,7 @@ instance Tree Tm_ where
 type Var = String    -- ^ Type of variables.
 {-# LINE 56 "CCO/Core/AG.hs" #-}
 
-{-# LINE 27 "CCO\\Core\\AG.ag" #-}
+{-# LINE 28 "CCO\\Core\\AG.ag" #-}
 
 crprinter :: Component Mod String
 crprinter = component $ \mod -> do
@@ -740,21 +740,35 @@ sem_Tm :: Tm ->
 sem_Tm (Tm _pos _t) =
     (sem_Tm_Tm _pos (sem_Tm_ _t))
 -- semantic domain
-type T_Tm = ( )
+type T_Tm = ( Mod,Exp)
 data Inh_Tm = Inh_Tm {}
-data Syn_Tm = Syn_Tm {}
+data Syn_Tm = Syn_Tm {core_Syn_Tm :: Mod,t_Syn_Tm :: Exp}
 wrap_Tm :: T_Tm ->
            Inh_Tm ->
            Syn_Tm
 wrap_Tm sem (Inh_Tm) =
-    (let ( ) = sem
-     in  (Syn_Tm))
+    (let ( _lhsOcore,_lhsOt) = sem
+     in  (Syn_Tm _lhsOcore _lhsOt))
 sem_Tm_Tm :: SourcePos ->
              T_Tm_ ->
              T_Tm
 sem_Tm_Tm pos_ t_ =
-    (let
-     in  ( ))
+    (let _lhsOcore :: Mod
+         _lhsOt :: Exp
+         _tIt :: Exp
+         _lhsOcore =
+             ({-# LINE 8 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              Mod _tIt []
+              {-# LINE 763 "CCO/Core/AG.hs" #-}
+              )
+         _lhsOt =
+             ({-# LINE 5 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              _tIt
+              {-# LINE 768 "CCO/Core/AG.hs" #-}
+              )
+         ( _tIt) =
+             t_
+     in  ( _lhsOcore,_lhsOt))
 -- Tm_ ---------------------------------------------------------
 data Tm_ = HNat (Int)
          | HVar (Var)
@@ -775,41 +789,86 @@ sem_Tm_ (HApp _t1 _t2) =
 sem_Tm_ (HLet _x _t1 _t2) =
     (sem_Tm__HLet _x (sem_Tm _t1) (sem_Tm _t2))
 -- semantic domain
-type T_Tm_ = ( )
+type T_Tm_ = ( Exp)
 data Inh_Tm_ = Inh_Tm_ {}
-data Syn_Tm_ = Syn_Tm_ {}
+data Syn_Tm_ = Syn_Tm_ {t_Syn_Tm_ :: Exp}
 wrap_Tm_ :: T_Tm_ ->
             Inh_Tm_ ->
             Syn_Tm_
 wrap_Tm_ sem (Inh_Tm_) =
-    (let ( ) = sem
-     in  (Syn_Tm_))
+    (let ( _lhsOt) = sem
+     in  (Syn_Tm_ _lhsOt))
 sem_Tm__HNat :: Int ->
                 T_Tm_
 sem_Tm__HNat i_ =
-    (let
-     in  ( ))
+    (let _lhsOt :: Exp
+         _lhsOt =
+             ({-# LINE 11 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              SExp (Int i_)
+              {-# LINE 809 "CCO/Core/AG.hs" #-}
+              )
+     in  ( _lhsOt))
 sem_Tm__HVar :: Var ->
                 T_Tm_
 sem_Tm__HVar x_ =
-    (let
-     in  ( ))
+    (let _lhsOt :: Exp
+         _lhsOt =
+             ({-# LINE 12 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              SExp (Int 1)
+              {-# LINE 819 "CCO/Core/AG.hs" #-}
+              )
+     in  ( _lhsOt))
 sem_Tm__HLam :: Var ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HLam x_ t1_ =
-    (let
-     in  ( ))
+    (let _lhsOt :: Exp
+         _t1Icore :: Mod
+         _t1It :: Exp
+         _lhsOt =
+             ({-# LINE 13 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              SExp (Int 2)
+              {-# LINE 832 "CCO/Core/AG.hs" #-}
+              )
+         ( _t1Icore,_t1It) =
+             t1_
+     in  ( _lhsOt))
 sem_Tm__HApp :: T_Tm ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HApp t1_ t2_ =
-    (let
-     in  ( ))
+    (let _lhsOt :: Exp
+         _t1Icore :: Mod
+         _t1It :: Exp
+         _t2Icore :: Mod
+         _t2It :: Exp
+         _lhsOt =
+             ({-# LINE 14 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              App _t1It [Int 3]
+              {-# LINE 849 "CCO/Core/AG.hs" #-}
+              )
+         ( _t1Icore,_t1It) =
+             t1_
+         ( _t2Icore,_t2It) =
+             t2_
+     in  ( _lhsOt))
 sem_Tm__HLet :: Var ->
                 T_Tm ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HLet x_ t1_ t2_ =
-    (let
-     in  ( ))
+    (let _lhsOt :: Exp
+         _t1Icore :: Mod
+         _t1It :: Exp
+         _t2Icore :: Mod
+         _t2It :: Exp
+         _lhsOt =
+             ({-# LINE 15 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+              Let (Bind (Glob 0) (SExp (Int 1))) _t2It
+              {-# LINE 869 "CCO/Core/AG.hs" #-}
+              )
+         ( _t1Icore,_t1It) =
+             t1_
+         ( _t2Icore,_t2It) =
+             t2_
+     in  ( _lhsOt))

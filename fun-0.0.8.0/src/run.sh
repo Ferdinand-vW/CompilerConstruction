@@ -1,10 +1,8 @@
 #!/bin/bash
-uuagc -Hdfcsw CCO/Core/AG.ag
-uuagc -Hdfcsw CCO/HM/AG.ag
-SLEEP 0.5
-ghc --make hm2cr.hs
-echo "Done compiling hm2cr"
-ghc --make ParseHM.hs
-echo "Done compiling ParseHM"
-ghc --make PpCore.hs
-echo "Done compiling PpCore"
+read -p "Enter a file name for compilation: " fn
+echo $fn
+cat $fn | ./ParseHM.exe > parsed.bl
+cat parsed.bl | ./hm2cr.exe > translated.bl
+cat translated.bl
+cat translated.bl | ./PpCore.exe > printed.bl
+cat printed.bl

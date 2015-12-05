@@ -83,5 +83,5 @@ instance Tree Exp where
 
 
 hm2cr :: Tm -> Feedback Mod
-hm2cr tm = undefined
+hm2cr tm = return $ core_Syn_Tm $ wrap_Tm (sem_Tm tm) Inh_Tm
 

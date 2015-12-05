@@ -23,6 +23,7 @@ import CCO.Component
 include "../AG/Core.ag"
 include "../Ag/HM.ag"
 include "AG/ToCoreRun.ag"
+include "AG/Hm2Cr.ag"
 
 {
 crprinter :: Component Mod String

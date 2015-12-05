@@ -1,0 +1,7 @@
+Mod(
+  Let(
+    Bind(Glob(0), SExp(Int(1)))
+  , Let(Bind(Glob(0), SExp(Int(1))), App(SExp(Int(1)), [Int(3)]))
+  )
+, []
+)

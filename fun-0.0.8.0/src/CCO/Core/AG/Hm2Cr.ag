@@ -1,0 +1,15 @@
+attr Tm
+    syn core :: {Mod}
+
+attr Tm Tm_
+    syn t :: {Exp}
+
+sem Tm
+    | Tm lhs.core = Mod @t.t []
+
+sem Tm_
+    |   HNat lhs.t = SExp (Int @i)
+    |   HVar lhs.t = SExp (Int 1)
+    |   HLam lhs.t = SExp (Int 2)
+    |   HApp lhs.t = App @t1.t [Int 3]
+    |   HLet lhs.t = Let (Bind (Glob 0) (SExp (Int 1))) @t2.t
