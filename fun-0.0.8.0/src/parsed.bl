@@ -14,11 +14,8 @@ Tm(
       , Tm(
           SourcePos(Stdin, Pos(3, 3))
         , HApp(
-            Tm(
-              SourcePos(Stdin, Pos(3, 4))
-            , HLam("y", Tm(SourcePos(Stdin, Pos(3, 9)), HVar("y")))
-            )
-          , Tm(SourcePos(Stdin, Pos(3, 12)), HNat(5))
+            Tm(SourcePos(Stdin, Pos(3, 3)), HVar("id"))
+          , Tm(SourcePos(Stdin, Pos(3, 6)), HVar("fv"))
           )
         )
       )

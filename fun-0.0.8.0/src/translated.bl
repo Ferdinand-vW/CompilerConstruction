@@ -1,10 +1,7 @@
 Mod(
-  Let(
-    Bind(Glob(0), SExp(Int(5)))
-  , Let(Bind(Glob(0), SExp(Int(2))), App(SExp(Int(2)), [Int(5)]))
-  )
+  SExp(Var(Glob(2)))
 , [ Bind(Glob(0), SExp(Int(5)))
-  , Bind(Glob(0), SExp(Int(2)))
-  , Bind(Glob(1), SExp(Var(Loc(0, 1))))
+  , Bind(Glob(1), Lam([Loc(0, 0)], SExp(Var(Loc(0, 0)))))
+  , Bind(Glob(2), Lam([], App(SExp(Var(Glob(1))), [Var(Glob(0))])))
   ]
 )

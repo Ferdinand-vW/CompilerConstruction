@@ -15,36 +15,53 @@ attr Core
     syn core :: {Mod}
 
 sem Core
-    | Core  lhs.core = Mod @tm.t @tm.binds
-            tm.env = []
+    | Core  lhs.core = Mod (SExp (Var @tm.main)) @tm.binds
+            tm.genv = []
+            tm.lenv = []
+            tm.lvl = 0
 
 
 attr Tm Tm_
-    syn main :: {Exp}
+    syn tm :: self
+    syn main :: {Ref}
     syn exp :: {Exp}
     syn binds use {++} {[]} :: {BindL}
-    inh env :: {Map String Int}
+    inh genv :: {Map String Ref}
+    inh lenv :: {Map String Ref}
+    inh lvl :: Int
 
 sem Tm_
-    |   HNat lhs.main = SExp (Int @i)
+    |   HNat lhs.main = Glob (getOffSet @lhs.genv)
              lhs.exp  = SExp (Int @i)
              lhs.binds = []
-    |   HVar lhs.main = SExp $ tmToSExp @lhs.env (HVar @x)
-             lhs.exp  = SExp $ tmToSExp @lhs.env (HVar @x)
+    |   HVar lhs.main = Glob (getOffSet @lhs.genv)
+             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (HVar @x)
              lhs.binds = []
-    |   HLam lhs.main = 
-             lhs.t  = SExp (Int 2)
-             lhs.binds = [Bind (Glob 1) @t1.t]
-             t1.env = insert @lhs.env @x
-    |   HApp lhs.t  = App (@t1.t) [fromExp @t2.t]
+    |   HLam lhs.main = Glob (getOffSet @lhs.genv)
+             lhs.exp  = Lam [fromJust $ lookup @x @loc.nenv] @t1.exp
              lhs.binds = []
-             t1.env = @lhs.env
-             t2.env = @lhs.env
+             t1.genv = @lhs.genv
+             loc.nenv = insertl @lhs.lenv @lhs.lvl @x
+             t1.lenv = @loc.nenv
+             t1.lvl = @lhs.lvl + 1
+    |   HApp lhs.main = Glob (getOffSet @lhs.genv)
+             lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
+             lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (Lam [] (App (@t1.exp) [fromExp @t2.exp]))]
+             t1.genv = @lhs.genv
+             t2.genv = @lhs.genv
+             t1.lenv = @lhs.lenv
+             t2.lenv = @lhs.lenv
+             t1.lvl = @lhs.lvl
+             t2.lvl = @lhs.lvl
     |   HLet lhs.main = @t2.main
-             lhs.t  = Let (Bind (Glob 0) @t1.t) @t2.t
-             lhs.binds = Bind (Glob 0) @t1.t : @t1.binds ++ @t2.binds
-             t1.env = @lhs.env
-             t2.env = insert @lhs.env @x
+             lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
+             lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
+             t1.genv = @lhs.genv
+             t2.genv = insertg @lhs.genv @x
+             t1.lenv = @lhs.lenv
+             t2.lenv = @lhs.lenv
+             t1.lvl = @lhs.lvl
+             t2.lvl = @lhs.lvl
 
 
 {
@@ -55,20 +72,16 @@ tmToTm_ (Tm pos t) = t
 fromExp :: Exp -> SExp
 fromExp (SExp s) = s 
 
-tmToSExp :: Map String Int -> Tm_ -> SExp
-tmToSExp map (HNat i) = Int i
-tmToSExp map (HVar x) = Var (Loc 0 (lookup' map x))
+findVarRef :: Map String Ref -> Map String Ref -> Tm_ -> SExp
+findVarRef genv lenv (HNat i) = Int i
+findVarRef genv lenv (HVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
 
-getOffSet :: Map String Int -> Int
+getOffSet :: Map String Ref -> Int
 getOffSet xs = length xs
 
-insert :: Map String Int -> String -> Map String Int
-insert xs s = (s, getOffSet xs) : xs
+insertg :: Map String Ref -> String -> Map String Ref
+insertg xs s = (s, Glob $ getOffSet xs) : xs
 
-lookup' :: Map String Int -> String -> Int
-lookup' [] _ = error "Was not able to find it"
-lookup' ((x,y):xy) s
-    | x == s = y
-    | otherwise = lookup' xy s
-
+insertl :: Map String Ref -> Int -> String -> Map String Ref
+insertl xs lvl s = (s, Loc lvl $ getOffSet xs) : xs
 }
