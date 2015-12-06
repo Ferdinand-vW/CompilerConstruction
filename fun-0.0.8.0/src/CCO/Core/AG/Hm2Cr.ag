@@ -1,15 +1,63 @@
-attr Tm
+imports
+{
+import Data.Maybe
+}
+
+{
+type Map a b = [(a,b)]
+}
+
+
+data Core
+    | Core tm :: Tm
+
+attr Core
     syn core :: {Mod}
+
+sem Core
+    | Core  lhs.core = Mod @tm.t []
+            tm.env = []
+
 
 attr Tm Tm_
     syn t :: {Exp}
-
-sem Tm
-    | Tm lhs.core = Mod @t.t []
+    inh env :: {Map String Int}
 
 sem Tm_
-    |   HNat lhs.t = SExp (Int @i)
-    |   HVar lhs.t = SExp (Int 1)
-    |   HLam lhs.t = SExp (Int 2)
-    |   HApp lhs.t = App @t1.t [Int 3]
-    |   HLet lhs.t = Let (Bind (Glob 0) (SExp (Int 1))) @t2.t
+    |   HNat lhs.t  = SExp (Int @i)
+    |   HVar lhs.t  = SExp $ tmToSExp @lhs.env (HVar @x)
+    |   HLam lhs.t  = SExp (Int 2)
+             t1.env = insert @lhs.env @x
+    |   HApp lhs.t  = App (@t1.t) [fromExp @t2.t]
+             t1.env = @lhs.env
+             t2.env = @lhs.env
+    |   HLet lhs.t  = Let (Bind (Glob 5) (SExp (Int 4))) @t2.t
+             t1.env = @lhs.env
+             t2.env = insert @lhs.env @x
+
+
+{
+
+tmToTm_ :: Tm -> Tm_
+tmToTm_ (Tm pos t) = t
+
+fromExp :: Exp -> SExp
+fromExp (SExp s) = s 
+
+tmToSExp :: Map String Int -> Tm_ -> SExp
+tmToSExp map (HNat i) = Int i
+tmToSExp map (HVar x) = Var (Loc 0 (lookup' map x))
+
+getOffSet :: Map String Int -> Int
+getOffSet xs = length xs
+
+insert :: Map String Int -> String -> Map String Int
+insert xs s = (s, getOffSet xs) : xs
+
+lookup' :: Map String Int -> String -> Int
+lookup' [] _ = error "Was not able to find it"
+lookup' ((x,y):xy) s
+    | x == s = y
+    | otherwise = lookup' xy s
+
+}
