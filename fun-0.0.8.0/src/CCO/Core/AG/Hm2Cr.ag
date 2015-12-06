@@ -15,23 +15,34 @@ attr Core
     syn core :: {Mod}
 
 sem Core
-    | Core  lhs.core = Mod @tm.t []
+    | Core  lhs.core = Mod @tm.t @tm.binds
             tm.env = []
 
 
 attr Tm Tm_
-    syn t :: {Exp}
+    syn main :: {Exp}
+    syn exp :: {Exp}
+    syn binds use {++} {[]} :: {BindL}
     inh env :: {Map String Int}
 
 sem Tm_
-    |   HNat lhs.t  = SExp (Int @i)
-    |   HVar lhs.t  = SExp $ tmToSExp @lhs.env (HVar @x)
-    |   HLam lhs.t  = SExp (Int 2)
+    |   HNat lhs.main = SExp (Int @i)
+             lhs.exp  = SExp (Int @i)
+             lhs.binds = []
+    |   HVar lhs.main = SExp $ tmToSExp @lhs.env (HVar @x)
+             lhs.exp  = SExp $ tmToSExp @lhs.env (HVar @x)
+             lhs.binds = []
+    |   HLam lhs.main = 
+             lhs.t  = SExp (Int 2)
+             lhs.binds = [Bind (Glob 1) @t1.t]
              t1.env = insert @lhs.env @x
     |   HApp lhs.t  = App (@t1.t) [fromExp @t2.t]
+             lhs.binds = []
              t1.env = @lhs.env
              t2.env = @lhs.env
-    |   HLet lhs.t  = Let (Bind (Glob 5) (SExp (Int 4))) @t2.t
+    |   HLet lhs.main = @t2.main
+             lhs.t  = Let (Bind (Glob 0) @t1.t) @t2.t
+             lhs.binds = Bind (Glob 0) @t1.t : @t1.binds ++ @t2.binds
              t1.env = @lhs.env
              t2.env = insert @lhs.env @x
 

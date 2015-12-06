@@ -37,7 +37,7 @@ import qualified UHC.Light.Compiler.CoreRun.API as CR
 type Map a b = [(a,b)]
 {-# LINE 39 "CCO/Core/AG.hs" #-}
 
-{-# LINE 39 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+{-# LINE 45 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
 
 
 tmToTm_ :: Tm -> Tm_
@@ -241,18 +241,19 @@ sem_Core_Core :: T_Tm ->
 sem_Core_Core tm_ =
     (let _lhsOcore :: Mod
          _tmOenv :: (Map String Int)
+         _tmIbinds :: BindL
          _tmIt :: Exp
          _lhsOcore =
              ({-# LINE 18 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
-              Mod _tmIt []
-              {-# LINE 249 "CCO/Core/AG.hs" #-}
+              Mod _tmIt _tmIbinds
+              {-# LINE 250 "CCO/Core/AG.hs" #-}
               )
          _tmOenv =
              ({-# LINE 19 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
               []
-              {-# LINE 254 "CCO/Core/AG.hs" #-}
+              {-# LINE 255 "CCO/Core/AG.hs" #-}
               )
-         ( _tmIt) =
+         ( _tmIbinds,_tmIt) =
              tm_ _tmOenv
      in  ( _lhsOcore))
 -- Exp ---------------------------------------------------------
@@ -304,17 +305,17 @@ sem_Exp_SExp sexp_ =
               _crexp =
                   ({-# LINE 30 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkExp (head _sexpIcrsexpl)
-                   {-# LINE 308 "CCO/Core/AG.hs" #-}
+                   {-# LINE 309 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 313 "CCO/Core/AG.hs" #-}
+                   {-# LINE 314 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 318 "CCO/Core/AG.hs" #-}
+                   {-# LINE 319 "CCO/Core/AG.hs" #-}
                    )
               ( _sexpIcrsexpl) =
                   sexp_
@@ -333,22 +334,22 @@ sem_Exp_Lam args_ body_ =
               _crexp =
                   ({-# LINE 31 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkLam (length _argsIcrrefl) 100 _bodyIcrexp
-                   {-# LINE 337 "CCO/Core/AG.hs" #-}
+                   {-# LINE 338 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 342 "CCO/Core/AG.hs" #-}
+                   {-# LINE 343 "CCO/Core/AG.hs" #-}
                    )
               _bodyOstkoff =
                   ({-# LINE 74 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    length _argsIcrrefl
-                   {-# LINE 347 "CCO/Core/AG.hs" #-}
+                   {-# LINE 348 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 352 "CCO/Core/AG.hs" #-}
+                   {-# LINE 353 "CCO/Core/AG.hs" #-}
                    )
               ( _argsIcrrefl) =
                   args_
@@ -369,22 +370,22 @@ sem_Exp_App func_ args_ =
               _crexp =
                   ({-# LINE 32 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkApp _funcIcrexp _argsIcrsexpl
-                   {-# LINE 373 "CCO/Core/AG.hs" #-}
+                   {-# LINE 374 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 378 "CCO/Core/AG.hs" #-}
+                   {-# LINE 379 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 383 "CCO/Core/AG.hs" #-}
+                   {-# LINE 384 "CCO/Core/AG.hs" #-}
                    )
               _funcOstkoff =
                   ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 388 "CCO/Core/AG.hs" #-}
+                   {-# LINE 389 "CCO/Core/AG.hs" #-}
                    )
               ( _funcIcrexp,_funcIcrexpl) =
                   func_ _funcOstkoff
@@ -402,17 +403,17 @@ sem_Exp_Prim func_ args_ =
               _crexp =
                   ({-# LINE 33 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkFFI func_       _argsIcrsexpl
-                   {-# LINE 406 "CCO/Core/AG.hs" #-}
+                   {-# LINE 407 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 411 "CCO/Core/AG.hs" #-}
+                   {-# LINE 412 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 416 "CCO/Core/AG.hs" #-}
+                   {-# LINE 417 "CCO/Core/AG.hs" #-}
                    )
               ( _argsIcrsexpl) =
                   args_
@@ -428,17 +429,17 @@ sem_Exp_Node tag_ args_ =
               _crexp =
                   ({-# LINE 34 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkTup tag_        _argsIcrsexpl
-                   {-# LINE 432 "CCO/Core/AG.hs" #-}
+                   {-# LINE 433 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 437 "CCO/Core/AG.hs" #-}
+                   {-# LINE 438 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 442 "CCO/Core/AG.hs" #-}
+                   {-# LINE 443 "CCO/Core/AG.hs" #-}
                    )
               ( _argsIcrsexpl) =
                   args_
@@ -455,17 +456,17 @@ sem_Exp_Case sexp_ alts_ =
               _crexp =
                   ({-# LINE 35 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkCase (head _sexpIcrsexpl) _altsIcrexpl
-                   {-# LINE 459 "CCO/Core/AG.hs" #-}
+                   {-# LINE 460 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 464 "CCO/Core/AG.hs" #-}
+                   {-# LINE 465 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 469 "CCO/Core/AG.hs" #-}
+                   {-# LINE 470 "CCO/Core/AG.hs" #-}
                    )
               ( _sexpIcrsexpl) =
                   sexp_
@@ -488,27 +489,27 @@ sem_Exp_Let bind_ body_ =
               _crexp =
                   ({-# LINE 36 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkLet _lhsIstkoff _bindIcrbindl _bodyIcrexp
-                   {-# LINE 492 "CCO/Core/AG.hs" #-}
+                   {-# LINE 493 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 497 "CCO/Core/AG.hs" #-}
+                   {-# LINE 498 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 502 "CCO/Core/AG.hs" #-}
+                   {-# LINE 503 "CCO/Core/AG.hs" #-}
                    )
               _bindOstkoff =
                   ({-# LINE 63 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _lhsIstkoff
-                   {-# LINE 507 "CCO/Core/AG.hs" #-}
+                   {-# LINE 508 "CCO/Core/AG.hs" #-}
                    )
               _bodyOstkoff =
                   ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _bindIstkoff
-                   {-# LINE 512 "CCO/Core/AG.hs" #-}
+                   {-# LINE 513 "CCO/Core/AG.hs" #-}
                    )
               ( _bindIcrbindl,_bindIstkoff) =
                   bind_ _bindOstkoff
@@ -524,17 +525,17 @@ sem_Exp_Dbg info_ =
               _crexp =
                   ({-# LINE 37 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    CR.mkDbg info_
-                   {-# LINE 528 "CCO/Core/AG.hs" #-}
+                   {-# LINE 529 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexpl =
                   ({-# LINE 40 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    [_crexp]
-                   {-# LINE 533 "CCO/Core/AG.hs" #-}
+                   {-# LINE 534 "CCO/Core/AG.hs" #-}
                    )
               _lhsOcrexp =
                   ({-# LINE 25 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
                    _crexp
-                   {-# LINE 538 "CCO/Core/AG.hs" #-}
+                   {-# LINE 539 "CCO/Core/AG.hs" #-}
                    )
           in  ( _lhsOcrexp,_lhsOcrexpl)))
 -- ExpL --------------------------------------------------------
@@ -566,12 +567,12 @@ sem_ExpL_Cons hd_ tl_ =
          _lhsOcrexpl =
              ({-# LINE 27 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrexpl ++ _tlIcrexpl
-              {-# LINE 570 "CCO/Core/AG.hs" #-}
+              {-# LINE 571 "CCO/Core/AG.hs" #-}
               )
          _hdOstkoff =
              ({-# LINE 61 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               error "missing rule: ExpL.Cons.hd.stkoff"
-              {-# LINE 575 "CCO/Core/AG.hs" #-}
+              {-# LINE 576 "CCO/Core/AG.hs" #-}
               )
          ( _hdIcrexp,_hdIcrexpl) =
              hd_ _hdOstkoff
@@ -584,7 +585,7 @@ sem_ExpL_Nil =
          _lhsOcrexpl =
              ({-# LINE 27 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 588 "CCO/Core/AG.hs" #-}
+              {-# LINE 589 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrexpl))
 -- Mod ---------------------------------------------------------
@@ -618,17 +619,17 @@ sem_Mod_Mod main_ binds_ =
          _lhsOcrmod =
              ({-# LINE 15 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               CR.mkMod (mkHNm "Main") Nothing (length _bindsIcrbindl + 100) _bindsIcrbindl _mainIcrexp
-              {-# LINE 622 "CCO/Core/AG.hs" #-}
+              {-# LINE 623 "CCO/Core/AG.hs" #-}
               )
          _bindsOstkoff =
              ({-# LINE 66 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               0
-              {-# LINE 627 "CCO/Core/AG.hs" #-}
+              {-# LINE 628 "CCO/Core/AG.hs" #-}
               )
          _mainOstkoff =
              ({-# LINE 67 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _bindsIstkoff
-              {-# LINE 632 "CCO/Core/AG.hs" #-}
+              {-# LINE 633 "CCO/Core/AG.hs" #-}
               )
          ( _mainIcrexp,_mainIcrexpl) =
              main_ _mainOstkoff
@@ -662,7 +663,7 @@ sem_Ref_Glob offset_ =
          _lhsOcrrefl =
              ({-# LINE 52 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkGlobRef 0 offset_]
-              {-# LINE 666 "CCO/Core/AG.hs" #-}
+              {-# LINE 667 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrrefl))
 sem_Ref_Loc :: Int ->
@@ -673,7 +674,7 @@ sem_Ref_Loc levdiff_ offset_ =
          _lhsOcrrefl =
              ({-# LINE 53 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkLocDifRef levdiff_ offset_]
-              {-# LINE 677 "CCO/Core/AG.hs" #-}
+              {-# LINE 678 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrrefl))
 -- RefL --------------------------------------------------------
@@ -703,7 +704,7 @@ sem_RefL_Cons hd_ tl_ =
          _lhsOcrrefl =
              ({-# LINE 49 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrrefl ++ _tlIcrrefl
-              {-# LINE 707 "CCO/Core/AG.hs" #-}
+              {-# LINE 708 "CCO/Core/AG.hs" #-}
               )
          ( _hdIcrrefl) =
              hd_
@@ -716,7 +717,7 @@ sem_RefL_Nil =
          _lhsOcrrefl =
              ({-# LINE 49 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 720 "CCO/Core/AG.hs" #-}
+              {-# LINE 721 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrrefl))
 -- SExp --------------------------------------------------------
@@ -746,7 +747,7 @@ sem_SExp_Int i_ =
          _lhsOcrsexpl =
              ({-# LINE 21 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkInt' i_]
-              {-# LINE 750 "CCO/Core/AG.hs" #-}
+              {-# LINE 751 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrsexpl))
 sem_SExp_Var :: T_Ref ->
@@ -757,7 +758,7 @@ sem_SExp_Var x_ =
          _lhsOcrsexpl =
              ({-# LINE 22 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               [CR.mkVar' $ head _xIcrrefl]
-              {-# LINE 761 "CCO/Core/AG.hs" #-}
+              {-# LINE 762 "CCO/Core/AG.hs" #-}
               )
          ( _xIcrrefl) =
              x_
@@ -789,7 +790,7 @@ sem_SExpL_Cons hd_ tl_ =
          _lhsOcrsexpl =
              ({-# LINE 18 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               _hdIcrsexpl ++ _tlIcrsexpl
-              {-# LINE 793 "CCO/Core/AG.hs" #-}
+              {-# LINE 794 "CCO/Core/AG.hs" #-}
               )
          ( _hdIcrsexpl) =
              hd_
@@ -802,7 +803,7 @@ sem_SExpL_Nil =
          _lhsOcrsexpl =
              ({-# LINE 18 "CCO\\Core\\AG\\ToCoreRun.ag" #-}
               []
-              {-# LINE 806 "CCO/Core/AG.hs" #-}
+              {-# LINE 807 "CCO/Core/AG.hs" #-}
               )
      in  ( _lhsOcrsexpl))
 -- Tm ----------------------------------------------------------
@@ -814,36 +815,43 @@ sem_Tm (Tm _pos _t) =
     (sem_Tm_Tm _pos (sem_Tm_ _t))
 -- semantic domain
 type T_Tm = (Map String Int) ->
-            ( Exp)
+            ( BindL,Exp)
 data Inh_Tm = Inh_Tm {env_Inh_Tm :: (Map String Int)}
-data Syn_Tm = Syn_Tm {t_Syn_Tm :: Exp}
+data Syn_Tm = Syn_Tm {binds_Syn_Tm :: BindL,t_Syn_Tm :: Exp}
 wrap_Tm :: T_Tm ->
            Inh_Tm ->
            Syn_Tm
 wrap_Tm sem (Inh_Tm _lhsIenv) =
-    (let ( _lhsOt) = sem _lhsIenv
-     in  (Syn_Tm _lhsOt))
+    (let ( _lhsObinds,_lhsOt) = sem _lhsIenv
+     in  (Syn_Tm _lhsObinds _lhsOt))
 sem_Tm_Tm :: SourcePos ->
              T_Tm_ ->
              T_Tm
 sem_Tm_Tm pos_ t_ =
     (\ _lhsIenv ->
-         (let _lhsOt :: Exp
+         (let _lhsObinds :: BindL
+              _lhsOt :: Exp
               _tOenv :: (Map String Int)
+              _tIbinds :: BindL
               _tIt :: Exp
+              _lhsObinds =
+                  ({-# LINE 24 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   _tIbinds
+                   {-# LINE 841 "CCO/Core/AG.hs" #-}
+                   )
               _lhsOt =
                   ({-# LINE 23 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    _tIt
-                   {-# LINE 838 "CCO/Core/AG.hs" #-}
+                   {-# LINE 846 "CCO/Core/AG.hs" #-}
                    )
               _tOenv =
-                  ({-# LINE 24 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 25 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    _lhsIenv
-                   {-# LINE 843 "CCO/Core/AG.hs" #-}
+                   {-# LINE 851 "CCO/Core/AG.hs" #-}
                    )
-              ( _tIt) =
+              ( _tIbinds,_tIt) =
                   t_ _tOenv
-          in  ( _lhsOt)))
+          in  ( _lhsObinds,_lhsOt)))
 -- Tm_ ---------------------------------------------------------
 data Tm_ = HNat (Int)
          | HVar (Var)
@@ -865,88 +873,115 @@ sem_Tm_ (HLet _x _t1 _t2) =
     (sem_Tm__HLet _x (sem_Tm _t1) (sem_Tm _t2))
 -- semantic domain
 type T_Tm_ = (Map String Int) ->
-             ( Exp)
+             ( BindL,Exp)
 data Inh_Tm_ = Inh_Tm_ {env_Inh_Tm_ :: (Map String Int)}
-data Syn_Tm_ = Syn_Tm_ {t_Syn_Tm_ :: Exp}
+data Syn_Tm_ = Syn_Tm_ {binds_Syn_Tm_ :: BindL,t_Syn_Tm_ :: Exp}
 wrap_Tm_ :: T_Tm_ ->
             Inh_Tm_ ->
             Syn_Tm_
 wrap_Tm_ sem (Inh_Tm_ _lhsIenv) =
-    (let ( _lhsOt) = sem _lhsIenv
-     in  (Syn_Tm_ _lhsOt))
+    (let ( _lhsObinds,_lhsOt) = sem _lhsIenv
+     in  (Syn_Tm_ _lhsObinds _lhsOt))
 sem_Tm__HNat :: Int ->
                 T_Tm_
 sem_Tm__HNat i_ =
     (\ _lhsIenv ->
          (let _lhsOt :: Exp
+              _lhsObinds :: BindL
               _lhsOt =
-                  ({-# LINE 27 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 28 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    SExp (Int i_)
-                   {-# LINE 886 "CCO/Core/AG.hs" #-}
+                   {-# LINE 895 "CCO/Core/AG.hs" #-}
                    )
-          in  ( _lhsOt)))
+              _lhsObinds =
+                  ({-# LINE 29 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   []
+                   {-# LINE 900 "CCO/Core/AG.hs" #-}
+                   )
+          in  ( _lhsObinds,_lhsOt)))
 sem_Tm__HVar :: Var ->
                 T_Tm_
 sem_Tm__HVar x_ =
     (\ _lhsIenv ->
          (let _lhsOt :: Exp
+              _lhsObinds :: BindL
               _lhsOt =
-                  ({-# LINE 28 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 30 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    SExp $ tmToSExp _lhsIenv (HVar x_)
-                   {-# LINE 897 "CCO/Core/AG.hs" #-}
+                   {-# LINE 912 "CCO/Core/AG.hs" #-}
                    )
-          in  ( _lhsOt)))
+              _lhsObinds =
+                  ({-# LINE 31 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   []
+                   {-# LINE 917 "CCO/Core/AG.hs" #-}
+                   )
+          in  ( _lhsObinds,_lhsOt)))
 sem_Tm__HLam :: Var ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HLam x_ t1_ =
     (\ _lhsIenv ->
          (let _lhsOt :: Exp
+              _lhsObinds :: BindL
               _t1Oenv :: (Map String Int)
+              _t1Ibinds :: BindL
               _t1It :: Exp
               _lhsOt =
-                  ({-# LINE 29 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 32 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    SExp (Int 2)
-                   {-# LINE 911 "CCO/Core/AG.hs" #-}
+                   {-# LINE 933 "CCO/Core/AG.hs" #-}
+                   )
+              _lhsObinds =
+                  ({-# LINE 33 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   [Bind (Glob 1) _t1It]
+                   {-# LINE 938 "CCO/Core/AG.hs" #-}
                    )
               _t1Oenv =
-                  ({-# LINE 30 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 34 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    insert _lhsIenv x_
-                   {-# LINE 916 "CCO/Core/AG.hs" #-}
+                   {-# LINE 943 "CCO/Core/AG.hs" #-}
                    )
-              ( _t1It) =
+              ( _t1Ibinds,_t1It) =
                   t1_ _t1Oenv
-          in  ( _lhsOt)))
+          in  ( _lhsObinds,_lhsOt)))
 sem_Tm__HApp :: T_Tm ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HApp t1_ t2_ =
     (\ _lhsIenv ->
          (let _lhsOt :: Exp
+              _lhsObinds :: BindL
               _t1Oenv :: (Map String Int)
               _t2Oenv :: (Map String Int)
+              _t1Ibinds :: BindL
               _t1It :: Exp
+              _t2Ibinds :: BindL
               _t2It :: Exp
               _lhsOt =
-                  ({-# LINE 31 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 35 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    App (_t1It) [fromExp _t2It]
-                   {-# LINE 934 "CCO/Core/AG.hs" #-}
+                   {-# LINE 964 "CCO/Core/AG.hs" #-}
+                   )
+              _lhsObinds =
+                  ({-# LINE 36 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   []
+                   {-# LINE 969 "CCO/Core/AG.hs" #-}
                    )
               _t1Oenv =
-                  ({-# LINE 32 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 37 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    _lhsIenv
-                   {-# LINE 939 "CCO/Core/AG.hs" #-}
+                   {-# LINE 974 "CCO/Core/AG.hs" #-}
                    )
               _t2Oenv =
-                  ({-# LINE 33 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 38 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    _lhsIenv
-                   {-# LINE 944 "CCO/Core/AG.hs" #-}
+                   {-# LINE 979 "CCO/Core/AG.hs" #-}
                    )
-              ( _t1It) =
+              ( _t1Ibinds,_t1It) =
                   t1_ _t1Oenv
-              ( _t2It) =
+              ( _t2Ibinds,_t2It) =
                   t2_ _t2Oenv
-          in  ( _lhsOt)))
+          in  ( _lhsObinds,_lhsOt)))
 sem_Tm__HLet :: Var ->
                 T_Tm ->
                 T_Tm ->
@@ -954,27 +989,35 @@ sem_Tm__HLet :: Var ->
 sem_Tm__HLet x_ t1_ t2_ =
     (\ _lhsIenv ->
          (let _lhsOt :: Exp
+              _lhsObinds :: BindL
               _t1Oenv :: (Map String Int)
               _t2Oenv :: (Map String Int)
+              _t1Ibinds :: BindL
               _t1It :: Exp
+              _t2Ibinds :: BindL
               _t2It :: Exp
               _lhsOt =
-                  ({-# LINE 34 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
-                   Let (Bind (Glob 5) (SExp (Int 4))) _t2It
-                   {-# LINE 965 "CCO/Core/AG.hs" #-}
+                  ({-# LINE 39 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   Let (Bind (Glob 0) _t1It) _t2It
+                   {-# LINE 1003 "CCO/Core/AG.hs" #-}
+                   )
+              _lhsObinds =
+                  ({-# LINE 40 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                   Bind (Glob 0) _t1It : _t1Ibinds ++ _t2Ibinds
+                   {-# LINE 1008 "CCO/Core/AG.hs" #-}
                    )
               _t1Oenv =
-                  ({-# LINE 35 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 41 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    _lhsIenv
-                   {-# LINE 970 "CCO/Core/AG.hs" #-}
+                   {-# LINE 1013 "CCO/Core/AG.hs" #-}
                    )
               _t2Oenv =
-                  ({-# LINE 36 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+                  ({-# LINE 42 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
                    insert _lhsIenv x_
-                   {-# LINE 975 "CCO/Core/AG.hs" #-}
+                   {-# LINE 1018 "CCO/Core/AG.hs" #-}
                    )
-              ( _t1It) =
+              ( _t1Ibinds,_t1It) =
                   t1_ _t1Oenv
-              ( _t2It) =
+              ( _t2Ibinds,_t2It) =
                   t2_ _t2Oenv
-          in  ( _lhsOt)))
+          in  ( _lhsObinds,_lhsOt)))
