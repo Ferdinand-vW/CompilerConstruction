@@ -1,9 +1,10 @@
 #!/bin/bash
 read -p "Enter a file name for compilation: " fn
-echo $fn
-cat $fn | ./ParseHM.exe > parsed.bl
-cat parsed.bl
-cat parsed.bl | ./hm2cr.exe > translated.bl
-cat translated.bl
-cat translated.bl | ./PpCore.exe > printed.bl
-cat printed.bl
+cat $fn | ./ParseHM.exe > ../examples/parsed.lam
+cat ../examples/parsed.lam
+cat ../examples/parsed.lam | ./hm2cr.exe > ../examples/translated.lam
+cat ../examples/translated.lam
+cat ../examples/translated.lam | ./PpCore.exe > ../examples/printed.tcrr
+cat ../examples/printed.tcrr
+
+echo "The output can be found in ../examples/printed.tcrr"
