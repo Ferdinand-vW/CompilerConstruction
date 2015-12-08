@@ -4,18 +4,31 @@ Tm(
     "fv"
   , Tm(SourcePos(Stdin, Pos(1, 10)), HNat(5))
   , Tm(
-      SourcePos(Stdin, Pos(2, 2))
+      SourcePos(Stdin, Pos(2, 1))
     , HLet(
         "id"
       , Tm(
-          SourcePos(Stdin, Pos(2, 11))
-        , HLam("x", Tm(SourcePos(Stdin, Pos(2, 16)), HVar("x")))
+          SourcePos(Stdin, Pos(2, 10))
+        , HLam("x", Tm(SourcePos(Stdin, Pos(2, 14)), HVar("x")))
         )
       , Tm(
-          SourcePos(Stdin, Pos(3, 3))
-        , HApp(
-            Tm(SourcePos(Stdin, Pos(3, 3)), HVar("id"))
-          , Tm(SourcePos(Stdin, Pos(3, 6)), HVar("fv"))
+          SourcePos(Stdin, Pos(3, 1))
+        , HLet(
+            "idfv"
+          , Tm(
+              SourcePos(Stdin, Pos(3, 12))
+            , HApp(
+                Tm(SourcePos(Stdin, Pos(3, 12)), HVar("id"))
+              , Tm(SourcePos(Stdin, Pos(3, 15)), HVar("fv"))
+              )
+            )
+          , Tm(
+              SourcePos(Stdin, Pos(4, 4))
+            , HApp(
+                Tm(SourcePos(Stdin, Pos(4, 4)), HVar("id"))
+              , Tm(SourcePos(Stdin, Pos(4, 7)), HVar("idfv"))
+              )
+            )
           )
         )
       )
