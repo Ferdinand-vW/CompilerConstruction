@@ -16,7 +16,9 @@ module CCO.HM (
     -- * Syntax
 
     -- * Parser
-  parser                      -- :: Component String Tm
+  parser,                      -- :: Component String Tm
+  toANormal
 ) where
 
 import CCO.HM.Parser    (parser)
+import CCO.HM.Base      (toANormal)

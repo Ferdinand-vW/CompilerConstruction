@@ -11,22 +11,23 @@
 -- A simple, implicitly typed functional language.
 --
 -------------------------------------------------------------------------------
-{-
-module CCO.HM.Base (
-    -- * Syntax
-    Var                                 -- = String
-  , Tm (Tm)                             -- instances: Tree
-  , Tm_ (HVar, HNat, HLam, HApp, HLet)       -- instances: Tree
-) where
 
+module CCO.HM.Base (
+    toANormal
+) where
 import CCO.HM.AG
-import CCO.Tree                   (Tree (fromTree, toTree))
-import qualified CCO.Tree as T    (ATerm (App))
-import CCO.Tree.Parser            (parseTree, app, arg)
-import Control.Applicative        (Applicative ((<*>)), (<$>))
+import CCO.Feedback
 
 -------------------------------------------------------------------------------
 -- Tree instances
 -------------------------------------------------------------------------------
 
--}
+
+--toANormal :: Tm -> Feedback Tm
+--toANormal tm = return $ Core_Syn_Tm $ wrap_Tm (sem_Tm tm) (Inh_Core)
+
+toANormal :: Tm -> Feedback Tm
+toANormal tm = return $ tm_Syn_Tm $ wrap_Tm (sem_Tm tm) Inh_Tm
+
+--hm2cr :: Tm -> Feedback Mod
+--hm2cr tm = return $ core_Syn_Core $ wrap_Core (sem_Core (Core tm)) (Inh_Core)
