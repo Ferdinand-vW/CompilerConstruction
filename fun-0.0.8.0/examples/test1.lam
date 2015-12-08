@@ -1,5 +1,0 @@
-let fv = 5 in
- let id = 6 in
-  id fv
- ni
-ni
