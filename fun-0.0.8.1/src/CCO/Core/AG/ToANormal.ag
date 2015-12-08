@@ -33,6 +33,7 @@ translate x y = x
 --Als dit zo is; controleer of @t1 en bij de eerste tm van @t2, dus @t2.t1, allebei een var zijn en gelijk aan elkaar zijn.
 -- Als dit zo is voeg een HLet  toe met de naam @t1 ++ @t2.t2 (Als dit een var is). En doe de HApp als waarde
 -- Vervolgens in de in van de let @t1 ++ @t2.t2 doe je HApp met @t1 (@t1 ++ @t2.t2)
+-- In exaples/haakjes.out en examples/correct.out zie je het verschil van hoe het moet worden en hoe het moet worden
 
 
 -- 
