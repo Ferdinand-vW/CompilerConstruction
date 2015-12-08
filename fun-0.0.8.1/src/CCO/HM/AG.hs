@@ -28,10 +28,11 @@ translate x y = x
 --Als dit zo is; controleer of @t1 en bij de eerste tm van @t2, dus @t2.t1, allebei een var zijn en gelijk aan elkaar zijn.
 -- Als dit zo is voeg een HLet  toe met de naam @t1 ++ @t2.t2 (Als dit een var is). En doe de HApp als waarde
 -- Vervolgens in de in van de let @t1 ++ @t2.t2 doe je HApp met @t1 (@t1 ++ @t2.t2)
+-- In exaples/haakjes.out en examples/correct.out zie je het verschil van hoe het moet worden en hoe het moet worden
 
 
 -- 
-{-# LINE 35 "CCO/HM/AG.hs" #-}
+{-# LINE 36 "CCO/HM/AG.hs" #-}
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -53,12 +54,12 @@ instance Tree Tm_ where
                      , app "HLet" (HLet <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 57 "CCO/HM/AG.hs" #-}
+{-# LINE 58 "CCO/HM/AG.hs" #-}
 
 {-# LINE 36 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 type Var = String    -- ^ Type of variables.
-{-# LINE 62 "CCO/HM/AG.hs" #-}
+{-# LINE 63 "CCO/HM/AG.hs" #-}
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
 -- cata
@@ -89,17 +90,17 @@ sem_Tm_Tm pos_ t_ =
               _lhsOtm =
                   ({-# LINE 9 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    Tm pos_ _tItm_
-                   {-# LINE 93 "CCO/HM/AG.hs" #-}
+                   {-# LINE 94 "CCO/HM/AG.hs" #-}
                    )
               _lhsOtm_ =
                   ({-# LINE 2 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _tItm_
-                   {-# LINE 98 "CCO/HM/AG.hs" #-}
+                   {-# LINE 99 "CCO/HM/AG.hs" #-}
                    )
               _tOpreviousTm =
                   ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _lhsIpreviousTm
-                   {-# LINE 103 "CCO/HM/AG.hs" #-}
+                   {-# LINE 104 "CCO/HM/AG.hs" #-}
                    )
               ( _tItm_) =
                   t_ _tOpreviousTm
@@ -142,7 +143,7 @@ sem_Tm__HNat i_ =
               _lhsOtm_ =
                   ({-# LINE 12 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    HNat i_
-                   {-# LINE 146 "CCO/HM/AG.hs" #-}
+                   {-# LINE 147 "CCO/HM/AG.hs" #-}
                    )
           in  ( _lhsOtm_)))
 sem_Tm__HVar :: Var ->
@@ -153,7 +154,7 @@ sem_Tm__HVar x_ =
               _lhsOtm_ =
                   ({-# LINE 13 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    HVar x_
-                   {-# LINE 157 "CCO/HM/AG.hs" #-}
+                   {-# LINE 158 "CCO/HM/AG.hs" #-}
                    )
           in  ( _lhsOtm_)))
 sem_Tm__HLam :: Var ->
@@ -168,12 +169,12 @@ sem_Tm__HLam x_ t1_ =
               _lhsOtm_ =
                   ({-# LINE 14 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    HLam x_ _t1Itm
-                   {-# LINE 172 "CCO/HM/AG.hs" #-}
+                   {-# LINE 173 "CCO/HM/AG.hs" #-}
                    )
               _t1OpreviousTm =
                   ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _lhsIpreviousTm
-                   {-# LINE 177 "CCO/HM/AG.hs" #-}
+                   {-# LINE 178 "CCO/HM/AG.hs" #-}
                    )
               ( _t1Itm,_t1Itm_) =
                   t1_ _t1OpreviousTm
@@ -193,17 +194,17 @@ sem_Tm__HApp t1_ t2_ =
               _lhsOtm_ =
                   ({-# LINE 15 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    HApp (functie _t1Itm_ _t1Itm) _t2Itm
-                   {-# LINE 197 "CCO/HM/AG.hs" #-}
+                   {-# LINE 198 "CCO/HM/AG.hs" #-}
                    )
               _t2OpreviousTm =
                   ({-# LINE 16 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _t1Itm_
-                   {-# LINE 202 "CCO/HM/AG.hs" #-}
+                   {-# LINE 203 "CCO/HM/AG.hs" #-}
                    )
               _t1OpreviousTm =
                   ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _lhsIpreviousTm
-                   {-# LINE 207 "CCO/HM/AG.hs" #-}
+                   {-# LINE 208 "CCO/HM/AG.hs" #-}
                    )
               ( _t1Itm,_t1Itm_) =
                   t1_ _t1OpreviousTm
@@ -226,17 +227,17 @@ sem_Tm__HLet x_ t1_ t2_ =
               _lhsOtm_ =
                   ({-# LINE 17 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    HLet x_ _t1Itm _t2Itm
-                   {-# LINE 230 "CCO/HM/AG.hs" #-}
+                   {-# LINE 231 "CCO/HM/AG.hs" #-}
                    )
               _t1OpreviousTm =
                   ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _lhsIpreviousTm
-                   {-# LINE 235 "CCO/HM/AG.hs" #-}
+                   {-# LINE 236 "CCO/HM/AG.hs" #-}
                    )
               _t2OpreviousTm =
                   ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
                    _lhsIpreviousTm
-                   {-# LINE 240 "CCO/HM/AG.hs" #-}
+                   {-# LINE 241 "CCO/HM/AG.hs" #-}
                    )
               ( _t1Itm,_t1Itm_) =
                   t1_ _t1OpreviousTm
