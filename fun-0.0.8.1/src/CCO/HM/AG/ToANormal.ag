@@ -1,0 +1,70 @@
+
+attr Tm Tm_
+    syn tm_ :: Tm_
+    syn ntm_ :: Tm_
+
+attr Tm
+    syn tm :: Tm
+    syn ntm :: Tm
+
+sem Tm
+    | Tm lhs.tm = Tm @pos @t.tm_
+    | Tm lhs.ntm = Tm @pos @t.ntm_
+
+sem Tm_
+    | HNat  lhs.tm_ = HNat @i
+            lhs.ntm_ = HNat @i
+    | HVar  lhs.tm_ = HVar @x
+            lhs.ntm_ = HVar @x
+    | HLam  lhs.tm_ = HLam @x @t1.tm
+            lhs.ntm_ = HLam @x @t1.ntm
+    | HApp  lhs.tm_ = HApp @t1.tm @t2.tm
+            lhs.ntm_ = transform (HApp @t1.ntm @t2.ntm)
+    | HLet  lhs.tm_ = HLet @x @t1.tm @t2.tm
+            lhs.ntm_ = HLet @x @t1.ntm @t2.ntm
+
+
+{
+
+--The second tm should be either t1 or t2
+transform :: Tm_ -> Tm_
+transform (HApp (Tm lpos (HApp lt1 lt2)) (Tm rpos (HApp rt1 rt2))) =
+    HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) $ Tm lpos $
+        HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) $ Tm rpos $
+            HApp (Tm lpos $ HVar $ letName lt1 lt2) (Tm rpos $ HVar $ letName rt1 rt2)
+transform (HApp (Tm lpos (HApp lt1 lt2)) t2) = HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) (Tm lpos $ HApp (Tm lpos $ HVar $ letName lt1 lt2) t2)
+transform (HApp t1 (Tm rpos (HApp rt1 rt2))) = HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) (Tm rpos $ HApp t1 (Tm rpos $ HVar $ letName rt1 rt2))
+transform tm = tm
+
+letName :: Tm -> Tm -> String
+letName tm1 tm2 = (getName $ tTm_ tm1) ++ (getName $ tTm_ tm2)
+
+tTm_ :: Tm -> Tm_
+tTm_ (Tm _ t) = t
+
+getName :: Tm_ -> String
+getName (HNat i) = show i
+getName (HVar x) = x
+getName (HLam x _) = x
+getName (HLet x _ _) = x
+getname _ = ""
+
+functie :: Tm_ -> Tm -> Tm
+functie x y = y
+
+translate :: Tm_ -> Tm_ -> Tm_
+translate (HVar x) (HVar y) | x==y = HVar "Matthew"
+                          | otherwise = (HVar x)
+translate x y = x
+
+
+--Ik krijg het niet correct werkend met uuagc-.-, dus zal wel de stappen opschrijven wat ik van plan was. Ik ben ook nog wel op skype denk ik.
+--Controleer HApp of @t2 een HApp is
+--Als dit zo is; controleer of @t1 en bij de eerste tm van @t2, dus @t2.t1, allebei een var zijn en gelijk aan elkaar zijn.
+-- Als dit zo is voeg een HLet  toe met de naam @t1 ++ @t2.t2 (Als dit een var is). En doe de HApp als waarde
+-- Vervolgens in de in van de let @t1 ++ @t2.t2 doe je HApp met @t1 (@t1 ++ @t2.t2)
+-- In exaples/haakjes.out en examples/correct.out zie je het verschil van hoe het moet worden en hoe het moet worden
+
+
+-- 
+}

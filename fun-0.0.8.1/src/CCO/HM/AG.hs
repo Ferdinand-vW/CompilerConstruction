@@ -11,8 +11,31 @@ import qualified CCO.Tree as T    (ATerm (App))
 import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 14 "CCO/HM/AG.hs" #-}
-{-# LINE 20 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
+{-# LINE 27 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
+
+--The second tm should be either t1 or t2
+transform :: Tm_ -> Tm_
+transform (HApp (Tm lpos (HApp lt1 lt2)) (Tm rpos (HApp rt1 rt2))) =
+    HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) $ Tm lpos $
+        HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) $ Tm rpos $
+            HApp (Tm lpos $ HVar $ letName lt1 lt2) (Tm rpos $ HVar $ letName rt1 rt2)
+transform (HApp (Tm lpos (HApp lt1 lt2)) t2) = HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) (Tm lpos $ HApp (Tm lpos $ HVar $ letName lt1 lt2) t2)
+transform (HApp t1 (Tm rpos (HApp rt1 rt2))) = HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) (Tm rpos $ HApp t1 (Tm rpos $ HVar $ letName rt1 rt2))
+transform tm = tm
+
+letName :: Tm -> Tm -> String
+letName tm1 tm2 = (getName $ tTm_ tm1) ++ (getName $ tTm_ tm2)
+
+tTm_ :: Tm -> Tm_
+tTm_ (Tm _ t) = t
+
+getName :: Tm_ -> String
+getName (HNat i) = show i
+getName (HVar x) = x
+getName (HLam x _) = x
+getName (HLet x _ _) = x
+getname _ = ""
 
 functie :: Tm_ -> Tm -> Tm
 functie x y = y
@@ -32,7 +55,7 @@ translate x y = x
 
 
 -- 
-{-# LINE 36 "CCO/HM/AG.hs" #-}
+{-# LINE 59 "CCO/HM/AG.hs" #-}
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -54,12 +77,12 @@ instance Tree Tm_ where
                      , app "HLet" (HLet <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 58 "CCO/HM/AG.hs" #-}
+{-# LINE 81 "CCO/HM/AG.hs" #-}
 
 {-# LINE 36 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 type Var = String    -- ^ Type of variables.
-{-# LINE 63 "CCO/HM/AG.hs" #-}
+{-# LINE 86 "CCO/HM/AG.hs" #-}
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
 -- cata
@@ -68,43 +91,48 @@ sem_Tm :: Tm ->
 sem_Tm (Tm _pos _t) =
     (sem_Tm_Tm _pos (sem_Tm_ _t))
 -- semantic domain
-type T_Tm = Tm_ ->
-            ( Tm,Tm_)
-data Inh_Tm = Inh_Tm {previousTm_Inh_Tm :: Tm_}
-data Syn_Tm = Syn_Tm {tm_Syn_Tm :: Tm,tm__Syn_Tm :: Tm_}
+type T_Tm = ( Tm,Tm_,Tm,Tm_)
+data Inh_Tm = Inh_Tm {}
+data Syn_Tm = Syn_Tm {ntm_Syn_Tm :: Tm,ntm__Syn_Tm :: Tm_,tm_Syn_Tm :: Tm,tm__Syn_Tm :: Tm_}
 wrap_Tm :: T_Tm ->
            Inh_Tm ->
            Syn_Tm
-wrap_Tm sem (Inh_Tm _lhsIpreviousTm) =
-    (let ( _lhsOtm,_lhsOtm_) = sem _lhsIpreviousTm
-     in  (Syn_Tm _lhsOtm _lhsOtm_))
+wrap_Tm sem (Inh_Tm) =
+    (let ( _lhsOntm,_lhsOntm_,_lhsOtm,_lhsOtm_) = sem
+     in  (Syn_Tm _lhsOntm _lhsOntm_ _lhsOtm _lhsOtm_))
 sem_Tm_Tm :: SourcePos ->
              T_Tm_ ->
              T_Tm
 sem_Tm_Tm pos_ t_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm :: Tm
-              _lhsOtm_ :: Tm_
-              _tOpreviousTm :: Tm_
-              _tItm_ :: Tm_
-              _lhsOtm =
-                  ({-# LINE 9 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   Tm pos_ _tItm_
-                   {-# LINE 94 "CCO/HM/AG.hs" #-}
-                   )
-              _lhsOtm_ =
-                  ({-# LINE 2 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _tItm_
-                   {-# LINE 99 "CCO/HM/AG.hs" #-}
-                   )
-              _tOpreviousTm =
-                  ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _lhsIpreviousTm
-                   {-# LINE 104 "CCO/HM/AG.hs" #-}
-                   )
-              ( _tItm_) =
-                  t_ _tOpreviousTm
-          in  ( _lhsOtm,_lhsOtm_)))
+    (let _lhsOtm :: Tm
+         _lhsOntm :: Tm
+         _lhsOntm_ :: Tm_
+         _lhsOtm_ :: Tm_
+         _tIntm_ :: Tm_
+         _tItm_ :: Tm_
+         _lhsOtm =
+             ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              Tm pos_ _tItm_
+              {-# LINE 117 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm =
+             ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              Tm pos_ _tIntm_
+              {-# LINE 122 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 4 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              _tIntm_
+              {-# LINE 127 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOtm_ =
+             ({-# LINE 3 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              _tItm_
+              {-# LINE 132 "CCO/HM/AG.hs" #-}
+              )
+         ( _tIntm_,_tItm_) =
+             t_
+     in  ( _lhsOntm,_lhsOntm_,_lhsOtm,_lhsOtm_))
 -- Tm_ ---------------------------------------------------------
 data Tm_ = HNat (Int)
          | HVar (Var)
@@ -125,122 +153,126 @@ sem_Tm_ (HApp _t1 _t2) =
 sem_Tm_ (HLet _x _t1 _t2) =
     (sem_Tm__HLet _x (sem_Tm _t1) (sem_Tm _t2))
 -- semantic domain
-type T_Tm_ = Tm_ ->
-             ( Tm_)
-data Inh_Tm_ = Inh_Tm_ {previousTm_Inh_Tm_ :: Tm_}
-data Syn_Tm_ = Syn_Tm_ {tm__Syn_Tm_ :: Tm_}
+type T_Tm_ = ( Tm_,Tm_)
+data Inh_Tm_ = Inh_Tm_ {}
+data Syn_Tm_ = Syn_Tm_ {ntm__Syn_Tm_ :: Tm_,tm__Syn_Tm_ :: Tm_}
 wrap_Tm_ :: T_Tm_ ->
             Inh_Tm_ ->
             Syn_Tm_
-wrap_Tm_ sem (Inh_Tm_ _lhsIpreviousTm) =
-    (let ( _lhsOtm_) = sem _lhsIpreviousTm
-     in  (Syn_Tm_ _lhsOtm_))
+wrap_Tm_ sem (Inh_Tm_) =
+    (let ( _lhsOntm_,_lhsOtm_) = sem
+     in  (Syn_Tm_ _lhsOntm_ _lhsOtm_))
 sem_Tm__HNat :: Int ->
                 T_Tm_
 sem_Tm__HNat i_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm_ :: Tm_
-              _lhsOtm_ =
-                  ({-# LINE 12 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   HNat i_
-                   {-# LINE 147 "CCO/HM/AG.hs" #-}
-                   )
-          in  ( _lhsOtm_)))
+    (let _lhsOtm_ :: Tm_
+         _lhsOntm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HNat i_
+              {-# LINE 174 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HNat i_
+              {-# LINE 179 "CCO/HM/AG.hs" #-}
+              )
+     in  ( _lhsOntm_,_lhsOtm_))
 sem_Tm__HVar :: Var ->
                 T_Tm_
 sem_Tm__HVar x_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm_ :: Tm_
-              _lhsOtm_ =
-                  ({-# LINE 13 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   HVar x_
-                   {-# LINE 158 "CCO/HM/AG.hs" #-}
-                   )
-          in  ( _lhsOtm_)))
+    (let _lhsOtm_ :: Tm_
+         _lhsOntm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HVar x_
+              {-# LINE 190 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HVar x_
+              {-# LINE 195 "CCO/HM/AG.hs" #-}
+              )
+     in  ( _lhsOntm_,_lhsOtm_))
 sem_Tm__HLam :: Var ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HLam x_ t1_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm_ :: Tm_
-              _t1OpreviousTm :: Tm_
-              _t1Itm :: Tm
-              _t1Itm_ :: Tm_
-              _lhsOtm_ =
-                  ({-# LINE 14 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   HLam x_ _t1Itm
-                   {-# LINE 173 "CCO/HM/AG.hs" #-}
-                   )
-              _t1OpreviousTm =
-                  ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _lhsIpreviousTm
-                   {-# LINE 178 "CCO/HM/AG.hs" #-}
-                   )
-              ( _t1Itm,_t1Itm_) =
-                  t1_ _t1OpreviousTm
-          in  ( _lhsOtm_)))
+    (let _lhsOtm_ :: Tm_
+         _lhsOntm_ :: Tm_
+         _t1Intm :: Tm
+         _t1Intm_ :: Tm_
+         _t1Itm :: Tm
+         _t1Itm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 19 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HLam x_ _t1Itm
+              {-# LINE 211 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 20 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HLam x_ _t1Intm
+              {-# LINE 216 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Intm,_t1Intm_,_t1Itm,_t1Itm_) =
+             t1_
+     in  ( _lhsOntm_,_lhsOtm_))
 sem_Tm__HApp :: T_Tm ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HApp t1_ t2_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm_ :: Tm_
-              _t2OpreviousTm :: Tm_
-              _t1OpreviousTm :: Tm_
-              _t1Itm :: Tm
-              _t1Itm_ :: Tm_
-              _t2Itm :: Tm
-              _t2Itm_ :: Tm_
-              _lhsOtm_ =
-                  ({-# LINE 15 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   HApp (functie _t1Itm_ _t1Itm) _t2Itm
-                   {-# LINE 198 "CCO/HM/AG.hs" #-}
-                   )
-              _t2OpreviousTm =
-                  ({-# LINE 16 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _t1Itm_
-                   {-# LINE 203 "CCO/HM/AG.hs" #-}
-                   )
-              _t1OpreviousTm =
-                  ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _lhsIpreviousTm
-                   {-# LINE 208 "CCO/HM/AG.hs" #-}
-                   )
-              ( _t1Itm,_t1Itm_) =
-                  t1_ _t1OpreviousTm
-              ( _t2Itm,_t2Itm_) =
-                  t2_ _t2OpreviousTm
-          in  ( _lhsOtm_)))
+    (let _lhsOtm_ :: Tm_
+         _lhsOntm_ :: Tm_
+         _t1Intm :: Tm
+         _t1Intm_ :: Tm_
+         _t1Itm :: Tm
+         _t1Itm_ :: Tm_
+         _t2Intm :: Tm
+         _t2Intm_ :: Tm_
+         _t2Itm :: Tm
+         _t2Itm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 21 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HApp _t1Itm _t2Itm
+              {-# LINE 238 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 22 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              transform (HApp _t1Intm _t2Intm)
+              {-# LINE 243 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Intm,_t1Intm_,_t1Itm,_t1Itm_) =
+             t1_
+         ( _t2Intm,_t2Intm_,_t2Itm,_t2Itm_) =
+             t2_
+     in  ( _lhsOntm_,_lhsOtm_))
 sem_Tm__HLet :: Var ->
                 T_Tm ->
                 T_Tm ->
                 T_Tm_
 sem_Tm__HLet x_ t1_ t2_ =
-    (\ _lhsIpreviousTm ->
-         (let _lhsOtm_ :: Tm_
-              _t1OpreviousTm :: Tm_
-              _t2OpreviousTm :: Tm_
-              _t1Itm :: Tm
-              _t1Itm_ :: Tm_
-              _t2Itm :: Tm
-              _t2Itm_ :: Tm_
-              _lhsOtm_ =
-                  ({-# LINE 17 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   HLet x_ _t1Itm _t2Itm
-                   {-# LINE 231 "CCO/HM/AG.hs" #-}
-                   )
-              _t1OpreviousTm =
-                  ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _lhsIpreviousTm
-                   {-# LINE 236 "CCO/HM/AG.hs" #-}
-                   )
-              _t2OpreviousTm =
-                  ({-# LINE 3 "CCO\\HM\\..\\Core\\AG\\ToANormal.ag" #-}
-                   _lhsIpreviousTm
-                   {-# LINE 241 "CCO/HM/AG.hs" #-}
-                   )
-              ( _t1Itm,_t1Itm_) =
-                  t1_ _t1OpreviousTm
-              ( _t2Itm,_t2Itm_) =
-                  t2_ _t2OpreviousTm
-          in  ( _lhsOtm_)))
+    (let _lhsOtm_ :: Tm_
+         _lhsOntm_ :: Tm_
+         _t1Intm :: Tm
+         _t1Intm_ :: Tm_
+         _t1Itm :: Tm
+         _t1Itm_ :: Tm_
+         _t2Intm :: Tm
+         _t2Intm_ :: Tm_
+         _t2Itm :: Tm
+         _t2Itm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 23 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HLet x_ _t1Itm _t2Itm
+              {-# LINE 268 "CCO/HM/AG.hs" #-}
+              )
+         _lhsOntm_ =
+             ({-# LINE 24 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HLet x_ _t1Intm _t2Intm
+              {-# LINE 273 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Intm,_t1Intm_,_t1Itm,_t1Itm_) =
+             t1_
+         ( _t2Intm,_t2Intm_,_t2Itm,_t2Itm_) =
+             t2_
+     in  ( _lhsOntm_,_lhsOtm_))

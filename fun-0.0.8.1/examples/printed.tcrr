@@ -1,5 +1,6 @@
-module Main 104 -> m.3;
+module Main 105 -> m.4;
 5;
 \1,100 -> d.0.0;
+app (m.1)(m.1);
 app (m.1)(m.0);
-app (m.1)(m.2);
+app (m.2)(m.3);

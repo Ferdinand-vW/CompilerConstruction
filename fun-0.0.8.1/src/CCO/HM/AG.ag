@@ -15,4 +15,4 @@
 module {CCO.HM.AG} {} {}
 
 include "../AG/HM.ag"
-include "../Core/AG/ToANormal.ag"
+include "AG/ToANormal.ag"
