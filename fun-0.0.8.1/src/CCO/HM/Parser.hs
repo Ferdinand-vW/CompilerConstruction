@@ -42,7 +42,7 @@ parser = C.parser lexer (pTm <* eof)
 -- | Parses a 'Tm'.
 pTm :: TokenParser Tm
 pTm = (\pos x t1 -> Tm pos (HLam x t1)) <$> sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
-      (\pos x t1 t2 -> Tm pos (HPrim x t1 t2)) <$> sourcePos <* keyword "prim" <*> var <*> pTm <*> pTm <|>
+      (\pos x t1 t2 -> Tm pos (HPrim x t1 t2)) <$> sourcePos <* keyword "prim" <* spec '\"' <*> var <* spec '\"' <*> pTm <*> pTm <|>
       (\pos ts -> foldl1 (\t1 t2 -> Tm pos (HApp t1 t2)) ts) <$>
         sourcePos <*> some
           (

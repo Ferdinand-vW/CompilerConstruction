@@ -1,7 +1,0 @@
-module Main 104 -> eval(m.3);
-\0,100 ->  let 1 -> 4; in
-           let 2 -> 2; in
-           ffi "primAddInt" (d.0.0, d.0.1);
-5;
-\1,100 -> d.0.0;
-(m.0);
