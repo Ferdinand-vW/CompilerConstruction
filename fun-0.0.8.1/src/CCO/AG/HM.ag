@@ -16,15 +16,17 @@ instance Tree Tm where
 instance Tree Tm_ where
   fromTree (HNat x)       = T.App "HNat" [fromTree x]
   fromTree (HVar x)       = T.App "HVar" [fromTree x]
+  fromTree (HPrim x t1 t2) = T.App "HPrim" [fromTree x,fromTree t1, fromTree t2] --Added here
   fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
   fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
   fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
 
-  toTree = parseTree [ app "HNat" (HNat <$> arg                )
-                     , app "HVar" (HVar <$> arg                )
-                     , app "HLam" (HLam <$> arg <*> arg        )
-                     , app "HApp" (HApp <$> arg <*> arg        )
-                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+  toTree = parseTree [ app "HNat"  (HNat  <$> arg                )
+                     , app "HPrim" (HPrim <$> arg <*> arg <*> arg)
+                     , app "HVar"  (HVar  <$> arg                )
+                     , app "HLam"  (HLam  <$> arg <*> arg        )
+                     , app "HApp"  (HApp  <$> arg <*> arg        )
+                     , app "HLet"  (HLet  <$> arg <*> arg <*> arg)
                      ]
 
 }
@@ -42,6 +44,7 @@ data Tm
 
 data Tm_
   | HNat  i :: {Int}
+  | HPrim f :: {Var}  t1 :: Tm  t2 :: Tm  --Added here
   | HVar  x :: {Var}
   | HLam  x :: {Var}  t1 :: Tm
   | HApp  t1 :: Tm  t2 :: Tm

@@ -31,38 +31,47 @@ attr Tm Tm_
     inh lvl :: Int
 
 sem Tm_
-    |   HNat lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = SExp (Int @i)
-             lhs.binds = []
-    |   HVar lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (HVar @x)
-             lhs.binds = []
-    |   HLam lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = Lam [fromJust $ lookup @x @loc.nenv] @t1.exp
-             lhs.binds = []
-             t1.genv = @lhs.genv
-             loc.nenv = insertl @lhs.lenv @lhs.lvl @x
-             t1.lenv = @loc.nenv
-             t1.lvl = @lhs.lvl + 1
-    |   HApp lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
-             lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (App (@t1.exp) [fromExp @t2.exp])]
-             t1.genv = @lhs.genv
-             t2.genv = @lhs.genv
-             t1.lenv = @lhs.lenv
-             t2.lenv = @lhs.lenv
-             t1.lvl = @lhs.lvl
-             t2.lvl = @lhs.lvl
-    |   HLet lhs.main = @t2.main
-             lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
-             lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
-             t1.genv = @lhs.genv
-             t2.genv = insertg @lhs.genv @x
-             t1.lenv = @lhs.lenv
-             t2.lenv = @lhs.lenv
-             t1.lvl = @lhs.lvl
-             t2.lvl = @lhs.lvl
-
+    |   HNat  lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp  = SExp (Int @i)
+              lhs.binds = []
+    |   HVar  lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (HVar @x)
+              lhs.binds = []
+    |   HLam  lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp  = Lam [fromJust $ lookup @x @loc.nenv] @t1.exp
+              lhs.binds = []
+              t1.genv = @lhs.genv
+              loc.nenv = insertl @lhs.lenv @lhs.lvl @x
+              t1.lenv = @loc.nenv
+              t1.lvl = @lhs.lvl + 1
+    |   HApp  lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (App (@t1.exp) [fromExp @t2.exp])]
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = @lhs.lenv
+              t2.lenv = @lhs.lenv
+              t1.lvl = @lhs.lvl
+              t2.lvl = @lhs.lvl
+    |   HLet  lhs.main = @t2.main
+              lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
+              lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
+              t1.genv = @lhs.genv
+              t2.genv = insertg @lhs.genv @x
+              t1.lenv = @lhs.lenv
+              t2.lenv = @lhs.lenv
+              t1.lvl = @lhs.lvl
+              t2.lvl = @lhs.lvl
+    |   HPrim lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp = Prim @f [fromExp @t1.exp, fromExp @t2.exp]
+              lhs.binds = []
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = @lhs.lenv
+              t2.lenv = @lhs.lenv
+              t1.lvl = @lhs.lvl
+              t2.lvl = @lhs.lvl
+ 
 
 {
 
@@ -73,7 +82,7 @@ fromExp :: Exp -> SExp
 fromExp (SExp s) = s 
 
 findVarRef :: Map String Ref -> Map String Ref -> Tm_ -> SExp
-findVarRef genv lenv (HNat i) = Int i
+findVarRef genv lenv (HNat i) = Int i --Will the Int every be reached?
 findVarRef genv lenv (HVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
 
 getOffSet :: Map String Ref -> Int

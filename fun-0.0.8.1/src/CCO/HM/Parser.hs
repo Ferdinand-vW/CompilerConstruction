@@ -17,7 +17,7 @@ module CCO.HM.Parser (
     parser    -- :: Component String Tm
 ) where
 
-import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (HVar, HNat, HLam, HApp, HLet))
+import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (HVar, HNat, HLam, HApp, HLet,HPrim))
 import CCO.HM.Lexer                    (Token, lexer, keyword, var, nat, spec)
 import CCO.Component                   (Component)
 import qualified CCO.Component as C    (parser)
@@ -41,14 +41,13 @@ parser = C.parser lexer (pTm <* eof)
 
 -- | Parses a 'Tm'.
 pTm :: TokenParser Tm
-pTm = (\pos x t1 -> Tm pos (HLam x t1)) <$>
-        sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
+pTm = (\pos x t1 -> Tm pos (HLam x t1)) <$> sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
+      (\pos x t1 t2 -> Tm pos (HPrim x t1 t2)) <$> sourcePos <* keyword "prim" <*> var <*> pTm <*> pTm <|>
       (\pos ts -> foldl1 (\t1 t2 -> Tm pos (HApp t1 t2)) ts) <$>
         sourcePos <*> some
-          (  (\pos x -> Tm pos (HNat x)) <$> sourcePos <*> nat <|>
+          (
+            (\pos x -> Tm pos (HNat x)) <$> sourcePos <*> nat <|>
              (\pos x -> Tm pos (HVar x)) <$> sourcePos <*> var <|>
-             (\pos x t1 t2 -> Tm pos (HLet x t1 t2)) <$>
-               sourcePos <* keyword "let" <*> var <* spec '=' <*> pTm <*
-               keyword "in" <*> pTm <* keyword "ni" <|>
+             (\pos x t1 t2 -> Tm pos (HLet x t1 t2)) <$> sourcePos <* keyword "let" <*> var <* spec '=' <*> pTm <* keyword "in" <*> pTm <* keyword "ni" <|>
               spec '(' *> pTm <* spec ')'
           )

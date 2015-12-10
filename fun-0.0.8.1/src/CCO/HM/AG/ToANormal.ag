@@ -13,6 +13,7 @@ sem Tm_
     | HNat  lhs.tm_ = HNat @i
     | HVar  lhs.tm_ = HVar @x
     | HLam  lhs.tm_ = HLam @x @t1.tm
+    | HPrim lhs.tm_ = HPrim @f @t1.tm @t2.tm
     | HApp  lhs.tm_ = transform (HApp @t1.tm @t2.tm)
     | HLet  lhs.tm_ = HLet @x @t1.tm @t2.tm
 
@@ -43,6 +44,7 @@ tTm_ (Tm _ t) = t
 getName :: Tm_ -> String
 getName (HNat i) = show i
 getName (HVar x) = x
+getName (HPrim x _ _) = x
 getName (HLam x _) = x
 getName (HLet x _ _) = x
 getname _ = ""

@@ -11,7 +11,7 @@ import qualified CCO.Tree as T    (ATerm (App))
 import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 14 "CCO/HM/AG.hs" #-}
-{-# LINE 20 "CCO\\HM\\AG\\ToANormal.ag" #-}
+{-# LINE 21 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
 
 transform :: Tm_ -> Tm_
@@ -38,6 +38,7 @@ tTm_ (Tm _ t) = t
 getName :: Tm_ -> String
 getName (HNat i) = show i
 getName (HVar x) = x
+getName (HPrim x _ _) = x
 getName (HLam x _) = x
 getName (HLet x _ _) = x
 getname _ = ""
@@ -60,7 +61,7 @@ translate x y = x
 
 
 -- 
-{-# LINE 64 "CCO/HM/AG.hs" #-}
+{-# LINE 65 "CCO/HM/AG.hs" #-}
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -71,23 +72,25 @@ instance Tree Tm where
 instance Tree Tm_ where
   fromTree (HNat x)       = T.App "HNat" [fromTree x]
   fromTree (HVar x)       = T.App "HVar" [fromTree x]
+  fromTree (HPrim x t1 t2) = T.App "HPrim" [fromTree x,fromTree t1, fromTree t2] --Added here
   fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
   fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
   fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
 
-  toTree = parseTree [ app "HNat" (HNat <$> arg                )
-                     , app "HVar" (HVar <$> arg                )
-                     , app "HLam" (HLam <$> arg <*> arg        )
-                     , app "HApp" (HApp <$> arg <*> arg        )
-                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+  toTree = parseTree [ app "HNat"  (HNat  <$> arg                )
+                     , app "HPrim" (HPrim <$> arg <*> arg <*> arg)
+                     , app "HVar"  (HVar  <$> arg                )
+                     , app "HLam"  (HLam  <$> arg <*> arg        )
+                     , app "HApp"  (HApp  <$> arg <*> arg        )
+                     , app "HLet"  (HLet  <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 86 "CCO/HM/AG.hs" #-}
+{-# LINE 89 "CCO/HM/AG.hs" #-}
 
-{-# LINE 36 "CCO\\HM\\..\\AG\\HM.ag" #-}
+{-# LINE 38 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 type Var = String    -- ^ Type of variables.
-{-# LINE 91 "CCO/HM/AG.hs" #-}
+{-# LINE 94 "CCO/HM/AG.hs" #-}
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
 -- cata
@@ -115,18 +118,19 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               Tm pos_ _tItm_
-              {-# LINE 119 "CCO/HM/AG.hs" #-}
+              {-# LINE 122 "CCO/HM/AG.hs" #-}
               )
          _lhsOtm_ =
              ({-# LINE 4 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm_
-              {-# LINE 124 "CCO/HM/AG.hs" #-}
+              {-# LINE 127 "CCO/HM/AG.hs" #-}
               )
          ( _tItm_) =
              t_
      in  ( _lhsOtm,_lhsOtm_))
 -- Tm_ ---------------------------------------------------------
 data Tm_ = HNat (Int)
+         | HPrim (Var) (Tm) (Tm)
          | HVar (Var)
          | HLam (Var) (Tm)
          | HApp (Tm) (Tm)
@@ -136,6 +140,8 @@ sem_Tm_ :: Tm_ ->
            T_Tm_
 sem_Tm_ (HNat _i) =
     (sem_Tm__HNat _i)
+sem_Tm_ (HPrim _f _t1 _t2) =
+    (sem_Tm__HPrim _f (sem_Tm _t1) (sem_Tm _t2))
 sem_Tm_ (HVar _x) =
     (sem_Tm__HVar _x)
 sem_Tm_ (HLam _x _t1) =
@@ -161,8 +167,28 @@ sem_Tm__HNat i_ =
          _lhsOtm_ =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
               HNat i_
-              {-# LINE 165 "CCO/HM/AG.hs" #-}
+              {-# LINE 171 "CCO/HM/AG.hs" #-}
               )
+     in  ( _lhsOtm_))
+sem_Tm__HPrim :: Var ->
+                 T_Tm ->
+                 T_Tm ->
+                 T_Tm_
+sem_Tm__HPrim f_ t1_ t2_ =
+    (let _lhsOtm_ :: Tm_
+         _t1Itm :: Tm
+         _t1Itm_ :: Tm_
+         _t2Itm :: Tm
+         _t2Itm_ :: Tm_
+         _lhsOtm_ =
+             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              HPrim f_ _t1Itm _t2Itm
+              {-# LINE 187 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Itm,_t1Itm_) =
+             t1_
+         ( _t2Itm,_t2Itm_) =
+             t2_
      in  ( _lhsOtm_))
 sem_Tm__HVar :: Var ->
                 T_Tm_
@@ -171,7 +197,7 @@ sem_Tm__HVar x_ =
          _lhsOtm_ =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
               HVar x_
-              {-# LINE 175 "CCO/HM/AG.hs" #-}
+              {-# LINE 201 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm_))
 sem_Tm__HLam :: Var ->
@@ -184,7 +210,7 @@ sem_Tm__HLam x_ t1_ =
          _lhsOtm_ =
              ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
               HLam x_ _t1Itm
-              {-# LINE 188 "CCO/HM/AG.hs" #-}
+              {-# LINE 214 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm,_t1Itm_) =
              t1_
@@ -199,9 +225,9 @@ sem_Tm__HApp t1_ t2_ =
          _t2Itm :: Tm
          _t2Itm_ :: Tm_
          _lhsOtm_ =
-             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
               transform (HApp _t1Itm _t2Itm)
-              {-# LINE 205 "CCO/HM/AG.hs" #-}
+              {-# LINE 231 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm,_t1Itm_) =
              t1_
@@ -219,9 +245,9 @@ sem_Tm__HLet x_ t1_ t2_ =
          _t2Itm :: Tm
          _t2Itm_ :: Tm_
          _lhsOtm_ =
-             ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
               HLet x_ _t1Itm _t2Itm
-              {-# LINE 225 "CCO/HM/AG.hs" #-}
+              {-# LINE 251 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm,_t1Itm_) =
              t1_
