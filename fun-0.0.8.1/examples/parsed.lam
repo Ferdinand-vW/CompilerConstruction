@@ -16,28 +16,41 @@ Tm(
         , HLet(
             "idid"
           , Tm(
-              SourcePos(Stdin, Pos(3, 2))
+              SourcePos(Stdin, Pos(3, 3))
             , HApp(
-                Tm(SourcePos(Stdin, Pos(3, 2)), HVar("id"))
-              , Tm(SourcePos(Stdin, Pos(3, 5)), HVar("id"))
+                Tm(SourcePos(Stdin, Pos(3, 3)), HVar("id"))
+              , Tm(SourcePos(Stdin, Pos(3, 6)), HVar("id"))
               )
             )
           , Tm(
               SourcePos(Stdin, Pos(3, 2))
             , HLet(
-                "idfv"
+                "ididid"
               , Tm(
-                  SourcePos(Stdin, Pos(3, 10))
+                  SourcePos(Stdin, Pos(3, 3))
                 , HApp(
-                    Tm(SourcePos(Stdin, Pos(3, 10)), HVar("id"))
-                  , Tm(SourcePos(Stdin, Pos(3, 13)), HVar("fv"))
+                    Tm(SourcePos(Stdin, Pos(3, 3)), HVar("idid"))
+                  , Tm(SourcePos(Stdin, Pos(3, 10)), HVar("id"))
                   )
                 )
               , Tm(
-                  SourcePos(Stdin, Pos(3, 10))
-                , HApp(
-                    Tm(SourcePos(Stdin, Pos(3, 2)), HVar("idid"))
-                  , Tm(SourcePos(Stdin, Pos(3, 10)), HVar("idfv"))
+                  SourcePos(Stdin, Pos(3, 3))
+                , HLet(
+                    "idfv"
+                  , Tm(
+                      SourcePos(Stdin, Pos(3, 15))
+                    , HApp(
+                        Tm(SourcePos(Stdin, Pos(3, 15)), HVar("id"))
+                      , Tm(SourcePos(Stdin, Pos(3, 18)), HVar("fv"))
+                      )
+                    )
+                  , Tm(
+                      SourcePos(Stdin, Pos(3, 15))
+                    , HApp(
+                        Tm(SourcePos(Stdin, Pos(3, 3)), HVar("ididid"))
+                      , Tm(SourcePos(Stdin, Pos(3, 15)), HVar("idfv"))
+                      )
+                    )
                   )
                 )
               )
