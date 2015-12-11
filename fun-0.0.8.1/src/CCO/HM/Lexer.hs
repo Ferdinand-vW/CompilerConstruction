@@ -78,11 +78,11 @@ layout_ = ignore (some (anyCharFrom " \n\t"))
 
 -- | A 'Lexer' that recognises 'Keyword' tokens.
 keyword_ :: Lexer Token
-keyword_ = fmap Keyword $ string "in" <|> string "let" <|> string "ni"
+keyword_ = fmap Keyword $ string "in" <|> string "let" <|> string "ni" <|> string "prim" --added prim as keyword
 
 -- | A 'Lexer' that recognises 'Var' tokens.
 var_ :: Lexer Token
-var_ = Var <$> some (alpha <|> char '_')
+var_ = Var <$> some (alpha <|> char '_')--Variable may now contain a "
 
 -- | A 'Lexer' that recognises 'Nat' tokens.
 nat_ :: Lexer Token
@@ -90,7 +90,7 @@ nat_ = (Nat . read) <$> some digit
 
 -- | A 'Lexer' that recognises 'Spec' tokens.
 spec_ :: Lexer Token
-spec_ = Spec <$> anyCharFrom "()=\\."
+spec_ = Spec <$> anyCharFrom "()=\\.\""
 
 -- | The 'Lexer' for the language.
 lexer :: Lexer Token

@@ -1,0 +1,5 @@
+let plus = \x. \y. prim "primAddInt" x y in
+let fv = 5 in
+let id = \x .x
+in plus 1 2
+ni ni ni

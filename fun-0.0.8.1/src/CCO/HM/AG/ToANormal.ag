@@ -9,6 +9,7 @@ sem Tm
 sem Tm_
     | Nat   lhs.tm = ANat @i 
     | Var   lhs.tm = AVar @x
+    | Prim  lhs.tm = APrim @f @t1.tm @t2.tm
     | Lam   lhs.tm = ALam @x @t1.tm
     | App   lhs.tm = removeDup [] $ transform (AApp @t1.tm @t2.tm)
     | Let   lhs.tm = ALet @x @t1.tm @t2.tm
@@ -19,6 +20,7 @@ removeDup env (ALet x t1 t2)
     | x `elem` env = removeDup env t2
     | otherwise    = ALet x t1 $ removeDup (x:env) t2
 removeDup _ tm = tm
+getName (HPrim x _ _) = x
 
 eitherAApp :: ATm -> ATm -> Bool
 eitherAApp (AApp _ _) _ = True
