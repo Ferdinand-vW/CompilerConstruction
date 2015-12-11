@@ -83,7 +83,7 @@ fromPrim lvl (SExp s) = Var $ Loc lvl (off s)
 
 
 findVarRef :: Map String Ref -> Map String Ref -> ATm -> SExp
-findVarRef genv lenv (HVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
+findVarRef genv lenv (AVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
 
 getOffSet :: Map String Ref -> Int
 getOffSet xs = length xs

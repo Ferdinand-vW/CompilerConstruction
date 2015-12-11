@@ -20,7 +20,6 @@ removeDup env (ALet x t1 t2)
     | x `elem` env = removeDup env t2
     | otherwise    = ALet x t1 $ removeDup (x:env) t2
 removeDup _ tm = tm
-getName (HPrim x _ _) = x
 
 eitherAApp :: ATm -> ATm -> Bool
 eitherAApp (AApp _ _) _ = True
@@ -43,6 +42,7 @@ newLets tm = tm
 
 getName :: ATm -> String
 getName (ANat i) = show i
+getName (APrim x _ _) = x
 getName (AVar x) = x
 getName (ALam x _) = x
 getName (ALet x _ _) = x

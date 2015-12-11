@@ -1,17 +1,13 @@
 ALet(
-  "fv"
-, ANat(5)
+  "plus"
+, ALam("x", ALam("y", APrim("primAddInt", AVar("x"), AVar("y"))))
 , ALet(
-    "id"
-  , ALam("x", AVar("x"))
+    "fv"
+  , ANat(5)
   , ALet(
-      "idid"
-    , AApp(AVar("id"), AVar("id"))
-    , ALet(
-        "ididid"
-      , AApp(AVar("idid"), AVar("id"))
-      , AApp(AVar("ididid"), AVar("ididid"))
-      )
+      "id"
+    , ALam("x", AVar("x"))
+    , ALet("plus1", AApp(AVar("plus"), ANat(1)), AApp(AVar("plus1"), ANat(2)))
     )
   )
 )
