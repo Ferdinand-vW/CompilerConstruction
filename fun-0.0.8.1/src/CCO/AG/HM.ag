@@ -14,17 +14,17 @@ instance Tree Tm where
   toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
 
 instance Tree Tm_ where
-  fromTree (HNat x)       = T.App "HNat" [fromTree x]
-  fromTree (HVar x)       = T.App "HVar" [fromTree x]
-  fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
-  fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
-  fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (Nat x)       = T.App "Nat" [fromTree x]
+  fromTree (Var x)       = T.App "Var" [fromTree x]
+  fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
+  fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
+  fromTree (Let x t1 t2) = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
 
-  toTree = parseTree [ app "HNat" (HNat <$> arg                )
-                     , app "HVar" (HVar <$> arg                )
-                     , app "HLam" (HLam <$> arg <*> arg        )
-                     , app "HApp" (HApp <$> arg <*> arg        )
-                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+  toTree = parseTree [ app "Nat" (Nat <$> arg                )
+                     , app "Var" (Var <$> arg                )
+                     , app "Lam" (Lam <$> arg <*> arg        )
+                     , app "App" (App <$> arg <*> arg        )
+                     , app "Let" (Let <$> arg <*> arg <*> arg)
                      ]
 
 }
@@ -33,16 +33,12 @@ instance Tree Tm_ where
 -- Syntax
 -------------------------------------------------------------------------------
 
-{
-type Var = String    -- ^ Type of variables.
-}
-
 data Tm
   | Tm  pos :: {SourcePos}  t :: Tm_
 
 data Tm_
-  | HNat  i :: {Int}
-  | HVar  x :: {Var}
-  | HLam  x :: {Var}  t1 :: Tm
-  | HApp  t1 :: Tm  t2 :: Tm
-  | HLet  x :: {Var}  t1 :: Tm  t2 :: Tm
+  | Nat  i :: {Int}
+  | Var  x :: {Var}
+  | Lam  x :: {Var}  t1 :: Tm
+  | App  t1 :: Tm  t2 :: Tm
+  | Let  x :: {Var}  t1 :: Tm  t2 :: Tm

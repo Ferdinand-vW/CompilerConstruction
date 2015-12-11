@@ -26,7 +26,7 @@ import CCO.Feedback
 --toANormal :: Tm -> Feedback Tm
 --toANormal tm = return $ Core_Syn_Tm $ wrap_Tm (sem_Tm tm) (Inh_Core)
 
-toANormal :: Tm -> Feedback Tm
+toANormal :: Tm -> Feedback ATm
 toANormal tm = return $ tm_Syn_Tm $ wrap_Tm (sem_Tm tm) Inh_Tm
 
 --hm2cr :: Tm -> Feedback Mod

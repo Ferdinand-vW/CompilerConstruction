@@ -9,7 +9,7 @@ type Map a b = [(a,b)]
 
 
 data Core
-    | Core tm :: Tm
+    | Core tm :: ATm
 
 attr Core
     syn core :: {Mod}
@@ -21,7 +21,7 @@ sem Core
             tm.lvl = 0
 
 
-attr Tm Tm_
+attr ATm
     syn tm :: self
     syn main :: {Ref}
     syn exp :: {Exp}
@@ -30,21 +30,21 @@ attr Tm Tm_
     inh lenv :: {Map String Ref}
     inh lvl :: Int
 
-sem Tm_
-    |   HNat lhs.main = Glob (getOffSet @lhs.genv)
+sem ATm
+    |   ANat lhs.main = Glob (getOffSet @lhs.genv)
              lhs.exp  = SExp (Int @i)
              lhs.binds = []
-    |   HVar lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (HVar @x)
+    |   AVar lhs.main = Glob (getOffSet @lhs.genv)
+             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (AVar @x)
              lhs.binds = []
-    |   HLam lhs.main = Glob (getOffSet @lhs.genv)
+    |   ALam lhs.main = Glob (getOffSet @lhs.genv)
              lhs.exp  = Lam [fromJust $ lookup @x @loc.nenv] @t1.exp
              lhs.binds = []
              t1.genv = @lhs.genv
              loc.nenv = insertl @lhs.lenv @lhs.lvl @x
              t1.lenv = @loc.nenv
              t1.lvl = @lhs.lvl + 1
-    |   HApp lhs.main = Glob (getOffSet @lhs.genv)
+    |   AApp lhs.main = Glob (getOffSet @lhs.genv)
              lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (App (@t1.exp) [fromExp @t2.exp])]
              t1.genv = @lhs.genv
@@ -53,7 +53,7 @@ sem Tm_
              t2.lenv = @lhs.lenv
              t1.lvl = @lhs.lvl
              t2.lvl = @lhs.lvl
-    |   HLet lhs.main = @t2.main
+    |   ALet lhs.main = @t2.main
              lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
              lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
              t1.genv = @lhs.genv
@@ -66,15 +66,12 @@ sem Tm_
 
 {
 
-tmToTm_ :: Tm -> Tm_
-tmToTm_ (Tm pos t) = t
-
 fromExp :: Exp -> SExp
 fromExp (SExp s) = s 
 
-findVarRef :: Map String Ref -> Map String Ref -> Tm_ -> SExp
-findVarRef genv lenv (HNat i) = Int i
-findVarRef genv lenv (HVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
+findVarRef :: Map String Ref -> Map String Ref -> ATm -> SExp
+findVarRef genv lenv (ANat i) = Int i
+findVarRef genv lenv (AVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
 
 getOffSet :: Map String Ref -> Int
 getOffSet xs = length xs

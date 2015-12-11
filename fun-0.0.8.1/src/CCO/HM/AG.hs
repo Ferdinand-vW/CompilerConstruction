@@ -3,6 +3,13 @@
 -- UUAGC 0.9.52.1 (CCO/HM/AG.ag)
 module CCO.HM.AG where
 
+{-# LINE 2 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+
+import CCO.Tree (Tree (fromTree, toTree))
+import qualified CCO.Tree as T (ATerm (App))
+import CCO.Tree.Parser (parseTree, app, arg)
+{-# LINE 12 "CCO/HM/AG.hs" #-}
+
 {-# LINE 2 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 import CCO.SourcePos
@@ -10,57 +17,75 @@ import CCO.Tree                   (Tree (fromTree, toTree))
 import qualified CCO.Tree as T    (ATerm (App))
 import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
-{-# LINE 14 "CCO/HM/AG.hs" #-}
-{-# LINE 20 "CCO\\HM\\AG\\ToANormal.ag" #-}
+{-# LINE 21 "CCO/HM/AG.hs" #-}
+{-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
 
-transform :: Tm_ -> Tm_
-transform (HApp (Tm lpos (HLet x lt1 lt2)) (Tm rpos (HLet y rt1 rt2))) =
-    HLet x lt1 $ Tm lpos $
-        HLet y rt1 $ Tm rpos $
-            transform $ HApp lt2 rt2
-transform (HApp (Tm pos (HLet x lt1 lt2)) t2) = HLet x lt1 (Tm pos $ transform (HApp lt2 t2))
-transform (HApp t1 (Tm pos (HLet x lt1 lt2))) = HLet x lt1 (Tm pos $ transform (HApp t1 lt2))
-transform (HApp (Tm lpos (HApp lt1 lt2)) (Tm rpos (HApp rt1 rt2))) =
-    HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) $ Tm lpos $
-        HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) $ Tm rpos $
-            HApp (Tm lpos $ HVar $ letName lt1 lt2) (Tm rpos $ HVar $ letName rt1 rt2)
-transform (HApp (Tm lpos (HApp lt1 lt2)) t2) = HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) (Tm lpos $ HApp (Tm lpos $ HVar $ letName lt1 lt2) t2)
-transform (HApp t1 (Tm rpos (HApp rt1 rt2))) = HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) (Tm rpos $ HApp t1 (Tm rpos $ HVar $ letName rt1 rt2))
-transform tm = tm
+removeDup :: [String] -> ATm -> ATm
+removeDup env tm =
+    case tm of
+        ALet x t1 t2 -> if x `elem` env
+                        then removeDup env t2
+                        else ALet x t1 $ removeDup (x:env) t2
+        AApp t1 t2 -> if eitherAApp t1 t2
+                        then removeDup env (newLets (AApp t1 t2))
+                      else tm
+        _ -> tm
 
-letName :: Tm -> Tm -> String
-letName tm1 tm2 = (getName $ tTm_ tm1) ++ (getName $ tTm_ tm2)
+eitherAApp :: ATm -> ATm -> Bool
+eitherAApp (AApp _ _) _ = True
+eitherAApp _ (AApp _ _) = True
+eitherAApp _ _ = False
 
-tTm_ :: Tm -> Tm_
-tTm_ (Tm _ t) = t
+transform :: ATm -> ATm
+transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
+transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
+transform tm = newLets tm
 
-getName :: Tm_ -> String
-getName (HNat i) = show i
-getName (HVar x) = x
-getName (HLam x _) = x
-getName (HLet x _ _) = x
+newLets :: ATm -> ATm
+newLets (AApp (AApp lt1 lt2) t2) = 
+        ALet (letName lt1 lt2) (AApp lt1 lt2) $ newLets $
+            AApp (AVar $ letName lt1 lt2) t2
+newLets (AApp t1 (AApp rt1 rt2)) =
+         ALet (letName rt1 rt2) (AApp rt1 rt2) $ newLets $
+            AApp t1 $ AVar $ letName rt1 rt2
+newLets tm = tm
+
+
+getName :: ATm -> String
+getName (ANat i) = show i
+getName (AVar x) = x
+getName (ALam x _) = x
+getName (ALet x _ _) = x
 getname _ = ""
 
-functie :: Tm_ -> Tm -> Tm
-functie x y = y
+letName :: ATm -> ATm -> String
+letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-translate :: Tm_ -> Tm_ -> Tm_
-translate (HVar x) (HVar y) | x==y = HVar "Matthew"
-                          | otherwise = (HVar x)
-translate x y = x
+{-# LINE 66 "CCO/HM/AG.hs" #-}
 
+{-# LINE 9 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
---Ik krijg het niet correct werkend met uuagc-.-, dus zal wel de stappen opschrijven wat ik van plan was. Ik ben ook nog wel op skype denk ik.
---Controleer HApp of @t2 een HApp is
---Als dit zo is; controleer of @t1 en bij de eerste tm van @t2, dus @t2.t1, allebei een var zijn en gelijk aan elkaar zijn.
--- Als dit zo is voeg een HLet  toe met de naam @t1 ++ @t2.t2 (Als dit een var is). En doe de HApp als waarde
--- Vervolgens in de in van de let @t1 ++ @t2.t2 doe je HApp met @t1 (@t1 ++ @t2.t2)
--- In exaples/haakjes.out en examples/correct.out zie je het verschil van hoe het moet worden en hoe het moet worden
+instance Tree ATm where
+  fromTree (ANat x)       = T.App "ANat" [fromTree x]
+  fromTree (AVar x)       = T.App "AVar" [fromTree x]
+  fromTree (ALam x t1)    = T.App "ALam" [fromTree x, fromTree t1]
+  fromTree (AApp t1 t2)   = T.App "AApp" [fromTree t1, fromTree t2]
+  fromTree (ALet x t1 t2) = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
 
+  toTree = parseTree [ app "ANat" (ANat <$> arg                )
+                     , app "AVar" (AVar <$> arg                )
+                     , app "ALam" (ALam <$> arg <*> arg        )
+                     , app "AApp" (AApp <$> arg <*> arg        )
+                     , app "ALet" (ALet <$> arg <*> arg <*> arg)
+                     ]
 
--- 
-{-# LINE 64 "CCO/HM/AG.hs" #-}
+{-# LINE 84 "CCO/HM/AG.hs" #-}
+
+{-# LINE 31 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+
+type Var = String
+{-# LINE 89 "CCO/HM/AG.hs" #-}
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -69,25 +94,78 @@ instance Tree Tm where
   toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
 
 instance Tree Tm_ where
-  fromTree (HNat x)       = T.App "HNat" [fromTree x]
-  fromTree (HVar x)       = T.App "HVar" [fromTree x]
-  fromTree (HLam x t1)    = T.App "HLam" [fromTree x, fromTree t1]
-  fromTree (HApp t1 t2)   = T.App "HApp" [fromTree t1, fromTree t2]
-  fromTree (HLet x t1 t2) = T.App "HLet" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (Nat x)       = T.App "Nat" [fromTree x]
+  fromTree (Var x)       = T.App "Var" [fromTree x]
+  fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
+  fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
+  fromTree (Let x t1 t2) = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
 
-  toTree = parseTree [ app "HNat" (HNat <$> arg                )
-                     , app "HVar" (HVar <$> arg                )
-                     , app "HLam" (HLam <$> arg <*> arg        )
-                     , app "HApp" (HApp <$> arg <*> arg        )
-                     , app "HLet" (HLet <$> arg <*> arg <*> arg)
+  toTree = parseTree [ app "Nat" (Nat <$> arg                )
+                     , app "Var" (Var <$> arg                )
+                     , app "Lam" (Lam <$> arg <*> arg        )
+                     , app "App" (App <$> arg <*> arg        )
+                     , app "Let" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 86 "CCO/HM/AG.hs" #-}
-
-{-# LINE 36 "CCO\\HM\\..\\AG\\HM.ag" #-}
-
-type Var = String    -- ^ Type of variables.
-{-# LINE 91 "CCO/HM/AG.hs" #-}
+{-# LINE 111 "CCO/HM/AG.hs" #-}
+-- ATm ---------------------------------------------------------
+data ATm = ANat (Int)
+         | AVar (Var)
+         | ALam (Var) (ATm)
+         | AApp (ATm) (ATm)
+         | ALet (Var) (ATm) (ATm)
+-- cata
+sem_ATm :: ATm ->
+           T_ATm
+sem_ATm (ANat _i) =
+    (sem_ATm_ANat _i)
+sem_ATm (AVar _x) =
+    (sem_ATm_AVar _x)
+sem_ATm (ALam _x _t1) =
+    (sem_ATm_ALam _x (sem_ATm _t1))
+sem_ATm (AApp _t1 _t2) =
+    (sem_ATm_AApp (sem_ATm _t1) (sem_ATm _t2))
+sem_ATm (ALet _x _t1 _t2) =
+    (sem_ATm_ALet _x (sem_ATm _t1) (sem_ATm _t2))
+-- semantic domain
+type T_ATm = ( )
+data Inh_ATm = Inh_ATm {}
+data Syn_ATm = Syn_ATm {}
+wrap_ATm :: T_ATm ->
+            Inh_ATm ->
+            Syn_ATm
+wrap_ATm sem (Inh_ATm) =
+    (let ( ) = sem
+     in  (Syn_ATm))
+sem_ATm_ANat :: Int ->
+                T_ATm
+sem_ATm_ANat i_ =
+    (let
+     in  ( ))
+sem_ATm_AVar :: Var ->
+                T_ATm
+sem_ATm_AVar x_ =
+    (let
+     in  ( ))
+sem_ATm_ALam :: Var ->
+                T_ATm ->
+                T_ATm
+sem_ATm_ALam x_ t1_ =
+    (let
+     in  ( ))
+sem_ATm_AApp :: T_ATm ->
+                T_ATm ->
+                T_ATm
+sem_ATm_AApp t1_ t2_ =
+    (let
+     in  ( ))
+sem_ATm_ALet :: Var ->
+                T_ATm ->
+                T_ATm ->
+                T_ATm
+sem_ATm_ALet x_ t1_ t2_ =
+    (let
+     in  ( ))
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
 -- cata
@@ -96,135 +174,124 @@ sem_Tm :: Tm ->
 sem_Tm (Tm _pos _t) =
     (sem_Tm_Tm _pos (sem_Tm_ _t))
 -- semantic domain
-type T_Tm = ( Tm,Tm_)
+type T_Tm = ( ATm)
 data Inh_Tm = Inh_Tm {}
-data Syn_Tm = Syn_Tm {tm_Syn_Tm :: Tm,tm__Syn_Tm :: Tm_}
+data Syn_Tm = Syn_Tm {tm_Syn_Tm :: ATm}
 wrap_Tm :: T_Tm ->
            Inh_Tm ->
            Syn_Tm
 wrap_Tm sem (Inh_Tm) =
-    (let ( _lhsOtm,_lhsOtm_) = sem
-     in  (Syn_Tm _lhsOtm _lhsOtm_))
+    (let ( _lhsOtm) = sem
+     in  (Syn_Tm _lhsOtm))
 sem_Tm_Tm :: SourcePos ->
              T_Tm_ ->
              T_Tm
 sem_Tm_Tm pos_ t_ =
-    (let _lhsOtm :: Tm
-         _lhsOtm_ :: Tm_
-         _tItm_ :: Tm_
+    (let _lhsOtm :: ATm
+         _tItm :: ATm
          _lhsOtm =
-             ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              Tm pos_ _tItm_
-              {-# LINE 119 "CCO/HM/AG.hs" #-}
+             ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              _tItm
+              {-# LINE 196 "CCO/HM/AG.hs" #-}
               )
-         _lhsOtm_ =
-             ({-# LINE 4 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              _tItm_
-              {-# LINE 124 "CCO/HM/AG.hs" #-}
-              )
-         ( _tItm_) =
+         ( _tItm) =
              t_
-     in  ( _lhsOtm,_lhsOtm_))
+     in  ( _lhsOtm))
 -- Tm_ ---------------------------------------------------------
-data Tm_ = HNat (Int)
-         | HVar (Var)
-         | HLam (Var) (Tm)
-         | HApp (Tm) (Tm)
-         | HLet (Var) (Tm) (Tm)
+data Tm_ = Nat (Int)
+         | Var (Var)
+         | Lam (Var) (Tm)
+         | App (Tm) (Tm)
+         | Let (Var) (Tm) (Tm)
 -- cata
 sem_Tm_ :: Tm_ ->
            T_Tm_
-sem_Tm_ (HNat _i) =
-    (sem_Tm__HNat _i)
-sem_Tm_ (HVar _x) =
-    (sem_Tm__HVar _x)
-sem_Tm_ (HLam _x _t1) =
-    (sem_Tm__HLam _x (sem_Tm _t1))
-sem_Tm_ (HApp _t1 _t2) =
-    (sem_Tm__HApp (sem_Tm _t1) (sem_Tm _t2))
-sem_Tm_ (HLet _x _t1 _t2) =
-    (sem_Tm__HLet _x (sem_Tm _t1) (sem_Tm _t2))
+sem_Tm_ (Nat _i) =
+    (sem_Tm__Nat _i)
+sem_Tm_ (Var _x) =
+    (sem_Tm__Var _x)
+sem_Tm_ (Lam _x _t1) =
+    (sem_Tm__Lam _x (sem_Tm _t1))
+sem_Tm_ (App _t1 _t2) =
+    (sem_Tm__App (sem_Tm _t1) (sem_Tm _t2))
+sem_Tm_ (Let _x _t1 _t2) =
+    (sem_Tm__Let _x (sem_Tm _t1) (sem_Tm _t2))
 -- semantic domain
-type T_Tm_ = ( Tm_)
+type T_Tm_ = ( ATm)
 data Inh_Tm_ = Inh_Tm_ {}
-data Syn_Tm_ = Syn_Tm_ {tm__Syn_Tm_ :: Tm_}
+data Syn_Tm_ = Syn_Tm_ {tm_Syn_Tm_ :: ATm}
 wrap_Tm_ :: T_Tm_ ->
             Inh_Tm_ ->
             Syn_Tm_
 wrap_Tm_ sem (Inh_Tm_) =
-    (let ( _lhsOtm_) = sem
-     in  (Syn_Tm_ _lhsOtm_))
-sem_Tm__HNat :: Int ->
-                T_Tm_
-sem_Tm__HNat i_ =
-    (let _lhsOtm_ :: Tm_
-         _lhsOtm_ =
+    (let ( _lhsOtm) = sem
+     in  (Syn_Tm_ _lhsOtm))
+sem_Tm__Nat :: Int ->
+               T_Tm_
+sem_Tm__Nat i_ =
+    (let _lhsOtm :: ATm
+         _lhsOtm =
+             ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              ANat i_
+              {-# LINE 237 "CCO/HM/AG.hs" #-}
+              )
+     in  ( _lhsOtm))
+sem_Tm__Var :: Var ->
+               T_Tm_
+sem_Tm__Var x_ =
+    (let _lhsOtm :: ATm
+         _lhsOtm =
+             ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              AVar x_
+              {-# LINE 247 "CCO/HM/AG.hs" #-}
+              )
+     in  ( _lhsOtm))
+sem_Tm__Lam :: Var ->
+               T_Tm ->
+               T_Tm_
+sem_Tm__Lam x_ t1_ =
+    (let _lhsOtm :: ATm
+         _t1Itm :: ATm
+         _lhsOtm =
+             ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              ALam x_ _t1Itm
+              {-# LINE 259 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Itm) =
+             t1_
+     in  ( _lhsOtm))
+sem_Tm__App :: T_Tm ->
+               T_Tm ->
+               T_Tm_
+sem_Tm__App t1_ t2_ =
+    (let _lhsOtm :: ATm
+         _t1Itm :: ATm
+         _t2Itm :: ATm
+         _lhsOtm =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              HNat i_
-              {-# LINE 165 "CCO/HM/AG.hs" #-}
+              removeDup [] $ transform (AApp _t1Itm _t2Itm)
+              {-# LINE 274 "CCO/HM/AG.hs" #-}
               )
-     in  ( _lhsOtm_))
-sem_Tm__HVar :: Var ->
-                T_Tm_
-sem_Tm__HVar x_ =
-    (let _lhsOtm_ :: Tm_
-         _lhsOtm_ =
+         ( _t1Itm) =
+             t1_
+         ( _t2Itm) =
+             t2_
+     in  ( _lhsOtm))
+sem_Tm__Let :: Var ->
+               T_Tm ->
+               T_Tm ->
+               T_Tm_
+sem_Tm__Let x_ t1_ t2_ =
+    (let _lhsOtm :: ATm
+         _t1Itm :: ATm
+         _t2Itm :: ATm
+         _lhsOtm =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              HVar x_
-              {-# LINE 175 "CCO/HM/AG.hs" #-}
+              ALet x_ _t1Itm _t2Itm
+              {-# LINE 292 "CCO/HM/AG.hs" #-}
               )
-     in  ( _lhsOtm_))
-sem_Tm__HLam :: Var ->
-                T_Tm ->
-                T_Tm_
-sem_Tm__HLam x_ t1_ =
-    (let _lhsOtm_ :: Tm_
-         _t1Itm :: Tm
-         _t1Itm_ :: Tm_
-         _lhsOtm_ =
-             ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              HLam x_ _t1Itm
-              {-# LINE 188 "CCO/HM/AG.hs" #-}
-              )
-         ( _t1Itm,_t1Itm_) =
+         ( _t1Itm) =
              t1_
-     in  ( _lhsOtm_))
-sem_Tm__HApp :: T_Tm ->
-                T_Tm ->
-                T_Tm_
-sem_Tm__HApp t1_ t2_ =
-    (let _lhsOtm_ :: Tm_
-         _t1Itm :: Tm
-         _t1Itm_ :: Tm_
-         _t2Itm :: Tm
-         _t2Itm_ :: Tm_
-         _lhsOtm_ =
-             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              transform (HApp _t1Itm _t2Itm)
-              {-# LINE 205 "CCO/HM/AG.hs" #-}
-              )
-         ( _t1Itm,_t1Itm_) =
-             t1_
-         ( _t2Itm,_t2Itm_) =
+         ( _t2Itm) =
              t2_
-     in  ( _lhsOtm_))
-sem_Tm__HLet :: Var ->
-                T_Tm ->
-                T_Tm ->
-                T_Tm_
-sem_Tm__HLet x_ t1_ t2_ =
-    (let _lhsOtm_ :: Tm_
-         _t1Itm :: Tm
-         _t1Itm_ :: Tm_
-         _t2Itm :: Tm
-         _t2Itm_ :: Tm_
-         _lhsOtm_ =
-             ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              HLet x_ _t1Itm _t2Itm
-              {-# LINE 225 "CCO/HM/AG.hs" #-}
-              )
-         ( _t1Itm,_t1Itm_) =
-             t1_
-         ( _t2Itm,_t2Itm_) =
-             t2_
-     in  ( _lhsOtm_))
+     in  ( _lhsOtm))

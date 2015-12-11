@@ -82,5 +82,5 @@ instance Tree Exp where
                      ]
 
 
-hm2cr :: Tm -> Feedback Mod
+hm2cr :: ATm -> Feedback Mod
 hm2cr tm = return $ core_Syn_Core $ wrap_Core (sem_Core (Core tm)) (Inh_Core)

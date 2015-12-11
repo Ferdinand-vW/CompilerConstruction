@@ -1,68 +1,58 @@
 
 
 attr Tm Tm_
-    syn tm_ :: Tm_
-
-attr Tm
-    syn tm :: Tm
+    syn tm :: ATm
 
 sem Tm
-    | Tm lhs.tm = Tm @pos @t.tm_
+    | Tm lhs.tm = @t.tm
 
 sem Tm_
-    | HNat  lhs.tm_ = HNat @i
-    | HVar  lhs.tm_ = HVar @x
-    | HLam  lhs.tm_ = HLam @x @t1.tm
-    | HApp  lhs.tm_ = transform (HApp @t1.tm @t2.tm)
-    | HLet  lhs.tm_ = HLet @x @t1.tm @t2.tm
-
-
+    | Nat   lhs.tm = ANat @i 
+    | Var   lhs.tm = AVar @x
+    | Lam   lhs.tm = ALam @x @t1.tm
+    | App   lhs.tm = removeDup [] $ transform (AApp @t1.tm @t2.tm)
+    | Let   lhs.tm = ALet @x @t1.tm @t2.tm
 {
 
-transform :: Tm_ -> Tm_
-transform (HApp (Tm lpos (HLet x lt1 lt2)) (Tm rpos (HLet y rt1 rt2))) =
-    HLet x lt1 $ Tm lpos $
-        HLet y rt1 $ Tm rpos $
-            transform $ HApp lt2 rt2
-transform (HApp (Tm pos (HLet x lt1 lt2)) t2) = HLet x lt1 (Tm pos $ transform (HApp lt2 t2))
-transform (HApp t1 (Tm pos (HLet x lt1 lt2))) = HLet x lt1 (Tm pos $ transform (HApp t1 lt2))
-transform (HApp (Tm lpos (HApp lt1 lt2)) (Tm rpos (HApp rt1 rt2))) =
-    HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) $ Tm lpos $
-        HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) $ Tm rpos $
-            HApp (Tm lpos $ HVar $ letName lt1 lt2) (Tm rpos $ HVar $ letName rt1 rt2)
-transform (HApp (Tm lpos (HApp lt1 lt2)) t2) = HLet (letName lt1 lt2) (Tm lpos $ HApp lt1 lt2) (Tm lpos $ HApp (Tm lpos $ HVar $ letName lt1 lt2) t2)
-transform (HApp t1 (Tm rpos (HApp rt1 rt2))) = HLet (letName rt1 rt2) (Tm rpos $ HApp rt1 rt2) (Tm rpos $ HApp t1 (Tm rpos $ HVar $ letName rt1 rt2))
-transform tm = tm
+removeDup :: [String] -> ATm -> ATm
+removeDup env tm =
+    case tm of
+        ALet x t1 t2 -> if x `elem` env
+                        then removeDup env t2
+                        else ALet x t1 $ removeDup (x:env) t2
+        AApp t1 t2 -> if eitherAApp t1 t2
+                        then removeDup env (newLets (AApp t1 t2))
+                      else tm
+        _ -> tm
 
-letName :: Tm -> Tm -> String
-letName tm1 tm2 = (getName $ tTm_ tm1) ++ (getName $ tTm_ tm2)
+eitherAApp :: ATm -> ATm -> Bool
+eitherAApp (AApp _ _) _ = True
+eitherAApp _ (AApp _ _) = True
+eitherAApp _ _ = False
 
-tTm_ :: Tm -> Tm_
-tTm_ (Tm _ t) = t
+transform :: ATm -> ATm
+transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
+transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
+transform tm = newLets tm
 
-getName :: Tm_ -> String
-getName (HNat i) = show i
-getName (HVar x) = x
-getName (HLam x _) = x
-getName (HLet x _ _) = x
+newLets :: ATm -> ATm
+newLets (AApp (AApp lt1 lt2) t2) = 
+        ALet (letName lt1 lt2) (AApp lt1 lt2) $ newLets $
+            AApp (AVar $ letName lt1 lt2) t2
+newLets (AApp t1 (AApp rt1 rt2)) =
+         ALet (letName rt1 rt2) (AApp rt1 rt2) $ newLets $
+            AApp t1 $ AVar $ letName rt1 rt2
+newLets tm = tm
+
+
+getName :: ATm -> String
+getName (ANat i) = show i
+getName (AVar x) = x
+getName (ALam x _) = x
+getName (ALet x _ _) = x
 getname _ = ""
 
-functie :: Tm_ -> Tm -> Tm
-functie x y = y
+letName :: ATm -> ATm -> String
+letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-translate :: Tm_ -> Tm_ -> Tm_
-translate (HVar x) (HVar y) | x==y = HVar "Matthew"
-                          | otherwise = (HVar x)
-translate x y = x
-
-
---Ik krijg het niet correct werkend met uuagc-.-, dus zal wel de stappen opschrijven wat ik van plan was. Ik ben ook nog wel op skype denk ik.
---Controleer HApp of @t2 een HApp is
---Als dit zo is; controleer of @t1 en bij de eerste tm van @t2, dus @t2.t1, allebei een var zijn en gelijk aan elkaar zijn.
--- Als dit zo is voeg een HLet  toe met de naam @t1 ++ @t2.t2 (Als dit een var is). En doe de HApp als waarde
--- Vervolgens in de in van de let @t1 ++ @t2.t2 doe je HApp met @t1 (@t1 ++ @t2.t2)
--- In exaples/haakjes.out en examples/correct.out zie je het verschil van hoe het moet worden en hoe het moet worden
-
-
--- 
 }
