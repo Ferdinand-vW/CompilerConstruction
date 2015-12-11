@@ -20,17 +20,11 @@ import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 21 "CCO/HM/AG.hs" #-}
 {-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
-
 removeDup :: [String] -> ATm -> ATm
-removeDup env tm =
-    case tm of
-        ALet x t1 t2 -> if x `elem` env
-                        then removeDup env t2
-                        else ALet x t1 $ removeDup (x:env) t2
-        AApp t1 t2 -> if eitherAApp t1 t2
-                        then removeDup env (newLets (AApp t1 t2))
-                      else tm
-        _ -> tm
+removeDup env (ALet x t1 t2)
+    | x `elem` env = removeDup env t2
+    | otherwise    = ALet x t1 $ removeDup (x:env) t2
+removeDup _ tm = tm
 
 eitherAApp :: ATm -> ATm -> Bool
 eitherAApp (AApp _ _) _ = True
@@ -62,7 +56,7 @@ getname _ = ""
 letName :: ATm -> ATm -> String
 letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-{-# LINE 66 "CCO/HM/AG.hs" #-}
+{-# LINE 60 "CCO/HM/AG.hs" #-}
 
 {-# LINE 9 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
@@ -80,12 +74,12 @@ instance Tree ATm where
                      , app "ALet" (ALet <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 84 "CCO/HM/AG.hs" #-}
+{-# LINE 78 "CCO/HM/AG.hs" #-}
 
 {-# LINE 31 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 type Var = String
-{-# LINE 89 "CCO/HM/AG.hs" #-}
+{-# LINE 83 "CCO/HM/AG.hs" #-}
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -107,7 +101,7 @@ instance Tree Tm_ where
                      , app "Let" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 111 "CCO/HM/AG.hs" #-}
+{-# LINE 105 "CCO/HM/AG.hs" #-}
 -- ATm ---------------------------------------------------------
 data ATm = ANat (Int)
          | AVar (Var)
@@ -192,7 +186,7 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm
-              {-# LINE 196 "CCO/HM/AG.hs" #-}
+              {-# LINE 190 "CCO/HM/AG.hs" #-}
               )
          ( _tItm) =
              t_
@@ -233,7 +227,7 @@ sem_Tm__Nat i_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANat i_
-              {-# LINE 237 "CCO/HM/AG.hs" #-}
+              {-# LINE 231 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Var :: Var ->
@@ -243,7 +237,7 @@ sem_Tm__Var x_ =
          _lhsOtm =
              ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AVar x_
-              {-# LINE 247 "CCO/HM/AG.hs" #-}
+              {-# LINE 241 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Lam :: Var ->
@@ -255,7 +249,7 @@ sem_Tm__Lam x_ t1_ =
          _lhsOtm =
              ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALam x_ _t1Itm
-              {-# LINE 259 "CCO/HM/AG.hs" #-}
+              {-# LINE 253 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -270,7 +264,7 @@ sem_Tm__App t1_ t2_ =
          _lhsOtm =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
               removeDup [] $ transform (AApp _t1Itm _t2Itm)
-              {-# LINE 274 "CCO/HM/AG.hs" #-}
+              {-# LINE 268 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -288,7 +282,7 @@ sem_Tm__Let x_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALet x_ _t1Itm _t2Itm
-              {-# LINE 292 "CCO/HM/AG.hs" #-}
+              {-# LINE 286 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_

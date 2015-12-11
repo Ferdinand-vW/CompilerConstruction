@@ -7,7 +7,11 @@ ALet(
   , ALet(
       "idid"
     , AApp(AVar("id"), AVar("id"))
-    , AApp(AVar("idid"), AVar("idid"))
+    , ALet(
+        "ididid"
+      , AApp(AVar("idid"), AVar("id"))
+      , AApp(AVar("ididid"), AVar("ididid"))
+      )
     )
   )
 )

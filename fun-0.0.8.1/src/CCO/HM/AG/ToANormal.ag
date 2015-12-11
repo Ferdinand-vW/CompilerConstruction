@@ -15,15 +15,10 @@ sem Tm_
 {
 
 removeDup :: [String] -> ATm -> ATm
-removeDup env tm =
-    case tm of
-        ALet x t1 t2 -> if x `elem` env
-                        then removeDup env t2
-                        else ALet x t1 $ removeDup (x:env) t2
-        AApp t1 t2 -> if eitherAApp t1 t2
-                        then removeDup env (newLets (AApp t1 t2))
-                      else tm
-        _ -> tm
+removeDup env (ALet x t1 t2)
+    | x `elem` env = removeDup env t2
+    | otherwise    = ALet x t1 $ removeDup (x:env) t2
+removeDup _ tm = tm
 
 eitherAApp :: ATm -> ATm -> Bool
 eitherAApp (AApp _ _) _ = True
@@ -43,7 +38,6 @@ newLets (AApp t1 (AApp rt1 rt2)) =
          ALet (letName rt1 rt2) (AApp rt1 rt2) $ newLets $
             AApp t1 $ AVar $ letName rt1 rt2
 newLets tm = tm
-
 
 getName :: ATm -> String
 getName (ANat i) = show i
