@@ -1,6 +1,6 @@
-module Main 105 -> eval(m.4);
-\1,100 -> \1,100 -> ffi "primAddInt"(d.1.0,d.1.1);
+module Main 105 -> m.4;
+\2,100 -> ffi "primAddInt"(d.0.0,d.0.1);
 5;
 \1,100 -> d.0.0;
 app (m.0)(1);
-tail(eval(app (m.3)(2)));
+app (m.3)(2);

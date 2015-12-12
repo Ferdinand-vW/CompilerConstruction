@@ -38,10 +38,10 @@ sem ATm
              lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (AVar @x)
               lhs.binds = []
     |   ALam  lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp  = Lam [Loc (@lhs.lvl + 1) $ getOffSet @lhs.lenv] @t1.exp
+              lhs.exp  = joinLam [Loc 0 $ getOffSet @lhs.lenv] @t1.exp --Hard coded lvl as 0 for now
               lhs.binds = []
               t1.genv = @lhs.genv
-              t1.lenv = insertl @lhs.lenv (@lhs.lvl + 1) @x
+              t1.lenv = insertl @lhs.lenv 0 @x
               t1.lvl = @lhs.lvl + 1
     |   AApp lhs.main = Glob (getOffSet @lhs.genv)
               lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
@@ -73,6 +73,10 @@ sem ATm
  
 
 {
+
+joinLam :: RefL -> Exp -> Exp
+joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
+joinLam xs exp = Lam xs exp
 
 fromExp :: Exp -> SExp
 fromExp (SExp s) = s
