@@ -18,8 +18,6 @@ sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) @tm.binds
             tm.genv = []
             tm.lenv = []
-            tm.lvl = -1
-
 
 attr ATm
     syn tm :: self
@@ -28,7 +26,6 @@ attr ATm
     syn binds use {++} {[]} :: {BindL}
     inh genv :: {Map String Ref}
     inh lenv :: {Map String Ref}
-    inh lvl :: Int
 
 sem ATm
     |   ANat lhs.main = Glob (getOffSet @lhs.genv)
@@ -42,7 +39,6 @@ sem ATm
               lhs.binds = []
               t1.genv = @lhs.genv
               t1.lenv = insertl @lhs.lenv 0 @x
-              t1.lvl = @lhs.lvl + 1
     |   AApp lhs.main = Glob (getOffSet @lhs.genv)
               lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
               lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (App (@t1.exp) [fromExp @t2.exp])]
@@ -50,8 +46,6 @@ sem ATm
               t2.genv = @lhs.genv
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
-              t1.lvl = @lhs.lvl
-              t2.lvl = @lhs.lvl
     |   ALet lhs.main = @t2.main
               lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
               lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
@@ -59,19 +53,13 @@ sem ATm
               t2.genv = insertg @lhs.genv @x
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
-              t1.lvl = @lhs.lvl
-              t2.lvl = @lhs.lvl
     |   APrim lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp = Prim @f [fromPrim @lhs.lvl @t1.exp, fromPrim @lhs.lvl @t2.exp]
+              lhs.exp = Prim @f [fromPrim @t1.exp, fromPrim @t2.exp]
               lhs.binds =  []
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
-              t1.lvl = @lhs.lvl
-              t2.lvl = @lhs.lvl
- 
-
 {
 
 joinLam :: RefL -> Exp -> Exp
@@ -81,8 +69,8 @@ joinLam xs exp = Lam xs exp
 fromExp :: Exp -> SExp
 fromExp (SExp s) = s
 
-fromPrim :: Int -> Exp -> SExp
-fromPrim lvl (SExp s) = Var $ Loc lvl (off s)
+fromPrim :: Exp -> SExp
+fromPrim (SExp s) = Var $ Loc 0 (off s)
               where off (Var (Loc l o)) = o
 
 
