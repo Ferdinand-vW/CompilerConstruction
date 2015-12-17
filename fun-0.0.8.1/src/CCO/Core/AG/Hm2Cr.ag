@@ -4,7 +4,8 @@ import Data.Maybe
 }
 
 {
-type Map a b = [(a,b)]
+type Map a b = (Int, [(a,b)])
+
 }
 
 
@@ -16,9 +17,10 @@ attr Core
 
 sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) @tm.binds
-            tm.genv = []
-            tm.lenv = []
+            tm.genv = (0,[])
+            tm.lenv = (0,[])
 
+--("False",Glob 0) ("True", Glob 1)
 attr ATm
     syn tm :: self
     syn main :: {Ref}
@@ -30,10 +32,10 @@ attr ATm
 sem ATm
     |   ANat lhs.main = Glob (getOffSet @lhs.genv)
               lhs.exp  = SExp (Int @i)
-              lhs.binds = []
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (SExp (Int @i))]
     |   AVar lhs.main = Glob (getOffSet @lhs.genv)
              lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (AVar @x)
-              lhs.binds = []
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (SExp $ findVarRef @lhs.genv @lhs.lenv (AVar @x))]
     |   ALam  lhs.main = Glob (getOffSet @lhs.genv)
               lhs.exp  = joinLam [Loc 0 $ getOffSet @lhs.lenv] @t1.exp --Hard coded lvl as 0 for now
               lhs.binds = []
@@ -60,7 +62,28 @@ sem ATm
               t2.genv = @lhs.genv
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
+    |   AIf lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp = Lam [] (joinAppValue @exp.exp @loc.exp)
+              loc.exp = Case (Var $ Tag 0 $ getOffSet @lhs.lenv) [checkIf @t2.tm @t2.exp, checkIf @t1.tm @t1.exp]
+              lhs.binds =  []
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = ((fst @lhs.lenv)+1, snd @lhs.lenv)
+              t2.lenv = ((fst @lhs.lenv)+1, snd @lhs.lenv)
 {
+
+checkIf :: ATm -> Exp -> Exp
+checkIf (AIf _ _ _) (Lam a s)  = s
+checkIf _ e = e
+
+joinAppValue :: Exp -> Exp -> Exp
+joinAppValue (Let (Bind r x) y) exp2 = Let (Bind r (joinParentAppValue x y)) exp2
+joinChildAppValue :: Exp -> SExpL
+joinChildAppValue (App x y) = y
+joinChildAppValue (SExp x) = [x]
+joinChildAppValue (Let x y) = joinChildAppValue y --Hier gaat het verkeerd
+joinParentAppValue :: Exp -> Exp -> Exp
+joinParentAppValue (App x y) app2 = App x (y ++ joinChildAppValue app2)
 
 joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
@@ -75,14 +98,14 @@ fromPrim (SExp s) = Var $ Loc 0 (off s)
 
 
 findVarRef :: Map String Ref -> Map String Ref -> ATm -> SExp
-findVarRef genv lenv (AVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
+findVarRef (_,genv) (_,lenv) (AVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
 
 getOffSet :: Map String Ref -> Int
-getOffSet xs = length xs
+getOffSet (x,_) = x
 
 insertg :: Map String Ref -> String -> Map String Ref
-insertg xs s = (s, Glob $ getOffSet xs) : xs
+insertg (n,xs) s = (n+1,(s, Glob $ n) : xs)
 
 insertl :: Map String Ref -> Int -> String -> Map String Ref
-insertl xs lvl s = (s, Loc lvl $ getOffSet xs) : xs
+insertl (n,xs) lvl s = (n+1,(s, Loc lvl $ n) : xs)
 }

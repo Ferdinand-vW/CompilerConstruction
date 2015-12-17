@@ -20,6 +20,7 @@ instance Tree Tm_ where
   fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
   fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
   fromTree (Let x t1 t2) = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (If exp t1 t2) = T.App "If" [fromTree exp, fromTree t1, fromTree t2]
 
   toTree = parseTree [ app "Nat" (Nat <$> arg                )
                      , app "Var" (Var <$> arg                )
@@ -27,6 +28,7 @@ instance Tree Tm_ where
                      , app "Lam" (Lam <$> arg <*> arg        )
                      , app "App" (App <$> arg <*> arg        )
                      , app "Let" (Let <$> arg <*> arg <*> arg)
+                     , app "If" (Let <$> arg <*> arg <*> arg)
                      ]
 
 }
@@ -45,3 +47,4 @@ data Tm_
   | Lam  x :: {Var}  t1 :: Tm
   | App  t1 :: Tm  t2 :: Tm
   | Let  x :: {Var}  t1 :: Tm  t2 :: Tm
+  | If exp :: Tm t1 :: Tm  t2 :: Tm

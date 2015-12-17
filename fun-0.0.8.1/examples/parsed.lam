@@ -1,13 +1,29 @@
 ALet(
-  "plus"
-, ALam("x", ALam("y", APrim("primAddInt", AVar("x"), AVar("y"))))
+  "eq"
+, ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
 , ALet(
-    "fv"
-  , ANat(5)
+    "ma"
+  , ALam("x", AVar("x"))
   , ALet(
-      "id"
-    , ALam("x", AVar("x"))
-    , ALet("plus1", AApp(AVar("plus"), ANat(1)), AApp(AVar("plus1"), ANat(2)))
+      "matthew"
+    , AIf(
+        ALet(
+          "eq2"
+        , AApp(AVar("eq"), ANat(2))
+        , ALet(
+            "ma3"
+          , AApp(AVar("ma"), ANat(3))
+          , AApp(AVar("eq2"), AVar("ma3"))
+          )
+        )
+      , ANat(5)
+      , AIf(
+          ALet("eq2", AApp(AVar("eq"), ANat(2)), AApp(AVar("eq2"), ANat(2)))
+        , AApp(AVar("ma"), ANat(10))
+        , ANat(11)
+        )
+      )
+    , AVar("matthew")
     )
   )
 )

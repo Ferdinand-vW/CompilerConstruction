@@ -13,6 +13,7 @@ sem Tm_
     | Lam   lhs.tm = ALam @x @t1.tm
     | App   lhs.tm = removeDup [] $ transform (AApp @t1.tm @t2.tm)
     | Let   lhs.tm = ALet @x @t1.tm @t2.tm
+    | If    lhs.tm = AIf @exp.tm @t1.tm @t2.tm
 {
 
 removeDup :: [String] -> ATm -> ATm

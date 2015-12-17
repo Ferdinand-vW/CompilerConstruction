@@ -78,8 +78,11 @@ layout_ = ignore (some (anyCharFrom " \n\t"))
 
 -- | A 'Lexer' that recognises 'Keyword' tokens.
 keyword_ :: Lexer Token
-keyword_ = fmap Keyword $ string "in" <|> string "let" <|> string "ni" <|> string "prim" --added prim as keyword
-
+keyword_ = fmap Keyword $   string "in"   <|> string "let"
+                        <|> string "ni"   <|> string "prim"
+                        <|> string "if"   <|> string "then"
+                        <|> string "else" <|> string "==" --added prim as keyword
+                        <|> string "if"   <|> string "fi"
 -- | A 'Lexer' that recognises 'Var' tokens.
 var_ :: Lexer Token
 var_ = Var <$> some (alpha <|> char '_')--Variable may now contain a "

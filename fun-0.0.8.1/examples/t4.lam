@@ -1,5 +1,5 @@
-let plus = \x. \y. prim "primAddInt" x y in
+let plus = \x .\y.prim "primEqInt" x y in
 let fv = 5 in
 let id = \x .x
-in plus 1 2
+in id (plus fv 4)
 ni ni ni
