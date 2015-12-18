@@ -1,2 +1,2 @@
 let x = cons 1 (cons 2 nil) in
-head (tail x) ni
+tail x ni
