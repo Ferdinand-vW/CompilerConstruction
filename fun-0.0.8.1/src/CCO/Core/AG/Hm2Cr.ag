@@ -181,6 +181,10 @@ insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
 defaultBinds :: BindL
 defaultBinds = [nilBind,consBind,headBind]
 
+
+isConsBind = Bind (Glob 4) exp
+      where exp = 
+
 headBind :: Bind
 headBind = Bind (Glob 2) exp
   where exp = Lam [Loc 0 0] $
@@ -195,4 +199,5 @@ consBind = Bind (Glob 1) exp
 
 nilBind :: Bind
 nilBind = Bind (Glob 0) Nil
+
 }
