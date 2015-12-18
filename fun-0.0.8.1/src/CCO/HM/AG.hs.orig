@@ -18,7 +18,11 @@ import qualified CCO.Tree as T    (ATerm (App))
 import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 21 "CCO/HM/AG.hs" #-}
-{-# LINE 19 "CCO\\HM\\AG\\ToANormal.ag" #-}
+<<<<<<< HEAD
+{-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
+=======
+{-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
+>>>>>>> ifbool
 
 
 removeDup :: [String] -> ATm -> ATm
@@ -67,10 +71,16 @@ instance Tree ATm where
   fromTree (ANil)          = T.App "ANil" [] 
   fromTree (ACons t1 t2)   = T.App "ACons" [fromTree t1, fromTree t2]
   fromTree (APrim f t1 t2) = T.App "APrim" [fromTree f, fromTree t1, fromTree t2]
+<<<<<<< HEAD
   fromTree (ALam x t1)     = T.App "ALam" [fromTree x, fromTree t1]
   fromTree (AApp t1 t2)    = T.App "AApp" [fromTree t1, fromTree t2]
   fromTree (ALet x t1 t2)  = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
+=======
+  fromTree (ALam x t1)    = T.App "ALam" [fromTree x, fromTree t1]
+  fromTree (AApp t1 t2)   = T.App "AApp" [fromTree t1, fromTree t2]
+  fromTree (ALet x t1 t2) = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
   fromTree (AIf exp t1 t2) = T.App "AIf" [fromTree exp, fromTree t1, fromTree t2]
+>>>>>>> ifbool
 
   toTree = parseTree [ app "ANat" (ANat <$> arg                )
                      , app "AVar" (AVar <$> arg                )
@@ -83,12 +93,21 @@ instance Tree ATm where
                      , app "AIf" (AIf <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 87 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+{-# LINE 85 "CCO/HM/AG.hs" #-}
 
-{-# LINE 39 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+{-# LINE 37 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 type Var = String
-{-# LINE 92 "CCO/HM/AG.hs" #-}
+{-# LINE 90 "CCO/HM/AG.hs" #-}
+=======
+{-# LINE 83 "CCO/HM/AG.hs" #-}
+
+{-# LINE 35 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+
+type Var = String
+{-# LINE 88 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
 
 {-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -118,7 +137,11 @@ instance Tree Tm_ where
                      , app "If" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 122 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+{-# LINE 118 "CCO/HM/AG.hs" #-}
+=======
+{-# LINE 114 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
 -- ATm ---------------------------------------------------------
 data ATm = ANat (Int)
          | AVar (Var)
@@ -239,7 +262,11 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm
-              {-# LINE 243 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 229 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 219 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _tItm) =
              t_
@@ -292,7 +319,11 @@ sem_Tm__Nat i_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANat i_
-              {-# LINE 296 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 279 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 266 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
      in  ( _lhsOtm))
 sem_Tm__Var :: Var ->
@@ -302,7 +333,8 @@ sem_Tm__Var x_ =
          _lhsOtm =
              ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AVar x_
-              {-# LINE 306 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 289 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Nil :: T_Tm_
@@ -311,7 +343,7 @@ sem_Tm__Nil =
          _lhsOtm =
              ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANil
-              {-# LINE 315 "CCO/HM/AG.hs" #-}
+              {-# LINE 298 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Cons :: T_Tm ->
@@ -324,7 +356,10 @@ sem_Tm__Cons t1_ t2_ =
          _lhsOtm =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ACons _t1Itm _t2Itm
-              {-# LINE 328 "CCO/HM/AG.hs" #-}
+              {-# LINE 311 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 276 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _t1Itm) =
              t1_
@@ -342,7 +377,11 @@ sem_Tm__Prim f_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
               APrim f_ _t1Itm _t2Itm
-              {-# LINE 346 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 329 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 290 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _t1Itm) =
              t1_
@@ -358,7 +397,11 @@ sem_Tm__Lam x_ t1_ =
          _lhsOtm =
              ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALam x_ _t1Itm
-              {-# LINE 362 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 345 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 306 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _t1Itm) =
              t1_
@@ -373,7 +416,11 @@ sem_Tm__App t1_ t2_ =
          _lhsOtm =
              ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
               removeDup [] $ transform (AApp _t1Itm _t2Itm)
-              {-# LINE 377 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 360 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 321 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _t1Itm) =
              t1_
@@ -391,7 +438,10 @@ sem_Tm__Let x_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALet x_ _t1Itm _t2Itm
-              {-# LINE 395 "CCO/HM/AG.hs" #-}
+<<<<<<< HEAD
+              {-# LINE 378 "CCO/HM/AG.hs" #-}
+=======
+              {-# LINE 339 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -408,9 +458,10 @@ sem_Tm__If exp_ t1_ t2_ =
          _t1Itm :: ATm
          _t2Itm :: ATm
          _lhsOtm =
-             ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AIf _expItm _t1Itm _t2Itm
-              {-# LINE 414 "CCO/HM/AG.hs" #-}
+              {-# LINE 358 "CCO/HM/AG.hs" #-}
+>>>>>>> ifbool
               )
          ( _expItm) =
              exp_

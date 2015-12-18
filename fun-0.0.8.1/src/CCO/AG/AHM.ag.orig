@@ -1,0 +1,58 @@
+imports
+{
+import CCO.Tree (Tree (fromTree, toTree))
+import qualified CCO.Tree as T (ATerm (App))
+import CCO.Tree.Parser (parseTree, app, arg)
+}
+
+
+{
+instance Tree ATm where
+  fromTree (ANat x)        = T.App "ANat" [fromTree x]
+  fromTree (AVar x)        = T.App "AVar" [fromTree x]
+  fromTree (ANil)          = T.App "ANil" [] 
+  fromTree (ACons t1 t2)   = T.App "ACons" [fromTree t1, fromTree t2]
+  fromTree (APrim f t1 t2) = T.App "APrim" [fromTree f, fromTree t1, fromTree t2]
+<<<<<<< HEAD
+  fromTree (ALam x t1)     = T.App "ALam" [fromTree x, fromTree t1]
+  fromTree (AApp t1 t2)    = T.App "AApp" [fromTree t1, fromTree t2]
+  fromTree (ALet x t1 t2)  = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
+=======
+  fromTree (ALam x t1)    = T.App "ALam" [fromTree x, fromTree t1]
+  fromTree (AApp t1 t2)   = T.App "AApp" [fromTree t1, fromTree t2]
+  fromTree (ALet x t1 t2) = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (AIf exp t1 t2) = T.App "AIf" [fromTree exp, fromTree t1, fromTree t2]
+>>>>>>> ifbool
+
+  toTree = parseTree [ app "ANat" (ANat <$> arg                )
+                     , app "AVar" (AVar <$> arg                )
+                     , app "ANil" (pure ANil                   )
+                     , app "ACons" (ACons <$> arg <*> arg      )
+                     , app "APrim" (APrim <$> arg <*> arg <*> arg)
+                     , app "ALam" (ALam <$> arg <*> arg        )
+                     , app "AApp" (AApp <$> arg <*> arg        )
+                     , app "ALet" (ALet <$> arg <*> arg <*> arg)
+                     , app "AIf" (AIf <$> arg <*> arg <*> arg)
+                     ]
+
+}
+
+
+------------------------------------------------------
+-- Syntax
+------------------------------------------------------
+
+{
+type Var = String
+}
+
+data ATm
+    | ANat  i :: {Int}
+    | AVar  x :: {Var}
+    | ANil
+    | ACons t1 :: ATm t2 :: ATm
+    | APrim f :: {Var} t1 :: ATm t2 :: ATm
+    | ALam  x :: {Var} t1 :: ATm
+    | AApp t1 :: ATm t2 :: ATm
+    | ALet  x :: {Var} t1 :: ATm t2 :: ATm
+    | AIf exp :: ATm  t1 :: ATm  t2 :: ATm

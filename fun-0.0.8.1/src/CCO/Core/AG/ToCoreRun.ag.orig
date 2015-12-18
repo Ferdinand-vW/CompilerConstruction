@@ -1,0 +1,90 @@
+imports
+{
+import           UHC.Light.Compiler.Base.API
+import qualified UHC.Light.Compiler.CoreRun.API as CR
+import qualified UHC.Light.Compiler.CoreRun.API.Internal as CRI
+}
+
+-------------------------------------------------------------------------------
+-- CoreRun generation
+-------------------------------------------------------------------------------
+
+attr Mod
+  syn crmod :: {CR.Mod}
+
+sem Mod
+<<<<<<< HEAD
+  | Mod  lhs    .   crmod   =   CR.mkMod (mkHNm "Main") Nothing (length @binds.crbindl + 100) @binds.crbindl (CR.mkEval @main.crexp)
+=======
+  | Mod  lhs    .   crmod   =   CR.mkModWithMetas (mkHNm "Main") Nothing (length @binds.crbindl + 100) [CR.mkMetaDataType (mkHNm "Bool") [CR.mkMetaDataCon (mkHNm "False") 0,CR.mkMetaDataCon (mkHNm "True") 1]] (CRI.crarrayFromList @binds.crbindl) @main.crexp
+>>>>>>> ifbool
+
+attr SExpL SExp
+  syn crsexpl use {++} {[]} :: {[CR.SExp]}
+
+sem SExp
+  | Int  lhs    .   crsexpl =   [CR.mkInteger' $ toInteger @i]
+  | Var  lhs    .   crsexpl =   [CR.mkVar' $ head @x.crrefl]
+  
+
+
+
+attr Exp
+  syn crexp :: {CR.Exp}
+attr Exp ExpL
+  syn crexpl use {++} {[]} :: {[CR.Exp]}
+
+sem Exp
+  | SExp loc    .   crexp   =   CR.mkExp (head @sexp.crsexpl)
+  | Nil  loc    .   crexp   = CR.mkTup 0 []
+  | Cons loc    .   crexp   = CR.mkTup 1 [head @t1.crsexpl, head @t2.crsexpl]
+  | Lam  loc    .   crexp   =   CR.mkLam (length @args.crrefl) 100 @body.crexp
+  | App  loc    .   crexp   =   CR.mkApp @func.crexp @args.crsexpl
+  | Prim loc    .   crexp   =   CR.mkFFI @func       @args.crsexpl
+  | Node loc    .   crexp   =   CR.mkTup @tag        @args.crsexpl
+  | Case loc    .   crexp   =   CR.mkCase (head @sexp.crsexpl) @alts.crexpl
+  | Let  loc    .   crexp   =   CR.mkLet @lhs.stkoff @bind.crbindl @body.crexp
+  | Dbg  loc    .   crexp   =   CR.mkDbg @info
+  --| Matthew loc .   crexp   =   expr_Pat_BoolExpr
+
+
+
+
+
+sem Exp
+  | * 	 lhs	.	crexpl	=	[@crexp]
+
+attr BindL Bind
+  syn crbindl use {++} {[]} :: {[CR.Bind]}
+
+sem Bind
+  | Bind lhs    .   crbindl =   [@xexp.crexp]
+
+attr RefL Ref
+  syn crrefl use {++} {[]} :: {[CR.RRef]}
+
+sem Ref
+  | Glob  lhs   .   crrefl  =   [CR.mkModRef @offset]
+  | Loc   lhs   .   crrefl  =   [CR.mkLocDifRef @levdiff @offset]
+  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag $ CR.mkLocDifRef @levdiff @offset]
+
+-------------------------------------------------------------------------------
+-- Stack offset for Let
+-------------------------------------------------------------------------------
+
+attr Exp ExpL
+  inh stkoff :: {Int}
+attr Bind BindL
+  chn stkoff :: {Int}
+
+sem Mod
+  | Mod  binds  .   stkoff  =   0
+         main   .   stkoff  =   @binds.stkoff
+
+sem Bind
+  | Bind xexp   .   stkoff  =   0
+         lhs    .   stkoff  =   @lhs.stkoff + 1
+
+sem Exp
+  | Lam  body   .   stkoff  =   length @args.crrefl
+
