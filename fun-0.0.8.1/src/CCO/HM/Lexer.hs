@@ -82,7 +82,7 @@ keyword_ = fmap Keyword $   string "in"   <|> string "let"
                         <|> string "ni"   <|> string "prim"
                         <|> string "if"   <|> string "then"
                         <|> string "else" <|> string "==" --added prim as keyword
-  		        <|> string "cons" <|> string "nil"
+                        <|> string "cons" <|> string "nil"
                         <|> string "fi"
 -- | A 'Lexer' that recognises 'Var' tokens.
 var_ :: Lexer Token
