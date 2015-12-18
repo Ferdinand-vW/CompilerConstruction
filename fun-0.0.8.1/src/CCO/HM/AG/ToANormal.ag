@@ -11,8 +11,6 @@ sem Tm_
     | Var   lhs.tm = AVar @x
     | Nil   lhs.tm = ANil
     | Cons  lhs.tm = ACons @t1.tm @t2.tm
-    | Head  lhs.tm = AHead @t1.tm
-    | Tail  lhs.tm = ATail @t1.tm
     | Prim  lhs.tm = APrim @f @t1.tm @t2.tm
     | Lam   lhs.tm = ALam @x @t1.tm
     | App   lhs.tm = removeDup [] $ transform (AApp @t1.tm @t2.tm)
@@ -37,7 +35,6 @@ transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
 transform tm = newLets tm
 
 newLets :: ATm -> ATm
-newLets (AApp t1 (AHead t2)) = ALet (letName (AHead t2) t2) (AHead t2) $ AApp t1 (AVar $ letName (AHead t2) t2)
 newLets (AApp (AApp lt1 lt2) t2) = 
         ALet (letName lt1 lt2) (AApp lt1 lt2) $ newLets $
             AApp (AVar $ letName lt1 lt2) t2
@@ -48,7 +45,6 @@ newLets tm = tm
 
 getName :: ATm -> String
 getName (ANat i) = show i
-getName (AHead _) = "head"
 getName (ACons x _) = "cons" ++ getName x
 getName (ANil) = "nil"
 getName (APrim x _ _) = x

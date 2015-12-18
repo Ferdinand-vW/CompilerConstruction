@@ -16,8 +16,8 @@ attr Core
     syn core :: {Mod}
 
 sem Core
-    | Core  lhs.core = Mod (SExp (Var @tm.main)) ([Bind (Glob 0) Nil,Bind (Glob 1) consConstructor] ++ @tm.binds)
-            tm.genv = (2,[("cons", Glob 1),("nil",Glob 0)])
+    | Core  lhs.core = Mod (SExp (Var @tm.main)) (defaultBinds ++ @tm.binds)
+            tm.genv = (3,[("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
 
 --("False",Glob 0) ("True", Glob 1)
@@ -41,14 +41,7 @@ sem ATm
               lhs.binds = [Bind (next @lhs.genv) $ SExp $ findVarRef' @lhs.genv "nil"]
     |   ACons lhs.main = next @lhs.genv
               lhs.exp = mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)
-              lhs.binds = []--[Bind (next @lhs.genv) $ App (findVarRef' "cons" @lhs.genv) 
-                          --[toSExp @t1.exp, nilOrCons @lhs.genv @t2.exp]] ++ @t2.binds
-    |   AHead lhs.main = next @lhs.genv
-              lhs.exp = mkHead @lhs.genv @lhs.lenv @t1.exp
-              lhs.binds = [Bind (next @lhs.genv) $ mkHead @lhs.genv @lhs.lenv @t1.exp]
-    |   ATail lhs.main = next @lhs.genv
-              lhs.exp = mkTail @lhs.genv @t1.exp
-              lhs.binds = [Bind (next @lhs.genv) $ mkTail @lhs.genv @t1.exp]
+              lhs.binds = [Bind (next @lhs.genv) $ mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)] 
     |   ALam  lhs.main = next @lhs.genv
               lhs.exp  = joinLam [Loc 0 $ getOffSet @lhs.lenv] @t1.exp --Hard coded lvl as 0 for now
               lhs.binds = []
@@ -85,16 +78,6 @@ sem ATm
               t1.lenv = incrOffSet' @lhs.lenv 1
               t2.lenv = incrOffSet' @lhs.lenv 1
 {
-
-mkHead :: Map String Ref -> Map String Ref -> Exp -> Exp
-mkHead genv lenv (Let b (Let b2 exp)) = mkHead genv lenv (Let b2 exp)
-mkHead genv (n,_) (Let (Bind _ (App r xs)) exp) = Let (Bind (Loc 0 5) (App r [head xs, findVarRef' genv "nil"])) (SExp $ Var $ Loc 0 n)
-mkHead genv _ _ = SExp $ findVarRef' genv "nil"
-
-mkTail :: Map String Ref -> Exp -> Exp
-mkTail genv (Let b (Let b2 exp)) = Let b (mkTail genv (Let b2 exp))
-mkTail genv (Let b (SExp (Var (Loc lvl off)))) = SExp (Var (Loc lvl (off - 1)))
-mkTail genv _ = SExp $ findVarRef' genv "nil"
 
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
 mkCons genv lenv atm = consExp genv offset atm (SExp $ Var $ Loc 0 offset)
@@ -195,14 +178,21 @@ insertgWithValue (n,xs) s r = (n,(s,r):xs)
 insertl :: Map String Ref -> Int -> String -> Map String Ref
 insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
 
+defaultBinds :: BindL
+defaultBinds = [nilBind,consBind,headBind]
 
 headBind :: Bind
-headBind = Bind (Glob 0) exp
+headBind = Bind (Glob 2) exp
   where exp = Lam [Loc 0 0] $
                 Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
                   Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
-                    [SExp $ Var $ Glob 0] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
+                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
 
-consConstructor :: Exp
-consConstructor = Lam [Loc 0 0, Loc 0 1] (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
+consBind :: Bind
+consBind = Bind (Glob 1) exp
+  where exp = Lam [Loc 0 0, Loc 0 1] 
+                (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
+
+nilBind :: Bind
+nilBind = Bind (Glob 0) Nil
 }

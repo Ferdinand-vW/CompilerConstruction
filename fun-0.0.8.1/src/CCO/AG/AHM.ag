@@ -12,8 +12,6 @@ instance Tree ATm where
   fromTree (AVar x)        = T.App "AVar" [fromTree x]
   fromTree (ANil)          = T.App "ANil" [] 
   fromTree (ACons t1 t2)   = T.App "ACons" [fromTree t1, fromTree t2]
-  fromTree (AHead t1)      = T.App "AHead" [fromTree t1]
-  fromTree (ATail t1)      = T.App "ATail" [fromTree t1]
   fromTree (APrim f t1 t2) = T.App "APrim" [fromTree f, fromTree t1, fromTree t2]
   fromTree (ALam x t1)     = T.App "ALam" [fromTree x, fromTree t1]
   fromTree (AApp t1 t2)    = T.App "AApp" [fromTree t1, fromTree t2]
@@ -24,8 +22,6 @@ instance Tree ATm where
                      , app "AVar" (AVar <$> arg                )
                      , app "ANil" (pure ANil                   )
                      , app "ACons" (ACons <$> arg <*> arg      )
-                     , app "AHead" (AHead <$> arg              ) 
-                     , app "ATail" (ATail <$> arg              )
                      , app "APrim" (APrim <$> arg <*> arg <*> arg)
                      , app "ALam" (ALam <$> arg <*> arg        )
                      , app "AApp" (AApp <$> arg <*> arg        )
@@ -49,8 +45,6 @@ data ATm
     | AVar  x :: {Var}
     | ANil
     | ACons t1 :: ATm t2 :: ATm
-    | AHead t1 :: ATm
-    | ATail t1 :: ATm
     | APrim f :: {Var} t1 :: ATm t2 :: ATm
     | ALam  x :: {Var} t1 :: ATm
     | AApp t1 :: ATm t2 :: ATm
