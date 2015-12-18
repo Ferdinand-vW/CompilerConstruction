@@ -2,6 +2,7 @@ imports
 {
 import           UHC.Light.Compiler.Base.API
 import qualified UHC.Light.Compiler.CoreRun.API as CR
+import qualified UHC.Light.Compiler.CoreRun.API.Internal as CRI
 }
 
 -------------------------------------------------------------------------------
@@ -12,14 +13,17 @@ attr Mod
   syn crmod :: {CR.Mod}
 
 sem Mod
-  | Mod  lhs    .   crmod   =   CR.mkMod (mkHNm "Main") Nothing (length @binds.crbindl + 100) @binds.crbindl (CR.mkEval @main.crexp)
+  | Mod  lhs    .   crmod   =   CR.mkModWithMetas (mkHNm "Main") Nothing (length @binds.crbindl + 100) [CR.mkMetaDataType (mkHNm "Bool") [CR.mkMetaDataCon (mkHNm "False") 0,CR.mkMetaDataCon (mkHNm "True") 1]] (CRI.crarrayFromList @binds.crbindl) (CR.mkEval @main.crexp)
 
 attr SExpL SExp
   syn crsexpl use {++} {[]} :: {[CR.SExp]}
 
 sem SExp
-  | Int  lhs    .   crsexpl =   [CR.mkInt' @i]
+  | Int  lhs    .   crsexpl =   [CR.mkInteger' $ toInteger @i]
   | Var  lhs    .   crsexpl =   [CR.mkVar' $ head @x.crrefl]
+  
+
+
 
 attr Exp
   syn crexp :: {CR.Exp}
@@ -37,6 +41,11 @@ sem Exp
   | Case loc    .   crexp   =   CR.mkCase (head @sexp.crsexpl) @alts.crexpl
   | Let  loc    .   crexp   =   CR.mkLet @lhs.stkoff @bind.crbindl @body.crexp
   | Dbg  loc    .   crexp   =   CR.mkDbg @info
+  --| Matthew loc .   crexp   =   expr_Pat_BoolExpr
+
+
+
+
 
 sem Exp
   | * 	 lhs	.	crexpl	=	[@crexp]
@@ -53,7 +62,7 @@ attr RefL Ref
 sem Ref
   | Glob  lhs   .   crrefl  =   [CR.mkModRef @offset]
   | Loc   lhs   .   crrefl  =   [CR.mkLocDifRef @levdiff @offset]
-
+  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag $ CR.mkLocDifRef @levdiff @offset]
 
 -------------------------------------------------------------------------------
 -- Stack offset for Let

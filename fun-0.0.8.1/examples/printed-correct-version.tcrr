@@ -1,0 +1,7 @@
+module Main 102 -> eval (m.1);
+data "Bool" = "False" -> 0, "True" -> 1;
+\2,100 -> ffi "primEqInt"(d.0.0,d.0.1);
+\0,100 -> let 0 -> app (m.0) (1,1); in
+          case d.0.0.tag of
+                -> 0;
+                -> 10;;

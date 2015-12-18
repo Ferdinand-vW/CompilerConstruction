@@ -14,7 +14,7 @@
 
 module CCO.Core.Base (
     -- * Syntax
-    Ref (Glob, Loc)                     
+    Ref (Glob, Loc, Tag)                     
   , RefL
   , SExp (Var, Int)                     
   , SExpL
@@ -56,9 +56,11 @@ instance Tree SExp where
 instance Tree Ref where
   fromTree (Glob  o)  = T.App "Glob" [fromTree o]
   fromTree (Loc d o)  = T.App "Loc" [fromTree d, fromTree o]
+  fromTree (Tag d o)  = T.App "Tag" [fromTree d, fromTree o]
 
   toTree = parseTree [ app "Glob" (Glob <$> arg)
                      , app "Loc"  (Loc  <$> arg <*> arg)
+                     , app "Tag"  (Tag  <$> arg <*> arg)
                      ]
 
 instance Tree Exp where

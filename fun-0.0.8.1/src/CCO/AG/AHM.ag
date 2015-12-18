@@ -16,6 +16,7 @@ instance Tree ATm where
   fromTree (ALam x t1)     = T.App "ALam" [fromTree x, fromTree t1]
   fromTree (AApp t1 t2)    = T.App "AApp" [fromTree t1, fromTree t2]
   fromTree (ALet x t1 t2)  = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (AIf exp t1 t2) = T.App "AIf" [fromTree exp, fromTree t1, fromTree t2]
 
   toTree = parseTree [ app "ANat" (ANat <$> arg                )
                      , app "AVar" (AVar <$> arg                )
@@ -25,6 +26,7 @@ instance Tree ATm where
                      , app "ALam" (ALam <$> arg <*> arg        )
                      , app "AApp" (AApp <$> arg <*> arg        )
                      , app "ALet" (ALet <$> arg <*> arg <*> arg)
+                     , app "AIf" (AIf <$> arg <*> arg <*> arg)
                      ]
 
 }
@@ -47,3 +49,4 @@ data ATm
     | ALam  x :: {Var} t1 :: ATm
     | AApp t1 :: ATm t2 :: ATm
     | ALet  x :: {Var} t1 :: ATm t2 :: ATm
+    | AIf exp :: ATm  t1 :: ATm  t2 :: ATm

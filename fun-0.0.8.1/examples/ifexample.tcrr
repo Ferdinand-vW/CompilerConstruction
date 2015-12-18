@@ -1,0 +1,10 @@
+module ifthenelse8 7 -> eval (m.1);
+data "Bool" = "False" -> 1, "True" -> 0;
+{-m.0 -} \2, 6 -> let 2 -> {-d.0.2 -} eval (d.0.0); in
+                  let 3 -> {-d.0.3 -} eval (d.0.1); in
+                  ffi "primEqInt" (d.0.2, d.0.3);
+{-m.3 -} \0, 3 -> let 0 -> {-d.0.0 -} \0, 3 -> tail (app (eval (m.0)) (5, 5)); in
+                  let 1 -> {-d.0.1 -} eval (d.0.0); in
+                  case d.0.1.tag of
+                     -> tail (0);
+                     -> tail (1); ;
