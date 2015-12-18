@@ -1,0 +1,6 @@
+let matthew = cons 3 (cons 2 nil) in
+         if isCons matthew 
+            then 3 
+            else 5 
+        fi 
+ni
