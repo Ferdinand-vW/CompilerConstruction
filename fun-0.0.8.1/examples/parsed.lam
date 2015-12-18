@@ -1,1 +1,1 @@
-ALet("x", ACons(ANat(1), ACons(ANat(2), ANil)), AApp(AVar("head"), AVar("x")))
+ALet("x", ACons(ANat(1), ACons(ANat(2), ANil)), AApp(AVar("tail"), AVar("x")))
