@@ -56,11 +56,13 @@ instance Tree SExp where
 instance Tree Ref where
   fromTree (Glob  o)  = T.App "Glob" [fromTree o]
   fromTree (Loc d o)  = T.App "Loc" [fromTree d, fromTree o]
-  fromTree (Tag d o)  = T.App "Tag" [fromTree d, fromTree o]
+  fromTree (Tag r)  = T.App "Tag" [fromTree r]
+  fromTree (Field i r) = T.App "Field" [fromTree i,fromTree r]
 
   toTree = parseTree [ app "Glob" (Glob <$> arg)
                      , app "Loc"  (Loc  <$> arg <*> arg)
-                     , app "Tag"  (Tag  <$> arg <*> arg)
+                     , app "Tag"  (Tag  <$> arg)
+                     , app "Field" (Field <$> arg <*> arg)
                      ]
 
 instance Tree Exp where
@@ -74,6 +76,7 @@ instance Tree Exp where
   fromTree (Case se as)   = T.App "Case" [fromTree se, fromTree as]
   fromTree (Let  bn bd)   = T.App "Let"  [fromTree bn, fromTree bd]
   fromTree (Dbg  i    )   = T.App "Dbg"  [fromTree i]
+  fromTree (Eval e)       =  T.App "Eval" [fromTree e]
 
   toTree = parseTree [ app "SExp" (SExp <$> arg        )
                      , app "Cons" (Cons <$> arg <*> arg)
@@ -85,6 +88,7 @@ instance Tree Exp where
                      , app "Case" (Case <$> arg <*> arg)
                      , app "Let"  (Let  <$> arg <*> arg)
                      , app "Dbg"  (Dbg  <$> arg        )
+                     , app "Eval" (Eval <$> arg)
                      ]
 
 

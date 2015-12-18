@@ -1,2 +1,3 @@
-let x = \y. x in
-x ni
+let id = \x.x in
+let x = tail (cons 1 (cons 2 nil)) in
+head x ni ni

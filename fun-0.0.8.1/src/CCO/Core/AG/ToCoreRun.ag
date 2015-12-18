@@ -41,6 +41,7 @@ sem Exp
   | Case loc    .   crexp   =   CR.mkCase (head @sexp.crsexpl) @alts.crexpl
   | Let  loc    .   crexp   =   CR.mkLet @lhs.stkoff @bind.crbindl @body.crexp
   | Dbg  loc    .   crexp   =   CR.mkDbg @info
+  | Eval loc    .   crexp   = CR.mkEval @body.crexp
   --| Matthew loc .   crexp   =   expr_Pat_BoolExpr
 
 
@@ -59,10 +60,16 @@ sem Bind
 attr RefL Ref
   syn crrefl use {++} {[]} :: {[CR.RRef]}
 
+attr Ref
+  syn crref :: {CR.RRef}
+
 sem Ref
   | Glob  lhs   .   crrefl  =   [CR.mkModRef @offset]
+          lhs   .   crref   =   CR.mkModRef @offset
   | Loc   lhs   .   crrefl  =   [CR.mkLocDifRef @levdiff @offset]
-  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag $ CR.mkLocDifRef @levdiff @offset]
+          lhs   .   crref   =   CR.mkLocDifRef @levdiff @offset
+  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag @ref.crref]
+  | Field lhs   .   crrefl  =   [CRI.RRef_Fld @ref.crref @fld]
 
 -------------------------------------------------------------------------------
 -- Stack offset for Let

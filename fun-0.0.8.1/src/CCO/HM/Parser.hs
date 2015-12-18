@@ -17,7 +17,7 @@ module CCO.HM.Parser (
     parser    -- :: Component String Tm
 ) where
 
-import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (Var, Nat, Lam, App, Let, Prim, Cons, Nil, If))
+import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (Var, Nat, Lam, App, Let, Prim, Cons, Nil, Head, Tail, If))
 import CCO.HM.Lexer                    (Token, lexer, keyword, var, nat, spec)
 import CCO.Component                   (Component)
 import qualified CCO.Component as C    (parser)
@@ -43,6 +43,8 @@ parser = C.parser lexer (pTm <* eof)
 pTm :: TokenParser Tm
 pTm = (\pos x t1 -> Tm pos (Lam x t1)) <$> sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
       (\pos x t1 t2 -> Tm pos (Prim x t1 t2)) <$> sourcePos <* keyword "prim" <* spec '\"' <*> var <* spec '\"' <*> pTm <*> pTm <|>
+      (\pos t1 -> Tm pos (Head t1)) <$> sourcePos <* keyword "head" <*> pTm <|>
+      (\pos t1 -> Tm pos (Tail t1)) <$> sourcePos <* keyword "tail" <*> pTm <|>
       (\pos -> Tm pos Nil) <$> sourcePos <* keyword "nil" <|>
       (\pos x l -> Tm pos (Cons x l)) <$> sourcePos <* keyword "cons" <*> pTm <*> pTm <|>
       (\pos a b c -> Tm pos (If a b c)) <$> sourcePos <* keyword "if" <*> pTm <* keyword "then" <*> pTm <* keyword "else" <*> pTm <* keyword "fi"   <|>

@@ -15,8 +15,10 @@ data Ref
   | Glob offset     :: {Int}
   | Loc  levdiff    :: {Int}
          offset     :: {Int} 
-  | Tag  levdiff    :: {Int}
-         offset     :: {Int}
+  | Tag  ref :: Ref
+  | Field fld :: {Int}
+          ref :: Ref
+          
 
 deriving Ref : Show
 deriving Bind : Show
@@ -48,7 +50,7 @@ data Exp
   | Let  bind :: Bind
          body :: Exp
   | Dbg  info :: {String}
-  --| Matthew
+  | Eval body :: Exp
 
 type ExpL = [Exp]
   

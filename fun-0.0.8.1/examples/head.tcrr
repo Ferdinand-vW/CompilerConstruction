@@ -2,13 +2,13 @@ module Main 105 -> eval(m.4);
 data "Bool" = "False" -> 0, "True" -> 1;
 alloc 0();
 \2,100 -> alloc 1(d.0.0,d.0.1);
-\1,100 -> let 1 -> eval(d.0.0); in
-                case d.0.1.1.tag of
+\1,100 ->   let 1 -> d.0.0; in
+            let 2 -> eval(d.0.1); in 
+                case d.0.2.1.tag of
                     -> m.0;
-                    -> d.0.1.1;;
+                    -> d.0.2.0;;
 \0,100 -> let 0 -> app m.1 (1,m.0); in
           let 1 -> app m.1 (2,d.0.0);in
           let 2 -> app m.1 (18,d.0.1);in
           d.0.2;
 app m.2 (m.3);
-
