@@ -1,0 +1,19 @@
+<<<<<<< HEAD
+module Main 104 -> eval(m.3);
+alloc 0();
+\2,100 -> alloc 1(d.0.0,d.0.1);
+\1,100 -> m.2;
+=======
+module Main 104 -> eval (m.3);
+data "Bool" = "False" -> 0, "True" -> 1;
+\2,100 -> ffi "primEqInt"(d.0.0,d.0.1);
+\1,100 -> d.0.0;
+\0,100 -> let 0 -> app (m.0)(2,m.3); in
+          case d.0.0.tag of
+           -> let 1 -> app (m.0)(2,2); in
+              case d.0.1.tag of
+               -> 11;
+               -> app (m.1)(10);;
+           -> 5;;
+>>>>>>> ifbool
+m.2;

@@ -1,0 +1,9 @@
+let plus = \x .\y.prim "primEqInt" x y in
+let fv = 5 in
+let id = \x .x
+<<<<<<< HEAD
+in id (plus (id fv) 4)
+=======
+in id (plus fv 4)
+>>>>>>> ifbool
+ni ni ni

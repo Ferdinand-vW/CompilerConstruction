@@ -1,0 +1,33 @@
+<<<<<<< HEAD
+ALet("x", ALam("y", AVar("x")), AVar("x"))
+=======
+ALet(
+  "eq"
+, ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
+, ALet(
+    "ma"
+  , ALam("x", AVar("x"))
+  , ALet(
+      "matthew"
+    , AIf(
+        ALet(
+          "eq2"
+        , AApp(AVar("eq"), ANat(2))
+        , ALet(
+            "ma3"
+          , AApp(AVar("ma"), ANat(3))
+          , AApp(AVar("eq2"), AVar("ma3"))
+          )
+        )
+      , ANat(5)
+      , AIf(
+          ALet("eq2", AApp(AVar("eq"), ANat(2)), AApp(AVar("eq2"), ANat(2)))
+        , AApp(AVar("ma"), ANat(10))
+        , ANat(11)
+        )
+      )
+    , AVar("matthew")
+    )
+  )
+)
+>>>>>>> ifbool
