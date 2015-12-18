@@ -1,15 +1,11 @@
 Mod(
-  SExp(Var(Glob(4)))
-, [ Bind(
-      Glob(0)
-    , Lam(
-        [Loc(0, 0), Loc(0, 1)]
-      , Prim("primAddInt", [Var(Loc(0, 0)), Var(Loc(0, 1))])
-      )
+  SExp(Var(Glob(3)))
+, [ Bind(Glob(0), Nil)
+  , Bind(
+      Glob(1)
+    , Lam([Loc(0, 0), Loc(0, 1)], Cons(Var(Loc(0, 0)), Var(Loc(0, 1))))
     )
-  , Bind(Glob(1), SExp(Int(5)))
-  , Bind(Glob(2), Lam([Loc(0, 0)], SExp(Var(Loc(0, 0)))))
-  , Bind(Glob(3), App(SExp(Var(Glob(0))), [Int(1)]))
-  , Bind(Glob(4), App(SExp(Var(Glob(3))), [Int(2)]))
+  , Bind(Glob(2), Lam([Loc(0, 0)], SExp(Var(Glob(2)))))
+  , Bind(Glob(3), SExp(Var(Glob(2))))
   ]
 )

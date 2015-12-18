@@ -17,7 +17,7 @@ module CCO.HM.Parser (
     parser    -- :: Component String Tm
 ) where
 
-import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (Var, Nat, Lam, App, Let, Prim))
+import CCO.HM.AG                     (Var, Tm (Tm), Tm_ (Var, Nat, Lam, App, Let, Prim, Cons, Nil))
 import CCO.HM.Lexer                    (Token, lexer, keyword, var, nat, spec)
 import CCO.Component                   (Component)
 import qualified CCO.Component as C    (parser)
@@ -43,6 +43,8 @@ parser = C.parser lexer (pTm <* eof)
 pTm :: TokenParser Tm
 pTm = (\pos x t1 -> Tm pos (Lam x t1)) <$> sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
       (\pos x t1 t2 -> Tm pos (Prim x t1 t2)) <$> sourcePos <* keyword "prim" <* spec '\"' <*> var <* spec '\"' <*> pTm <*> pTm <|>
+      (\pos -> Tm pos Nil) <$> sourcePos <* keyword "nil" <|>
+      (\pos x l -> Tm pos (Cons x l)) <$> sourcePos <* keyword "cons" <*> pTm <*> pTm <|>
       (\pos ts -> foldl1 (\t1 t2 -> Tm pos (App t1 t2)) ts) <$>
         sourcePos <*> some
           (

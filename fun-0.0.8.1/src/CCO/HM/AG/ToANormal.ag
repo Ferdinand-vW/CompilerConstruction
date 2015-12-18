@@ -9,6 +9,8 @@ sem Tm
 sem Tm_
     | Nat   lhs.tm = ANat @i 
     | Var   lhs.tm = AVar @x
+    | Nil   lhs.tm = ANil
+    | Cons  lhs.tm = ACons @t1.tm @t2.tm
     | Prim  lhs.tm = APrim @f @t1.tm @t2.tm
     | Lam   lhs.tm = ALam @x @t1.tm
     | App   lhs.tm = removeDup [] $ transform (AApp @t1.tm @t2.tm)

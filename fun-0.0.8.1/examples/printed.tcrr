@@ -1,6 +1,5 @@
-module Main 105 -> m.4;
-\2,100 -> ffi "primAddInt"(d.0.0,d.0.1);
-5;
-\1,100 -> d.0.0;
-app (m.0)(1);
-app (m.3)(2);
+module Main 104 -> eval(m.3);
+alloc 0();
+\2,100 -> alloc 1(d.0.0,d.0.1);
+\1,100 -> m.2;
+m.2;

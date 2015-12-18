@@ -1,13 +1,1 @@
-ALet(
-  "plus"
-, ALam("x", ALam("y", APrim("primAddInt", AVar("x"), AVar("y"))))
-, ALet(
-    "fv"
-  , ANat(5)
-  , ALet(
-      "id"
-    , ALam("x", AVar("x"))
-    , ALet("plus1", AApp(AVar("plus"), ANat(1)), AApp(AVar("plus1"), ANat(2)))
-    )
-  )
-)
+ALet("x", ALam("y", AVar("x")), AVar("x"))

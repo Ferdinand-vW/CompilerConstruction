@@ -1,0 +1,3 @@
+let id = \x.x in
+let x = \y. (cons 1 (cons 2 nil)) in
+id x ni ni

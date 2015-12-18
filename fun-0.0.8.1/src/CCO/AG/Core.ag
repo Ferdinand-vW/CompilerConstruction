@@ -14,7 +14,12 @@ data Mod
 data Ref
   | Glob offset     :: {Int}
   | Loc  levdiff    :: {Int}
-         offset     :: {Int}
+         offset     :: {Int} 
+
+deriving Ref : Show
+deriving Bind : Show
+deriving Exp : Show
+deriving SExp : Show
 
 type RefL = [Ref]
   
@@ -26,6 +31,8 @@ type SExpL = [SExp]
   
 data Exp
   | SExp sexp :: SExp
+  | Nil
+  | Cons t1 :: SExp t2 :: SExp
   | Lam  args :: RefL
          body :: Exp
   | App  func :: Exp

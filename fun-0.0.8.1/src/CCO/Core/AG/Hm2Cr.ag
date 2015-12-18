@@ -4,7 +4,7 @@ import Data.Maybe
 }
 
 {
-type Map a b = [(a,b)]
+type Map a b = (Int,[(a,b)])
 }
 
 
@@ -15,9 +15,9 @@ attr Core
     syn core :: {Mod}
 
 sem Core
-    | Core  lhs.core = Mod (SExp (Var @tm.main)) @tm.binds
-            tm.genv = []
-            tm.lenv = []
+    | Core  lhs.core = Mod (SExp (Var @tm.main)) ([Bind (Glob 0) Nil,Bind (Glob 1) consConstructor] ++ @tm.binds)
+            tm.genv = (2,[("cons", Glob 1),("nil",Glob 0)])
+            tm.lenv = (0,[])
 
 attr ATm
     syn tm :: self
@@ -28,61 +28,132 @@ attr ATm
     inh lenv :: {Map String Ref}
 
 sem ATm
-    |   ANat lhs.main = Glob (getOffSet @lhs.genv)
+    |   ANat lhs.main = next @lhs.genv
               lhs.exp  = SExp (Int @i)
+              lhs.binds = [Bind (next @lhs.genv) $ SExp $ Int @i]
+    |   AVar lhs.main = next @lhs.genv
+             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv @x
+              lhs.binds = [Bind (next @lhs.genv) $ SExp $ findVarRef @lhs.genv @lhs.lenv @x]
+    |   ANil  lhs.main = next @lhs.genv
+              lhs.exp = Nil
               lhs.binds = []
-    |   AVar lhs.main = Glob (getOffSet @lhs.genv)
-             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv (AVar @x)
-              lhs.binds = []
-    |   ALam  lhs.main = Glob (getOffSet @lhs.genv)
+    |   ACons lhs.main = next @lhs.genv
+              lhs.exp = mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)
+              lhs.binds = []--[Bind (next @lhs.genv) $ App (findVarRef' "cons" @lhs.genv) 
+                          --[toSExp @t1.exp, nilOrCons @lhs.genv @t2.exp]] ++ @t2.binds
+    |   ALam  lhs.main = next @lhs.genv
               lhs.exp  = joinLam [Loc 0 $ getOffSet @lhs.lenv] @t1.exp --Hard coded lvl as 0 for now
               lhs.binds = []
               t1.genv = @lhs.genv
               t1.lenv = insertl @lhs.lenv 0 @x
-    |   AApp lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp  = App (@t1.exp) [fromExp @t2.exp]
-              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (App (@t1.exp) [fromExp @t2.exp])]
+    |   AApp lhs.main = next @lhs.genv
+              lhs.exp  = appExp @t1.exp @t2.exp
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (appExp' @t1.exp @t2.exp)]
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
     |   ALet lhs.main = @t2.main
-              lhs.exp  = Let (Bind (Glob (getOffSet @lhs.genv)) @t1.exp) @t2.exp
-              lhs.binds = Bind (Glob (getOffSet @lhs.genv)) @t1.exp : @t2.binds
+              lhs.exp  = Let (Bind (next @lhs.genv) @t1.exp) @t2.exp
+              lhs.binds = letBinds @lhs.genv @t1.tm @t1.exp @t2.binds
               t1.genv = @lhs.genv
-              t2.genv = insertg @lhs.genv @x
-              t1.lenv = @lhs.lenv
+              loc.genv = insertg @lhs.genv @x
+              t2.genv = @loc.genv
+              t1.lenv = insertgWithValue @lhs.lenv @x (fromJust $ lookup' @x @loc.genv)
               t2.lenv = @lhs.lenv
-    |   APrim lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp = Prim @f [fromPrim @t1.exp, fromPrim @t2.exp]
-              lhs.binds =  []
+    |   APrim lhs.main = next @lhs.genv
+              lhs.exp = Prim @f [toPrim @t1.exp, toPrim @t2.exp]
+              lhs.binds = []
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
               t1.lenv = @lhs.lenv
               t2.lenv = @lhs.lenv
 {
+mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
+mkCons genv lenv atm = consExp genv offset atm (SExp $ Var $ Loc 0 offset)
+  where
+    offset = getOffSet lenv + (listLength atm) - 1
+
+consExp :: Map String Ref -> Int -> ATm -> Exp -> Exp
+consExp genv n (ACons t1 t2) t3 = case t2 of
+                            ACons _ _ -> consExp genv (n-1) t2 (Let (Bind curr (App cons [toSExp $ intExp t1,Var prev])) t3)
+                            ANil -> Let (Bind curr (App cons [toSExp $ intExp t1, nil])) t3
+      where
+        cons = SExp $ findVarRef' genv "cons"
+        nil = findVarRef' genv "nil"
+        curr = Loc 0 n
+        prev = Loc 0 (n - 1)
+
+intExp :: ATm -> Exp
+intExp (ANat i) = SExp $ Int i
+
+appExp' :: Exp -> Exp -> Exp
+appExp' exp (Let b exp2) = Lam [] (appExp exp (Let b exp2))
+appExp' exp exp2 = appExp exp exp2
+
+appExp :: Exp -> Exp -> Exp
+appExp exp (Let b exp2) = Let b (appExp exp exp2)
+appExp exp (SExp sexp) = App exp [sexp]
+
+next :: Map String Ref -> Ref
+next (n,_) = Glob n
+
+letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
+letBinds (n,_) (AApp _ _) exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
+letBinds (n,_) (ACons _ _) exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
+letBinds (n,_) _ exp t2binds = Bind (Glob n) exp : t2binds
+
+nilOrCons :: Map String Ref -> Exp -> SExp
+nilOrCons env Nil = Var $ fromJust $  lookup' "nil" env
+nilOrCons (n,env) _ = Var $ Glob n 
+
+incrOffSet' :: Map String Ref -> Int -> Map String Ref
+incrOffSet' (n,xs) i = (n + i, xs)
+
+incrOffSet :: Map String Ref -> ATm -> Map String Ref
+incrOffSet (n,xs) list@(ACons _ _) = (n + (listLength list) - 1, xs)
+incrOffSet env _ = env
+
+listLength :: ATm -> Int
+listLength (ACons _ l) = 1 + listLength l
+listLength _ = 0
 
 joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
 joinLam xs exp = Lam xs exp
 
-fromExp :: Exp -> SExp
-fromExp (SExp s) = s
+--toList :: Exp -> LExpL
+--toList (EList l) = l
 
-fromPrim :: Exp -> SExp
-fromPrim (SExp s) = Var $ Loc 0 (off s)
+toSExp :: Exp -> SExp
+toSExp (SExp s) = s
+
+toPrim :: Exp -> SExp
+toPrim (SExp s) = Var $ Loc 0 (off s)
               where off (Var (Loc l o)) = o
 
+findVarRef' :: Map String Ref -> String -> SExp
+findVarRef' (_,env) s = Var $ fromJust $ lookup s env
 
-findVarRef :: Map String Ref -> Map String Ref -> ATm -> SExp
-findVarRef genv lenv (AVar x) = Var $ fromMaybe (fromJust (lookup x genv)) (lookup x lenv)
+findVarRef :: Map String Ref -> Map String Ref -> String -> SExp
+findVarRef (_,genv) (_,lenv) s = Var $ fromMaybe (fromJust (lookup s genv)) (lookup s lenv)
 
 getOffSet :: Map String Ref -> Int
-getOffSet xs = length xs
+getOffSet xs = fst xs
+
+lookup'  :: String -> Map String Ref -> Maybe Ref
+lookup' s (_,env) = lookup s env
 
 insertg :: Map String Ref -> String -> Map String Ref
-insertg xs s = (s, Glob $ getOffSet xs) : xs
+insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
+
+insertgWithValue :: Map String Ref -> String -> Ref -> Map String Ref
+insertgWithValue (n,xs) s r = (n,(s,r):xs)
 
 insertl :: Map String Ref -> Int -> String -> Map String Ref
-insertl xs lvl s = (s, Loc lvl $ getOffSet xs) : xs
+insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
+
+
+consConstructor :: Exp
+consConstructor = Lam [Loc 0 0, Loc 0 1] (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
 }

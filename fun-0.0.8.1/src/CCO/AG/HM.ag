@@ -16,6 +16,8 @@ instance Tree Tm where
 instance Tree Tm_ where
   fromTree (Nat x)       = T.App "Nat" [fromTree x]
   fromTree (Var x)       = T.App "Var" [fromTree x]
+  fromTree Nil           = T.App "Nil" []
+  fromTree (Cons t1 t2)   = T.App "Cons" [fromTree t1, fromTree t2]
   fromTree (Prim x t1 t2) = T.App "Prim" [fromTree x,fromTree t1, fromTree t2] --Added here
   fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
   fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
@@ -23,6 +25,8 @@ instance Tree Tm_ where
 
   toTree = parseTree [ app "Nat" (Nat <$> arg                )
                      , app "Var" (Var <$> arg                )
+                     , app "Nil" (pure Nil                   )
+                     , app "Cons" (Cons <$> arg <*> arg      )
                      , app "Prim" (Prim <$> arg <*> arg <*> arg)
                      , app "Lam" (Lam <$> arg <*> arg        )
                      , app "App" (App <$> arg <*> arg        )
@@ -41,6 +45,8 @@ data Tm
 data Tm_
   | Nat  i :: {Int}
   | Var  x :: {Var}
+  | Nil
+  | Cons t1 :: Tm t2 :: Tm
   | Prim f :: {Var} t1 :: Tm t2 :: Tm
   | Lam  x :: {Var}  t1 :: Tm
   | App  t1 :: Tm  t2 :: Tm
