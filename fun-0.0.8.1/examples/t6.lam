@@ -1,2 +1,7 @@
-let x = cons 1 (cons 2 nil) in
-tail x ni
+let x = 5
+in 
+if id (id (eq 2 2))
+            then \y. id (id (cons 1 (cons 2 nil)))
+            else 4 
+        fi
+ni
