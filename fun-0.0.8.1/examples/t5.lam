@@ -1,9 +1,10 @@
 let eq = \x .\y.prim "primEqInt" x y in
-let ma = \x . x in
+let id = \x .x in
+let ma = id 3 in
 let matthew = 
-    if eq 2 2
+    if eq 2 ma
         then 5 
         else 3
     fi 
 in matthew
-ni ni ni
+ni ni ni ni
