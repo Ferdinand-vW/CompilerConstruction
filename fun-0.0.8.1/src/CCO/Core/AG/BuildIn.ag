@@ -1,0 +1,41 @@
+{
+defaultBinds :: BindL
+defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind]
+
+isNilBind :: Bind
+isNilBind = Bind (Glob 5) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Int 1] ++ [SExp $ Int 0]
+
+isConsBind :: Bind
+isConsBind = Bind (Glob 4) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Int 0] ++ [SExp $ Int 1]
+
+tailBind :: Bind
+tailBind = Bind (Glob 3) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 1 $ Loc 0 1]
+
+
+headBind :: Bind
+headBind = Bind (Glob 2) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
+
+consBind :: Bind
+consBind = Bind (Glob 1) exp
+  where exp = Lam [Loc 0 0, Loc 0 1] 
+                (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
+
+nilBind :: Bind
+nilBind = Bind (Glob 0) Nil
+}

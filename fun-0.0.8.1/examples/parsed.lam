@@ -1,21 +1,9 @@
 ALet(
-  "l"
-, ACons(ANat(3), ACons(ANat(2), ANil))
+  "x"
 , ALet(
-    "id"
-  , ALam("x", AVar("x"))
-  , ALet(
-      "x"
-    , ALet(
-        "eq2"
-      , AApp(AVar("eq"), ANat(2))
-      , ALet(
-          "eq23"
-        , AApp(AVar("eq2"), ANat(3))
-        , AIf(AVar("eq23"), ANat(10), ANat(15))
-        )
-      )
-    , AApp(AVar("id"), AVar("x"))
-    )
+    "123nil"
+  , ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ANil)))
+  , AApp(AVar("tail"), AVar("123nil"))
   )
+, AVar("x")
 )

@@ -3,11 +3,6 @@ imports
 import Data.Maybe
 }
 
-{
-type Map a b = (Int,[(a,b)])
-}
-
-
 data Core
     | Core tm :: ATm
 
@@ -18,6 +13,7 @@ sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) (defaultBinds ++ @tm.binds)
             tm.genv = (6,[("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
+            tm.lvl = 0
 
 attr ATm
     syn tm :: self
@@ -25,58 +21,53 @@ attr ATm
     syn exp :: {Exp}
     syn binds use {++} {[]} :: {BindL}
     inh genv :: {Map String Ref}
-    inh no_eval :: {[String]}
     inh lenv :: {Map String Ref}
+    inh lvl :: {Int}
 
 sem ATm
     |   ANat lhs.main = next @lhs.genv
-              lhs.exp  = SExp (Int @i)
-              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ SExp $ Int @i]
+              lhs.exp  = natExp @i
+              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ natExp @i]
     |   AVar lhs.main = next @lhs.genv
-             lhs.exp  = SExp $ findVarRef @lhs.genv @lhs.lenv @x
-              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ Eval $ SExp $ findVarRef @lhs.genv @lhs.lenv @x]
+             lhs.exp  = varExp @lhs.genv @lhs.lenv @x
+              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ varBind @lhs.genv @x]
+
+{
+natExp :: Int -> Exp
+natExp i = SExp $ Int i
+
+varExp :: Map String Ref -> Map String Ref -> String -> Exp
+varExp genv lenv s = SExp $ findVarRef genv lenv s
+
+varBind :: Map String Ref -> String -> Exp
+varBind genv s = Eval $ SExp $ findVarRef' genv s
+
+--First looks for the Ref in the local environment, if it cannot find it, then
+--it will check the global environment. If it wasn't found, then the program crashes
+findVarRef :: Map String Ref -> Map String Ref -> String -> SExp
+findVarRef (_,genv) (_,lenv) s = Var $ fromMaybe (fromJust (lookup s genv))  (lookup s lenv)
+
+--Same as findVarRef except for just a single environment
+findVarRef' :: Map String Ref -> String -> SExp
+findVarRef' (_,env) s = Var $ fromJust $ lookup s env
+
+toSExp :: Exp -> SExp
+toSExp (SExp s) = s
+}
+
+
+sem ATm
     |   ANil  lhs.main = next @lhs.genv
               lhs.exp = Nil
-              lhs.binds = [Bind (next @lhs.genv) $ SExp $ findVarRef' @lhs.genv "nil"]
+              lhs.binds = [Bind (next @lhs.genv) $ nilBind' @lhs.genv]
     |   ACons lhs.main = next @lhs.genv
-              lhs.exp = mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)
-              lhs.binds = [Bind (next @lhs.genv) $ mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)] 
-    |   ALam  lhs.main = next @lhs.genv
-              lhs.exp  = joinLam [Loc 0 $ getOffSet @lhs.lenv] @t1.exp --Hard coded lvl as 0 for now
-              lhs.binds = []
-              t1.genv = @lhs.genv
-              t1.lenv = insertl @lhs.lenv 0 @x
-    |   AApp lhs.main = next @lhs.genv
-              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp
-              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (Lam [] $ appExp @lhs.lenv @t1.exp @t2.exp)]
-              t1.genv = @lhs.genv
-              t2.genv = @lhs.genv
-              t1.lenv = @lhs.lenv
-              t2.lenv = @lhs.lenv
-    |   ALet lhs.main = @t2.main
-              lhs.exp  = Let (Bind (next @lhs.genv) @t1.exp) @t2.exp
-              lhs.binds = letBinds @lhs.genv @t1.exp @t1.exp @t2.binds
-              t1.genv = @lhs.genv
-              loc.genv = insertg @lhs.genv @x
-              t2.genv = @loc.genv
-              t1.lenv = insertgWithValue @lhs.lenv @x (fromJust $ lookup' @x @loc.genv)
-              t2.lenv = @lhs.lenv
-    |   APrim lhs.main = next @lhs.genv
-              lhs.exp = Prim @f [toPrim @t1.exp, toPrim @t2.exp]
-              lhs.binds = []
-              t1.genv = @lhs.genv
-              t2.genv = @lhs.genv
-              t1.lenv = @lhs.lenv
-              t2.lenv = @lhs.lenv
-    |   AIf lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp = joinAppValue @exp.exp @loc.exp
-              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [checkIf @t2.tm @t2.exp, checkIf @t1.tm @t1.exp]
-              lhs.binds = [Bind (next @lhs.genv) $ joinAppValue @exp.exp @loc.exp]
-              t1.genv = @lhs.genv
-              t2.genv = @lhs.genv
-              t1.lenv = incrOffSet' @lhs.lenv 1
-              t2.lenv = incrOffSet' @lhs.lenv 1
+              lhs.exp = mkCons @lhs.genv (0,[]) (ACons @t1.tm @t2.tm)
+              lhs.binds = [Bind (next @lhs.genv) $ mkCons @lhs.genv (0,[]) (ACons @t1.tm @t2.tm)]
+
 {
+
+nilBind' :: Map String Ref -> Exp
+nilBind' genv = SExp $ findVarRef' genv "nil"
 
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
 mkCons genv lenv atm = consExp genv offset atm (SExp $ Var $ Loc 0 offset)
@@ -85,17 +76,53 @@ mkCons genv lenv atm = consExp genv offset atm (SExp $ Var $ Loc 0 offset)
 
 consExp :: Map String Ref -> Int -> ATm -> Exp -> Exp
 consExp genv n (ACons t1 t2) t3 = case t2 of
-                            ACons _ _ -> consExp genv (n-1) t2 (Let (Bind curr (App cons [toSExp $ intExp t1,Var prev])) t3)
-                            ANil -> Let (Bind curr (App cons [toSExp $ intExp t1, nil])) t3
+                            ACons _ _ -> consExp genv (n-1) t2 (Let (Bind curr (App cons [toInt t1,Var prev])) t3)
+                            ANil -> Let (Bind curr (App cons [toInt t1, nil])) t3
       where
         cons = SExp $ findVarRef' genv "cons"
         nil = findVarRef' genv "nil"
         curr = Loc 0 n
         prev = Loc 0 (n - 1)
+        toInt (ANat n) = Int n
 
-intExp :: ATm -> Exp
-intExp (ANat i) = SExp $ Int i
+listLength :: ATm -> Int
+listLength (ACons _ l) = 1 + listLength l
+listLength _ = 0
 
+}
+
+
+sem ATm
+    |   ALam  lhs.main = next @lhs.genv
+              lhs.exp  = joinLam [Loc (@lhs.lvl + 1) $ getOffSet @lhs.lenv] @t1.exp
+              lhs.binds = []
+              t1.genv = @lhs.genv
+              t1.lenv = insertl (incrEnv @lhs.lenv) @x
+              t1.lvl = @lhs.lvl + 1
+
+
+{
+
+--Consecutive lambda's are joined
+joinLam :: RefL -> Exp -> Exp
+joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
+joinLam xs exp = Lam xs exp
+
+}
+
+
+sem ATm
+    |   AApp lhs.main = next @lhs.genv
+              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (Lam [] $ appExp @lhs.lenv @t1.exp @t2.exp)]
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = @lhs.lenv
+              t2.lenv = @lhs.lenv
+              t1.lvl = @lhs.lvl
+              t2.lvl = @lhs.lvl
+
+{
 appExp' :: Map String Ref -> Exp -> Exp -> Exp
 appExp' lenv exp (Let b exp2) = Lam [] (appExp lenv exp (Let b exp2))
 appExp' lenv exp exp2 = appExp lenv exp exp2
@@ -106,29 +133,74 @@ appExp lenv (SExp sexp1) (SExp sexp2) = Let (Bind (Loc 0 $ getOffSet lenv) (Eval
                                 Let (Bind (Loc 0 $ getOffSet lenv + 1) (Eval (SExp sexp1))) $ 
                                     App (SExp $ Var $ Loc 0 (getOffSet lenv + 1)) [Var $ Loc 0 (getOffSet lenv)])
 
-next :: Map String Ref -> Ref
-next (n,_) = Glob n
 
-letBinds :: Map String Ref -> Exp -> Exp -> BindL -> BindL
---letBinds (n,_) (App _ _) exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
---letBinds (n,_) (Let _ _) exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
-letBinds (n,_) (Lam _ _) exp t2binds = Bind (Glob n) exp : t2binds
+}
+
+sem ATm
+    |   ALet lhs.main = @t2.main
+              lhs.exp  = letExp @lhs.genv @t1.exp @t2.exp--Let (Bind (next @lhs.genv) @t1.exp) @t2.exp
+              lhs.binds = letBinds @lhs.genv @t1.tm @t1.exp @t2.binds
+              t1.genv = @lhs.genv
+              loc.genv = globalLet @lhs.genv @lhs.lvl @x
+              t2.genv = @loc.genv
+              t1.lenv = @lhs.lenv
+              t2.lenv = localLet @lhs.lenv @lhs.lvl @x
+              t1.lvl = localLetLvl @lhs.lvl
+              t2.lvl = @lhs.lvl
+
+{
+globalLet :: Map String Ref -> Int -> String -> Map String Ref
+globalLet genv lvl x 
+  | lvl == 0 = insertg genv x
+  | otherwise = genv
+
+localLetLvl :: Int -> Int
+localLetLvl 0 = 1
+localLetlvl lvl = lvl
+
+localLet :: Map String Ref -> Int -> String -> Map String Ref
+localLet lenv lvl x
+  | lvl > 0 = insertl lenv x
+  | otherwise = lenv
+
+letExp :: Map String Ref -> Exp -> Exp -> Exp
+letExp genv (Let b t1) exp2 = Let (Bind (next genv) (Lam [] (Let b t1))) exp2
+
+letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
+letBinds (n,_) (ALam _ _) exp t2binds = Bind (Glob n) exp : t2binds
 letBinds (n,_) _ exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
+}
 
-nilOrCons :: Map String Ref -> Exp -> SExp
-nilOrCons env Nil = Var $ fromJust $  lookup' "nil" env
-nilOrCons (n,env) _ = Var $ Glob n 
+sem ATm
+    |   APrim lhs.main = next @lhs.genv
+              lhs.exp = Prim @f [toPrim @t1.exp, toPrim @t2.exp]
+              lhs.binds = []
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = @lhs.lenv
+              t2.lenv = @lhs.lenv
+
+{
+toPrim :: Exp -> SExp
+toPrim (SExp s) = Var $ Loc 0 (off s)
+              where off (Var (Loc l o)) = o  
+}
+
+sem ATm
+    |   AIf lhs.main = Glob (getOffSet @lhs.genv)
+              lhs.exp = joinAppValue @exp.exp @loc.exp
+              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [checkIf @t2.tm @t2.exp, checkIf @t1.tm @t1.exp]
+              lhs.binds = [Bind (next @lhs.genv) $ joinAppValue @exp.exp @loc.exp]
+              t1.genv = @lhs.genv
+              t2.genv = @lhs.genv
+              t1.lenv = incrOffSet' @lhs.lenv 1
+              t2.lenv = incrOffSet' @lhs.lenv 1
+              t1.lvl = @lhs.lvl
+              t2.lvl = @lhs.lvl
+{
 
 incrOffSet' :: Map String Ref -> Int -> Map String Ref
 incrOffSet' (n,xs) i = (n + i, xs)
-
-incrOffSet :: Map String Ref -> ATm -> Map String Ref
-incrOffSet (n,xs) list@(ACons _ _) = (n + (listLength list) - 1, xs)
-incrOffSet env _ = env
-
-listLength :: ATm -> Int
-listLength (ACons _ l) = 1 + listLength l
-listLength _ = 0
 
 checkIf :: ATm -> Exp -> Exp
 checkIf (AIf _ _ _) (Lam a s)  = s
@@ -144,80 +216,4 @@ joinChildAppValue (Let x y) = joinChildAppValue y --Hier gaat het verkeerd
 
 joinParentAppValue :: Exp -> Exp -> Exp
 joinParentAppValue (App x y) app2 = App x (y ++ joinChildAppValue app2)
-
-joinLam :: RefL -> Exp -> Exp
-joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
-joinLam xs exp = Lam xs exp
-
---toList :: Exp -> LExpL
---toList (EList l) = l
-
-toSExp :: Exp -> SExp
-toSExp (SExp s) = s
-
-toPrim :: Exp -> SExp
-toPrim (SExp s) = Var $ Loc 0 (off s)
-              where off (Var (Loc l o)) = o
-
-findVarRef' :: Map String Ref -> String -> SExp
-findVarRef' (_,env) s = Var $ fromJust $ lookup s env
-
-findVarRef :: Map String Ref -> Map String Ref -> String -> SExp
-findVarRef (_,genv) (_,lenv) s = Var $ fromMaybe (fromJust (lookup s genv)) (lookup s lenv)
-
-getOffSet :: Map String Ref -> Int
-getOffSet xs = fst xs
-
-lookup'  :: String -> Map String Ref -> Maybe Ref
-lookup' s (_,env) = lookup s env
-
-insertg :: Map String Ref -> String -> Map String Ref
-insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
-
-insertgWithValue :: Map String Ref -> String -> Ref -> Map String Ref
-insertgWithValue (n,xs) s r = (n,(s,r):xs)
-
-insertl :: Map String Ref -> Int -> String -> Map String Ref
-insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
-
-defaultBinds :: BindL
-defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind]
-
-isNilBind :: Bind
-isNilBind = Bind (Glob 5) exp
-  where exp = Lam [Loc 0 0] $
-                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
-                  Case (Var $ Tag $ (Loc 0 1)) $
-                    [SExp $ Int 1] ++ [SExp $ Int 0]
-
-isConsBind :: Bind
-isConsBind = Bind (Glob 4) exp
-  where exp = Lam [Loc 0 0] $
-                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
-                  Case (Var $ Tag $ (Loc 0 1)) $
-                    [SExp $ Int 0] ++ [SExp $ Int 1]
-
-tailBind :: Bind
-tailBind = Bind (Glob 3) exp
-  where exp = Lam [Loc 0 0] $
-                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
-                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
-                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 1 $ Loc 0 1]
-
-
-headBind :: Bind
-headBind = Bind (Glob 2) exp
-  where exp = Lam [Loc 0 0] $
-                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
-                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
-                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
-
-consBind :: Bind
-consBind = Bind (Glob 1) exp
-  where exp = Lam [Loc 0 0, Loc 0 1] 
-                (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
-
-nilBind :: Bind
-nilBind = Bind (Glob 0) Nil
-
 }

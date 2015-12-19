@@ -1,0 +1,60 @@
+{
+type Map a b = (Int,[(a,b)])
+
+
+next :: Map String Ref -> Ref
+next (n,_) = Glob n
+
+getOffSet :: Map String Ref -> Int
+getOffSet xs = fst xs
+
+lookup'  :: String -> Map String Ref -> Maybe Ref
+lookup' s (_,env) = lookup s env
+
+insertg :: Map String Ref -> String -> Map String Ref
+insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
+
+insertgWithValue :: Map String Ref -> String -> Ref -> Map String Ref
+insertgWithValue (n,xs) s r = (n,(s,r):xs)
+
+insertl :: Map String Ref -> String -> Map String Ref
+insertl (n,xs) s = (n + 1, (s, Loc 0 n) : xs)
+
+
+incrEnv :: Map String Ref -> Map String Ref
+incrEnv (n,lenv) = (0, incr lenv)
+  where incr [] = []
+        incr ((s,(Loc lvl x)):xs) = (s,Loc (lvl + 1) x) : incr xs 
+        incr env = env
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
