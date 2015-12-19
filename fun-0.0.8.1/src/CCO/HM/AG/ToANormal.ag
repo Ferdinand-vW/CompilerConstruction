@@ -38,6 +38,7 @@ transform :: ATm -> ATm
 transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
 transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
 transform (AApp t1 (ACons x l)) = ALet (getName (ACons x l)) (ACons x l) (transform $ AApp t1 (AVar $ getName (ACons x l)))
+transform (AApp (ALam x t1) t2) = ALet (x ++ getName t1) (ALam x t1) (transform $ AApp (AVar $ x ++ getName t1) t2)
 transform tm = newLets tm
 
 newLets :: ATm -> ATm

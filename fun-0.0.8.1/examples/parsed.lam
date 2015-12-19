@@ -1,36 +1,21 @@
 ALet(
-  "x"
-, ANat(5)
+  "l"
+, ACons(ANat(3), ACons(ANat(2), ANil))
 , ALet(
-    "eq2"
-  , AApp(AVar("eq"), ANat(2))
+    "id"
+  , ALam("x", AVar("x"))
   , ALet(
-      "eq22"
-    , AApp(AVar("eq2"), ANat(2))
+      "x"
     , ALet(
-        "ideq22"
-      , AApp(AVar("id"), AVar("eq22"))
+        "eq2"
+      , AApp(AVar("eq"), ANat(2))
       , ALet(
-          "idideq22"
-        , AApp(AVar("id"), AVar("ideq22"))
-        , AIf(
-            AVar("idideq22")
-          , ALam(
-              "y"
-            , ALet(
-                "12nil"
-              , ACons(ANat(1), ACons(ANat(2), ANil))
-              , ALet(
-                  "id12nil"
-                , AApp(AVar("id"), AVar("12nil"))
-                , AApp(AVar("id"), AVar("id12nil"))
-                )
-              )
-            )
-          , ANat(4)
-          )
+          "eq23"
+        , AApp(AVar("eq2"), ANat(3))
+        , AIf(AVar("eq23"), ANat(10), ANat(15))
         )
       )
+    , AApp(AVar("id"), AVar("x"))
     )
   )
 )

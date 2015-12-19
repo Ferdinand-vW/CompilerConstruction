@@ -1,0 +1,40 @@
+<<<<<<< HEAD
+ALet(
+  "x"
+, ANat(5)
+, ALet(
+    "eq2"
+  , AApp(AVar("eq"), ANat(2))
+  , ALet(
+      "eq22"
+    , AApp(AVar("eq2"), ANat(2))
+    , ALet(
+        "ideq22"
+      , AApp(AVar("id"), AVar("eq22"))
+      , ALet(
+          "idideq22"
+        , AApp(AVar("id"), AVar("ideq22"))
+        , AIf(
+            AVar("idideq22")
+          , ALam(
+              "y"
+            , ALet(
+                "12nil"
+              , ACons(ANat(1), ACons(ANat(2), ANil))
+              , ALet(
+                  "id12nil"
+                , AApp(AVar("id"), AVar("12nil"))
+                , AApp(AVar("id"), AVar("id12nil"))
+                )
+              )
+            )
+          , ANat(4)
+          )
+        )
+      )
+    )
+  )
+)
+=======
+ALet("x", ACons(ANat(1), ANil), AApp(AVar("isNil"), AVar("x")))
+>>>>>>> 754d0d1c45d6758fc1b61060fbe5cee92b4dc171
