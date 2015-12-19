@@ -1,0 +1,32 @@
+module Main 111 -> eval(m.10);
+data "Bool" = "False" -> 0, "True" -> 1;
+alloc 0();
+\2,100 -> alloc 1(d.0.0,d.0.1);
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.2;
+           -> d.0.1.0;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.2;
+           -> d.0.1.1;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> 0;
+           -> 1;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> 1;
+           -> 0;;
+\2,100 -> ffi "primEqInt"(d.0.0,d.0.1);
+\1,100 -> d.0.0;
+\0,100 -> let 0 -> eval(3); in
+          let 1 -> eval(m.7); in
+          app (d.0.1)(d.0.0);
+\0,100 -> let 0 -> app (m.6) (2); in
+          let 1 -> app (d.0.0) (2); in
+          let 2 -> eval (d.0.1); in
+          case d.0.2.tag of
+           -> 3;
+           -> 5;;
+\0,100 -> eval(m.9);

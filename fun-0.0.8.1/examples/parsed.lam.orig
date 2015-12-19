@@ -1,40 +1,52 @@
-<<<<<<< HEAD
 ALet(
-  "x"
-, ANat(5)
+  "l"
+, ACons(ANat(3), ACons(ANat(2), ANil))
 , ALet(
-    "eq2"
-  , AApp(AVar("eq"), ANat(2))
+    "id"
+  , ALam("x", AVar("x"))
   , ALet(
-      "eq22"
-    , AApp(AVar("eq2"), ANat(2))
+<<<<<<< HEAD
+      "me2"
+    , AApp(AVar("me"), ANat(2))
     , ALet(
-        "ideq22"
-      , AApp(AVar("id"), AVar("eq22"))
+        "eq2me2"
+      , AApp(AVar("eq2"), AVar("me2"))
       , ALet(
-          "idideq22"
-        , AApp(AVar("id"), AVar("ideq22"))
-        , AIf(
-            AVar("idideq22")
-          , ALam(
-              "y"
-            , ALet(
-                "12nil"
-              , ACons(ANat(1), ACons(ANat(2), ANil))
+          "ideq2me2"
+        , AApp(AVar("id"), AVar("eq2me2"))
+        , ALet(
+            "idideq2me2"
+          , AApp(AVar("id"), AVar("ideq2me2"))
+          , AIf(
+              AVar("idideq2me2")
+            , ALam(
+                "y"
               , ALet(
-                  "id12nil"
-                , AApp(AVar("id"), AVar("12nil"))
-                , AApp(AVar("id"), AVar("id12nil"))
+                  "12nil"
+                , ACons(ANat(1), ACons(ANat(2), ANil))
+                , ALet(
+                    "id12nil"
+                  , AApp(AVar("id"), AVar("12nil"))
+                  , AApp(AVar("id"), AVar("id12nil"))
+                  )
                 )
               )
+            , ANat(4)
             )
-          , ANat(4)
           )
+=======
+      "x"
+    , ALet(
+        "eq2"
+      , AApp(AVar("eq"), ANat(2))
+      , ALet(
+          "eq23"
+        , AApp(AVar("eq2"), ANat(3))
+        , AIf(AVar("eq23"), ANat(10), ANat(15))
+>>>>>>> 22b2b0d2f5d5b8cee4ef785a984a3141e8f5384e
         )
       )
+    , AApp(AVar("id"), AVar("x"))
     )
   )
 )
-=======
-ALet("x", ACons(ANat(1), ANil), AApp(AVar("isNil"), AVar("x")))
->>>>>>> 754d0d1c45d6758fc1b61060fbe5cee92b4dc171

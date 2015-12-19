@@ -24,6 +24,7 @@ deriving Ref : Show
 deriving Bind : Show
 deriving Exp : Show
 deriving SExp : Show
+deriving ATm : Show
 
 type RefL = [Ref]
   

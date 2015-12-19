@@ -94,10 +94,10 @@ listLength _ = 0
 
 sem ATm
     |   ALam  lhs.main = next @lhs.genv
-              lhs.exp  = joinLam [Loc (@lhs.lvl + 1) $ getOffSet @lhs.lenv] @t1.exp
+              lhs.exp  = joinLam [Loc (0) $ getOffSet @lhs.lenv] @t1.exp
               lhs.binds = []
               t1.genv = @lhs.genv
-              t1.lenv = insertl (incrEnv @lhs.lenv) @x
+              t1.lenv = updateEnv @lhs.lenv @t1.tm @x
               t1.lvl = @lhs.lvl + 1
 
 
@@ -107,6 +107,10 @@ sem ATm
 joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
 joinLam xs exp = Lam xs exp
+
+updateEnv :: Map String Ref -> ATm -> String -> Map String Ref
+updateEnv lenv (ALam _ _) s = insertl lenv s
+updateEnv lenv tm s = incrEnv $ insertl lenv s
 
 }
 
@@ -143,7 +147,7 @@ sem ATm
               t1.genv = @lhs.genv
               loc.genv = globalLet @lhs.genv @lhs.lvl @x
               t2.genv = @loc.genv
-              t1.lenv = @lhs.lenv
+              t1.lenv = incrEnv @lhs.lenv
               t2.lenv = localLet @lhs.lenv @lhs.lvl @x
               t1.lvl = localLetLvl @lhs.lvl
               t2.lvl = @lhs.lvl
@@ -188,9 +192,9 @@ toPrim (SExp s) = Var $ Loc 0 (off s)
 
 sem ATm
     |   AIf lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp = joinAppValue @exp.exp @loc.exp
-              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [checkIf @t2.tm @t2.exp, checkIf @t1.tm @t1.exp]
-              lhs.binds = [Bind (next @lhs.genv) $ joinAppValue @exp.exp @loc.exp]
+              lhs.exp = createCase @exp.exp @loc.exp
+              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [@t2.exp, @t1.exp]
+              lhs.binds = []
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
               t1.lenv = incrOffSet' @lhs.lenv 1
@@ -198,6 +202,13 @@ sem ATm
               t1.lvl = @lhs.lvl
               t2.lvl = @lhs.lvl
 {
+
+createCase :: Exp -> Exp -> Exp
+createCase e1@(SExp s) e2 = Let (Bind (getRef s) (Eval e1)) e2
+
+getRef :: SExp -> Ref
+getRef (Var x) = x
+getRef _ = error "It did not solve"
 
 incrOffSet' :: Map String Ref -> Int -> Map String Ref
 incrOffSet' (n,xs) i = (n + i, xs)
