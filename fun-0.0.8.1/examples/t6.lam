@@ -1,1 +1,1 @@
-let x = nil in isNil x ni
+let x = cons 1 nil in isNil x ni

@@ -32,7 +32,7 @@ Mod(
       )
     )
   , Bind(
-      Glob(5)
+      Glob(4)
     , Lam(
         [Loc(0, 0)]
       , Let(
@@ -42,7 +42,7 @@ Mod(
       )
     )
   , Bind(
-      Glob(4)
+      Glob(5)
     , Lam(
         [Loc(0, 0)]
       , Let(
@@ -51,7 +51,16 @@ Mod(
         )
       )
     )
-  , Bind(Glob(6), Nil)
+  , Bind(
+      Glob(6)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), App(SExp(Var(Glob(1))), [Int(1), Var(Glob(0))]))
+        , SExp(Var(Loc(0, 0)))
+        )
+      )
+    )
   , Bind(Glob(7), App(SExp(Var(Glob(5))), [Var(Glob(6))]))
   ]
 )

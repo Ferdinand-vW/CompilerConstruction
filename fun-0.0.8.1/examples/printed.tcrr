@@ -18,5 +18,6 @@ alloc 0();
           case d.0.1.tag of
            -> 1;
            -> 0;;
-alloc 0();
+\0,100 -> let 0 -> app (m.1)(1,m.0); in
+          d.0.0;
 app (m.5)(m.6);

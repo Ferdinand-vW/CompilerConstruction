@@ -181,19 +181,19 @@ insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
 defaultBinds :: BindL
 defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind]
 
-isConsBind :: Bind
-isConsBind = Bind (Glob 5) exp
-  where exp = Lam [Loc 0 0] $
-                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
-                  Case (Var $ Tag $ (Loc 0 1)) $
-                    [SExp $ Int 0] ++ [SExp $ Int 1]
-
 isNilBind :: Bind
-isNilBind = Bind (Glob 4) exp
+isNilBind = Bind (Glob 5) exp
   where exp = Lam [Loc 0 0] $
                 Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
                   Case (Var $ Tag $ (Loc 0 1)) $
                     [SExp $ Int 1] ++ [SExp $ Int 0]
+
+isConsBind :: Bind
+isConsBind = Bind (Glob 4) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Int 0] ++ [SExp $ Int 1]
 
 tailBind :: Bind
 tailBind = Bind (Glob 3) exp

@@ -1,1 +1,1 @@
-ALet("x", ANil, AApp(AVar("isNil"), AVar("x")))
+ALet("x", ACons(ANat(1), ANil), AApp(AVar("isNil"), AVar("x")))
