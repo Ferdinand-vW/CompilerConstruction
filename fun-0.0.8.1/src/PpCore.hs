@@ -6,4 +6,3 @@ import Control.Arrow    (arr, (>>>))
 
 main = ioWrap $
        parser >>> (component toTree :: Component ATerm Mod) >>> crprinter
-
