@@ -17,7 +17,7 @@ attr Core
 
 sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) (defaultBinds ++ @tm.binds)
-            tm.genv = (5,[("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
+            tm.genv = (6,[("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
 
 --("False",Glob 0) ("True", Glob 1)
@@ -179,14 +179,21 @@ insertl :: Map String Ref -> Int -> String -> Map String Ref
 insertl (n,xs) lvl s = (n + 1, (s, Loc lvl n) : xs)
 
 defaultBinds :: BindL
-defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind]
+defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind]
 
 isConsBind :: Bind
-isConsBind = Bind (Glob 4) exp
+isConsBind = Bind (Glob 5) exp
   where exp = Lam [Loc 0 0] $
                 Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
                   Case (Var $ Tag $ (Loc 0 1)) $
                     [SExp $ Int 0] ++ [SExp $ Int 1]
+
+isNilBind :: Bind
+isNilBind = Bind (Glob 4) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Int 1] ++ [SExp $ Int 0]
 
 tailBind :: Bind
 tailBind = Bind (Glob 3) exp
