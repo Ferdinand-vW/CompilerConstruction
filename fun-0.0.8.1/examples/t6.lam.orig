@@ -1,0 +1,11 @@
+<<<<<<< HEAD
+let x = 5
+in 
+if id (id (eq 2 2))
+            then \y. id (id (cons 1 (cons 2 nil)))
+            else 4 
+        fi
+ni
+=======
+let x = cons 1 nil in isNil x ni
+>>>>>>> 754d0d1c45d6758fc1b61060fbe5cee92b4dc171

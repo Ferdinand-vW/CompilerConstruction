@@ -1,7 +1,8 @@
-let x = 5
-in 
-if id (id (eq 2 (me 2)))
-            then \y. id (id (cons 1 (cons 2 nil)))
-            else 4 
-        fi
-ni
+let l = cons 3 (cons 2 nil) in
+let id = \x.x in
+let x = if eq 2 3
+            then 10
+            else 15
+        fi in
+id x
+ni ni ni
