@@ -43,8 +43,6 @@ parser = C.parser lexer (pTm <* eof)
 pTm :: TokenParser Tm
 pTm = (\pos x t1 -> Tm pos (Lam x t1)) <$> sourcePos <* spec '\\' <*> var <* spec '.' <*> pTm <|>
       (\pos x t1 t2 -> Tm pos (Prim x t1 t2)) <$> sourcePos <* keyword "prim" <* spec '\"' <*> var <* spec '\"' <*> pTm <*> pTm <|>
-      (\pos -> Tm pos Nil) <$> sourcePos <* keyword "nil" <|>
-      (\pos x l -> Tm pos (Cons x l)) <$> sourcePos <* keyword "cons" <*> pTm <*> pTm <|>
       (\pos a b c -> Tm pos (If a b c)) <$> sourcePos <* keyword "if" <*> pTm <* keyword "then" <*> pTm <* keyword "else" <*> pTm <* keyword "fi"   <|>
       --(\pos exp true false -> Tm pos (If exp true false)) <$> sourcePos <*> pTm <* keyword "==" <*> pTm <* keyword "then" <*> pTm <* keyword "else" <*> pTm <* keyword "fi" <|>
       (\pos ts -> foldl1 (\t1 t2 -> Tm pos (App t1 t2)) ts) <$>

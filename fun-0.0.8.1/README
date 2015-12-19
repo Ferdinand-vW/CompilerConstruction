@@ -1,6 +1,38 @@
-Build
------
+Compiler Construction Project E Code generation for a lazy functional language
 
-First invoke make to generate .hs files out of .ag files, then use cabal to build.
-This distribution is not yet using using the cabal-uuagc plugin.
+Ferdinand van Walree 3874389 and Matthew Swart 5597250
 
+This project uses the following compiler verions:
+- Haskell version: 7.10.2-a
+- uuagc-0.9.52.1
+- uhc-light
+To build the package it is necessary to execute the following instructions:
+- Type in the console: "make". 
+- Goto the "src" folder and type in the console "./build.sh"
+
+Our language the following cases:
+Nat
+Var
+Nil -> Not really sure. I think this function could be deleted.
+Cons -> Not really sure?
+Prim -> to accept features of the corerun compiler.
+App
+Let
+
+It also possible to use a list. We did this by adding it manually in the Hm2Cr.ag. These functions will always be included in the outputfile, so that they can be used by the uses defined function. The following features are possible on a list.
+-   isNil
+-   isCons
+-   tail
+-   head
+-   cons
+-   nil
+
+
+Design
+ParseHM.hs -> added after parsing, the toANormal, to change the structure of the program, to make it easier for us to get the relevance information from the datatype. 
+toANormal...
+hm2cr.hs
+
+AHM.ag -> ANormal forms
+Core.ag -> This is the standard form
+HM.ag -> These are used to 
