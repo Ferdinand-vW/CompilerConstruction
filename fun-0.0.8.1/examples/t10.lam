@@ -1,0 +1,11 @@
+let plus = \x .\y.prim "primAddInt" x y in
+let eq = \x .\y. prim "primEqInt" x y in
+let matthew = 3 in 
+let matthew = 4 in
+let list = cons 2 (cons 1 nil) in
+let henk = 10 in 
+                  if True
+                        then ((\x.1) 2)
+                        else 10
+                  fi
+ ni ni ni ni ni ni

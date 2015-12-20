@@ -1,2 +1,2 @@
-let x = \y. tail (cons 1 (cons 2 (cons 3 nil))) in
-x 5 ni
+let x = tail (cons 1 (cons 2 nil)) in
+x ni

@@ -1,5 +1,5 @@
 Mod(
-  SExp(Var(Glob(18)))
+  SExp(Var(Glob(14)))
 , [ Bind(Glob(0), Nil)
   , Bind(
       Glob(1)
@@ -51,8 +51,8 @@ Mod(
         )
       )
     )
-  , Bind(Glob(7), True_)
   , Bind(Glob(6), False_)
+  , Bind(Glob(7), True_)
   , Bind(
       Glob(8)
     , Lam(
@@ -88,60 +88,22 @@ Mod(
     , Lam(
         []
       , Let(
-          Bind(Loc(0, 0), Eval(SExp(Var(Glob(13)))))
-        , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(8)))))
-          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          Bind(Glob(6), Eval(SExp(Var(Glob(6)))))
+        , Case(
+            Var(Tag(Loc(0, 0)))
+          , [ SExp(Int(10))
+            , Let(
+                Bind(Glob(14), Lam([Loc(0, 0)], SExp(Int(1))))
+              , Let(
+                  Bind(Loc(0, 2), Eval(SExp(Int(2))))
+                , Let(
+                    Bind(Loc(0, 3), Eval(SExp(Var(Loc(0, 1)))))
+                  , App(SExp(Var(Loc(0, 3))), [Var(Loc(0, 2))])
+                  )
+                )
+              )
+            ]
           )
-        )
-      )
-    )
-  , Bind(
-      Glob(15)
-    , Lam(
-        []
-      , Let(
-          Bind(Loc(0, 0), Eval(SExp(Int(14))))
-        , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(9)))))
-          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
-          )
-        )
-      )
-    )
-  , Bind(
-      Glob(16)
-    , Lam(
-        []
-      , Let(
-          Bind(Loc(0, 0), Eval(SExp(Var(Glob(11)))))
-        , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(14)))))
-          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
-          )
-        )
-      )
-    )
-  , Bind(
-      Glob(17)
-    , Lam(
-        []
-      , Let(
-          Bind(Loc(0, 0), Eval(SExp(Var(Glob(16)))))
-        , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(15)))))
-          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
-          )
-        )
-      )
-    )
-  , Bind(
-      Glob(18)
-    , Lam(
-        []
-      , Let(
-          Bind(Glob(17), Eval(SExp(Var(Glob(17)))))
-        , Case(Var(Tag(Loc(0, 0))), [SExp(Int(10)), Eval(SExp(Var(Glob(12))))])
         )
       )
     )

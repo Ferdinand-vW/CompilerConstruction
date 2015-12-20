@@ -6,15 +6,46 @@ This project uses the following compiler verions:
 - Haskell version: 7.10.2-a
 - uuagc-0.9.52.1
 - uhc-light
-To build the package it is necessary to execute the following instructions:
-- Type in the console: "make". 
-- Goto the "src" folder and type in the console "./build.sh"
+To build the package it is necessary to follow the following instructions:
+- Go to the root directory in a bash console;
+- Type in the console "./Build.sh".
 
-Our language the following cases:
-Nat
+This will build all of the relevance file to use it yourself
+
+How can you use the langauge
+We have choosen to implement special builtin syntax to deal with the following features:
+-   Bool: True and False
+-   List: cons and nil, you can make a list by typing: "cons 1 (cons 2 nil)".
+-   isCons; this function check if it a cons
+-   isNil; This function checks if it is nil
+-   head; This function will return the head of a list. For example head (cons 1 (cons 2 nil)) wil result in 1.
+-   tail; This function will return the end of a list. For example tail (cons 1 (cons 2 nil)) results in 1[2,0[]]
+-   prim; This keyword makes it possible to use feature from corerun
+
+To see how the language looks like you can look at the :examples" directory in the root, which contains several examples on how to use the language. 
+To compile the examples, we added in the src directory a "run.sh" , which you can use to compile the langauge.
+
+--Need to tell something about the recursion and laziness.
+
+Technical explanation
+This section gives an overview about the technical implemenentation about our solution. For a detailed explanation we recommenend you to read the code and the comments that we added in each the code.
+
+First we added the "AG" directory in the CCO folder to get a general location for all of the datatype that are used to compile the language. First we moved the Core.ag and the HM.ag to that folder, then we added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to modify the HM file to a more usuable form.
+
+
+We added manually 
+if expression
+Recursion
+Laziness
+
+
+
+
+The language allows the following cases
+Numbers
 Var
-Nil -> Not really sure. I think this function could be deleted.
-Cons -> Not really sure?
+Nil
+Cons
 Prim -> to accept features of the corerun compiler.
 App
 Let
@@ -36,3 +67,4 @@ hm2cr.hs
 AHM.ag -> ANormal forms
 Core.ag -> This is the standard form
 HM.ag -> These are used to 
+

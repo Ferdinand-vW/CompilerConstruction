@@ -1,6 +1,6 @@
 {
 defaultBinds :: BindL
-defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind, trueBind, falseBind]
+defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind, falseBind, trueBind]
 
 trueBind :: Bind
 trueBind = Bind (Glob 7) True_

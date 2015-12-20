@@ -16,22 +16,10 @@ ALet(
         , ALet(
             "henk"
           , ANat(10)
-          , ALet(
-              "plushenk"
-            , AApp(AVar("plus"), AVar("henk"))
-            , ALet(
-                "eq14"
-              , AApp(AVar("eq"), ANat(14))
-              , ALet(
-                  "plushenkmatthew"
-                , AApp(AVar("plushenk"), AVar("matthew"))
-                , ALet(
-                    "eq14plushenkmatthew"
-                  , AApp(AVar("eq14"), AVar("plushenkmatthew"))
-                  , AIf(AVar("eq14plushenkmatthew"), AVar("list"), ANat(10))
-                  )
-                )
-              )
+          , AIf(
+              AVar("True")
+            , ALet("x1", ALam("x", ANat(1)), AApp(AVar("x1"), ANat(2)))
+            , ANat(10)
             )
           )
         )

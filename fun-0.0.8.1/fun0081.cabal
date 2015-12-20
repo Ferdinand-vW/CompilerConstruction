@@ -9,7 +9,7 @@ maintainer:          m.a.swart@students.uu.nl
 -- copyright:           
 category:            Education
 build-type:          Simple
-extra-source-files:    README, Makefile,
+extra-source-files:    README, Build.sh, Makefile,
                        examples/t1.lam,
                        examples/t1.tcrr,
                        examples/sumtake.tcrr,
@@ -29,7 +29,6 @@ extra-source-files:    README, Makefile,
                        src/CCO/Core/Ag/Hm2Cr.ag,
                        src/CCO/Core/Ag/BuildIn.ag,
                        src/CCO/Core/Ag/EnvMap.ag,
-                       src/CCO/Core/Ag/ToCoreRun.ag,
                        src/CCO/Core.hs,
                        src/CCO/HM.hs,
                        src/CCO/SystemF.hs,

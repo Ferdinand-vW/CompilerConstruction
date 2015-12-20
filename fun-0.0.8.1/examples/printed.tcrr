@@ -1,4 +1,4 @@
-module Main 119 -> eval(m.18);
+module Main 115 -> eval(m.14);
 data "Bool" = "False" -> 0, "True" -> 1;
 alloc 0();
 \2,100 -> alloc 1(d.0.0,d.0.1);
@@ -18,8 +18,8 @@ alloc 0();
           case d.0.1.tag of
            -> m.6;
            -> m.7;;
-alloc 1();
 alloc 0();
+alloc 1();
 \2,100 -> ffi "primAddInt"(d.0.0,d.0.1);
 \2,100 -> ffi "primEqInt"(d.0.0,d.0.1);
 \0,100 -> 3;
@@ -28,19 +28,10 @@ alloc 0();
           let 1 -> app (m.1)(2,d.0.0); in
           d.0.1;
 \0,100 -> 10;
-\0,100 -> let 0 -> eval(m.13); in
-          let 1 -> eval(m.8); in
-          app (d.0.1)(d.0.0);
-\0,100 -> let 0 -> eval(14); in
-          let 1 -> eval(m.9); in
-          app (d.0.1)(d.0.0);
-\0,100 -> let 0 -> eval(m.11); in
-          let 1 -> eval(m.14); in
-          app (d.0.1)(d.0.0);
-\0,100 -> let 0 -> eval(m.16); in
-          let 1 -> eval(m.15); in
-          app (d.0.1)(d.0.0);
-\0,100 -> let 0 -> eval(m.17); in
+\0,100 -> let 0 -> eval(m.6); in
           case d.0.0.tag of
            -> 10;
-           -> eval(m.12);;
+           -> let 1 -> \1,100 -> 1; in
+              let 2 -> eval(2); in
+              let 3 -> eval(d.0.1); in
+              app (d.0.3)(d.0.2);;
