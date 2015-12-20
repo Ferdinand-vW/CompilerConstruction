@@ -54,7 +54,7 @@ Mod(
   , Bind(
       Glob(6)
     , Lam(
-        []
+        [Loc(0, 0)]
       , Let(
           Bind(
             Glob(6)
@@ -82,15 +82,27 @@ Mod(
             )
           )
         , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+            Bind(Loc(0, 2), Eval(SExp(Var(Loc(0, 1)))))
           , Let(
-              Bind(Loc(0, 2), Eval(SExp(Var(Glob(3)))))
-            , App(SExp(Var(Loc(0, 2))), [Var(Loc(0, 1))])
+              Bind(Loc(0, 3), Eval(SExp(Var(Glob(3)))))
+            , App(SExp(Var(Loc(0, 3))), [Var(Loc(0, 2))])
             )
           )
         )
       )
     )
-  , Bind(Glob(7), Lam([], Eval(SExp(Var(Glob(6))))))
+  , Bind(
+      Glob(7)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Int(5))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(6)))))
+          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          )
+        )
+      )
+    )
   ]
 )

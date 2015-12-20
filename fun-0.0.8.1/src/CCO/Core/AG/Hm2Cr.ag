@@ -14,6 +14,7 @@ sem Core
             tm.genv = (6,[("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
             tm.lvl = 0
+            tm.args = 0
 
 attr ATm
     syn tm :: self
@@ -23,6 +24,7 @@ attr ATm
     inh genv :: {Map String Ref}
     inh lenv :: {Map String Ref}
     inh lvl :: {Int}
+    inh args :: {Int}
 
 sem ATm
     |   ANat lhs.main = next @lhs.genv
@@ -94,13 +96,12 @@ listLength _ = 0
 
 sem ATm
     |   ALam  lhs.main = next @lhs.genv
-              lhs.exp  = joinLam [Loc (0) $ getOffSet @lhs.lenv] @t1.exp
+              lhs.exp  = joinLam [Loc (0) $ 0] @t1.exp
               lhs.binds = []
               t1.genv = @lhs.genv
-              t1.lenv = updateEnv @lhs.lenv @t1.tm @x
+              t1.lenv = updateEnv @lhs.lenv @lhs.args @x
               t1.lvl = @lhs.lvl + 1
-
-
+              t1.args = 1 + @lhs.args
 {
 
 --Consecutive lambda's are joined
@@ -108,9 +109,8 @@ joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
 joinLam xs exp = Lam xs exp
 
-updateEnv :: Map String Ref -> ATm -> String -> Map String Ref
-updateEnv lenv (ALam _ _) s = insertl lenv s
-updateEnv lenv tm s = incrEnv $ insertl lenv s
+updateEnv :: Map String Ref -> Int -> String -> Map String Ref
+updateEnv lenv numArgs s = insertl' (newOffSet lenv (numArgs)) s (Loc 0 numArgs)
 
 }
 
@@ -151,6 +151,8 @@ sem ATm
               t2.lenv = localLet @lhs.lenv @lhs.lvl @x
               t1.lvl = localLetLvl @lhs.lvl
               t2.lvl = @lhs.lvl
+              t1.args = 0
+              t2.args = 0
 
 {
 globalLet :: Map String Ref -> Int -> String -> Map String Ref
@@ -201,6 +203,8 @@ sem ATm
               t2.lenv = incrOffSet' @lhs.lenv 1
               t1.lvl = @lhs.lvl
               t2.lvl = @lhs.lvl
+              t1.args = 0
+              t2.args = 0
 {
 
 createCase :: Exp -> Exp -> Exp
