@@ -67,6 +67,8 @@ instance Tree Ref where
 
 instance Tree Exp where
   fromTree (SExp se   )   = T.App "SExp" [fromTree se]
+  fromTree (True_) = T.App "True_" []
+  fromTree (False_) = T.App "False_" []
   fromTree (Cons t1 t2) = T.App "Cons" [fromTree t1, fromTree t2]
   fromTree (Nil) = T.App "Nil" []
   fromTree (Lam  as bd)   = T.App "Lam"  [fromTree as, fromTree bd]
@@ -81,6 +83,8 @@ instance Tree Exp where
   toTree = parseTree [ app "SExp" (SExp <$> arg        )
                      , app "Cons" (Cons <$> arg <*> arg)
                      , app "Nil" (pure Nil)
+                     , app "True_" (pure True_)
+                     , app "False_" (pure False_)
                      , app "Lam"  (Lam  <$> arg <*> arg)
                      , app "App"  (App  <$> arg <*> arg)
                      , app "Prim" (Prim <$> arg <*> arg)

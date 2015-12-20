@@ -32,6 +32,8 @@ attr Exp ExpL
 
 sem Exp
   | SExp loc    .   crexp   =   CR.mkExp (head @sexp.crsexpl)
+  | False_  loc  .   crexp   =   CR.mkTup  0 []
+  | True_  loc    .   crexp   = CR.mkTup 1 []
   | Nil  loc    .   crexp   = CR.mkTup 0 []
   | Cons loc    .   crexp   = CR.mkTup 1 [head @t1.crsexpl, head @t2.crsexpl]
   | Lam  loc    .   crexp   =   CR.mkLam (length @args.crrefl) 100 @body.crexp
@@ -42,7 +44,6 @@ sem Exp
   | Let  loc    .   crexp   =   CR.mkLet @lhs.stkoff @bind.crbindl @body.crexp
   | Dbg  loc    .   crexp   =   CR.mkDbg @info
   | Eval loc    .   crexp   = CR.mkEval @body.crexp
-  --| Matthew loc .   crexp   =   expr_Pat_BoolExpr
 
 
 

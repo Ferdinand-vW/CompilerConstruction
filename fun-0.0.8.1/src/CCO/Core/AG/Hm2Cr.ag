@@ -11,7 +11,7 @@ attr Core
 
 sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) (defaultBinds ++ @tm.binds)
-            tm.genv = (6,[("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
+            tm.genv = (8,[("True", Glob 7),("False", Glob 6),("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
             tm.lvl = 0
             tm.args = 0

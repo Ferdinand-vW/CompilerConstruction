@@ -36,6 +36,8 @@ type SExpL = [SExp]
   
 data Exp
   | SExp sexp :: SExp
+  | True_
+  | False_
   | Nil
   | Cons t1 :: SExp t2 :: SExp
   | Lam  args :: RefL
