@@ -62,29 +62,16 @@ alloc 0();
                                  app (d.0.1)(d.0.0); in
               let 6 -> eval(d.0.5); in
               case d.0.6.tag of
-               -> let 7 -> \0,100 -> let 0 -> eval(d.1.1); in
-                                     let 1 -> eval(m.2); in
-                                     app (d.0.1)(d.0.0); in
-                  let 8 -> \0,100 -> let 0 -> eval(d.1.0); in
-                                     let 1 -> eval(m.9); in
-                                     app (d.0.1)(d.0.0); in
-                  let 9 -> \0,100 -> let 0 -> eval(1); in
-                                     let 1 -> eval(d.1.8); in
-                                     app (d.0.1)(d.0.0); in
-                  let 10 -> \0,100 -> let 0 -> eval(d.1.9); in
-                                      let 1 -> eval(m.13); in
-                                      app (d.0.1)(d.0.0); in
-                  let 11 -> \0,100 -> let 0 -> eval(d.1.1); in
-                                      let 1 -> eval(m.3); in
-                                      app (d.0.1)(d.0.0); in
-                  let 12 -> \0,100 -> let 0 -> eval(d.1.11); in
-                                      let 1 -> eval(d.1.10); in
-                                      app (d.0.1)(d.0.0); in
-                  let 13 -> app (m.1)(d.0.7,d.0.12); in
-                  d.0.13;
+               -> let 7 -> app (m.2)(d.0.1); in
+                  let 8 -> app (m.9)(d.0.0); in
+                  let 9 -> app (d.0.8)(1); in
+                  let 10 -> app (m.13)(d.0.9); in
+                  let 11 -> app (m.3)(d.0.1); in
+                  let 12 -> app (d.0.10)(d.0.11); in
+                  app (m.1)(d.0.7,d.0.12);
                -> eval(m.0);;
            -> eval(m.0);;
-\0,100 -> let 0 -> eval(3); in
+\0,100 -> let 0 -> eval(2); in
           let 1 -> eval(m.13); in
           app (d.0.1)(d.0.0);
 \0,100 -> let 0 -> eval(m.11); in
