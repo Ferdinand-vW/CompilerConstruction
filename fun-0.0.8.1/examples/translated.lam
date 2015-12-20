@@ -13,7 +13,7 @@ Mod(
           Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
         , Case(
             Var(Tag(Field(1, Loc(0, 1))))
-          , [SExp(Var(Glob(2))), SExp(Var(Field(0, Loc(0, 1))))]
+          , [SExp(Var(Glob(0))), SExp(Var(Field(0, Loc(0, 1))))]
           )
         )
       )
@@ -26,7 +26,7 @@ Mod(
           Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
         , Case(
             Var(Tag(Field(1, Loc(0, 1))))
-          , [SExp(Var(Glob(2))), SExp(Var(Field(1, Loc(0, 1))))]
+          , [SExp(Var(Glob(0))), SExp(Var(Field(1, Loc(0, 1))))]
           )
         )
       )
@@ -54,55 +54,16 @@ Mod(
   , Bind(
       Glob(6)
     , Lam(
-        [Loc(0, 0)]
-      , Let(
-          Bind(
-            Glob(6)
-          , Lam(
-              []
-            , Let(
-                Bind(
-                  Loc(0, 0)
-                , App(SExp(Var(Glob(1))), [Int(3), Var(Glob(0))])
-                )
-              , Let(
-                  Bind(
-                    Loc(0, 1)
-                  , App(SExp(Var(Glob(1))), [Int(2), Var(Loc(0, 0))])
-                  )
-                , Let(
-                    Bind(
-                      Loc(0, 2)
-                    , App(SExp(Var(Glob(1))), [Int(1), Var(Loc(0, 1))])
-                    )
-                  , SExp(Var(Loc(0, 2)))
-                  )
-                )
-              )
-            )
-          )
-        , Let(
-            Bind(Loc(0, 2), Eval(SExp(Var(Loc(0, 1)))))
-          , Let(
-              Bind(Loc(0, 3), Eval(SExp(Var(Glob(3)))))
-            , App(SExp(Var(Loc(0, 3))), [Var(Loc(0, 2))])
-            )
-          )
-        )
-      )
-    )
-  , Bind(
-      Glob(7)
-    , Lam(
         []
       , Let(
-          Bind(Loc(0, 0), Eval(SExp(Int(5))))
+          Bind(Loc(0, 0), Eval(SExp(Var(Glob(0)))))
         , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(6)))))
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(2)))))
           , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
           )
         )
       )
     )
+  , Bind(Glob(7), Lam([], Eval(SExp(Var(Glob(6))))))
   ]
 )

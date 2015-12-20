@@ -1,12 +1,1 @@
-ALet(
-  "x"
-, ALam(
-    "y"
-  , ALet(
-      "123nil"
-    , ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ANil)))
-    , AApp(AVar("tail"), AVar("123nil"))
-    )
-  )
-, AApp(AVar("x"), ANat(5))
-)
+ALet("x", AApp(AVar("head"), ANil), AVar("x"))

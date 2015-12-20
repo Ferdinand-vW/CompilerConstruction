@@ -21,7 +21,7 @@ tailBind = Bind (Glob 3) exp
   where exp = Lam [Loc 0 0] $
                 Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
                   Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
-                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 1 $ Loc 0 1]
+                    [SExp $ Var $ Glob 0] ++ [SExp $ Var $ Field 1 $ Loc 0 1]
 
 
 headBind :: Bind
@@ -29,7 +29,7 @@ headBind = Bind (Glob 2) exp
   where exp = Lam [Loc 0 0] $
                 Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
                   Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
-                    [SExp $ Var $ Glob 2] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
+                    [SExp $ Var $ Glob 0] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
 
 consBind :: Bind
 consBind = Bind (Glob 1) exp

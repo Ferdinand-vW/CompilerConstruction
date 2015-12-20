@@ -45,13 +45,13 @@ pTm = (\pos x t1 -> Tm pos (Lam x t1)) <$> sourcePos <* spec '\\' <*> var <* spe
       (\pos x t1 t2 -> Tm pos (Prim x t1 t2)) <$> sourcePos <* keyword "prim" <* spec '\"' <*> var <* spec '\"' <*> pTm <*> pTm <|>
       (\pos t1 t2 t3 -> Tm pos (If t1 t2 t3)) <$> sourcePos <* keyword "if" <*> pTm <* keyword "then" <*> pTm <* keyword "else" <*> pTm <* keyword "fi"   <|>
       (\pos t1 t2 -> Tm pos (Cons t1 t2)) <$> sourcePos <* keyword "cons" <*> pTm <*> pTm <|>
-      (\pos -> Tm pos Nil) <$> sourcePos <* keyword "nil" <|>
       --(\pos exp true false -> Tm pos (If exp true false)) <$> sourcePos <*> pTm <* keyword "==" <*> pTm <* keyword "then" <*> pTm <* keyword "else" <*> pTm <* keyword "fi" <|>
       (\pos ts -> foldl1 (\t1 t2 -> Tm pos (App t1 t2)) ts) <$>
         sourcePos <*> some
           (
             (\pos x -> Tm pos (Nat x)) <$> sourcePos <*> nat <|>
              (\pos x -> Tm pos (Var x)) <$> sourcePos <*> var <|>
+             (\pos -> Tm pos Nil) <$> sourcePos <* keyword "nil" <|>
              (\pos x t1 t2 -> Tm pos (Let x t1 t2)) <$> sourcePos <* keyword "let" <*> var <* spec '=' <*> pTm <* keyword "in" <*> pTm <* keyword "ni" <|>
               spec '(' *> pTm <* spec ')'
           )
