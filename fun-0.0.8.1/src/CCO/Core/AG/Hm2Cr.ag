@@ -142,7 +142,7 @@ appExp lenv (SExp sexp1) (SExp sexp2) = Let (Bind (Loc 0 $ getOffSet lenv) (Eval
 
 sem ATm
     |   ALet lhs.main = @t2.main
-              lhs.exp  = letExp @lhs.genv @t1.exp @t2.exp--Let (Bind (next @lhs.genv) @t1.exp) @t2.exp
+              lhs.exp  = letExp @lhs.genv @t1.exp @t2.exp
               lhs.binds = letBinds @lhs.genv @t1.tm @t1.exp @t2.binds
               t1.genv = @lhs.genv
               loc.genv = globalLet @lhs.genv @lhs.lvl @x
@@ -196,14 +196,18 @@ toPrim (SExp s) = Var $ Loc 0 (off s)
 sem ATm
     |   AIf lhs.main = Glob (getOffSet @lhs.genv)
               lhs.exp = createCase @exp.exp @loc.exp
-              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [@t2.exp, @t1.exp]
-              lhs.binds = []
+              loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [evalVar @t2.exp, evalVar @t1.exp]
+              lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) $ Lam [] $ createCase @exp.exp @loc.exp]
+              exp.genv = @lhs.genv
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
+              exp.lenv = @lhs.lenv
               t1.lenv = incrOffSet' @lhs.lenv 1
               t2.lenv = incrOffSet' @lhs.lenv 1
-              t1.lvl = @lhs.lvl
-              t2.lvl = @lhs.lvl
+              exp.lvl = @lhs.lvl + 1
+              t1.lvl = @lhs.lvl + 1
+              t2.lvl = @lhs.lvl + 1
+              exp.args = 0
               t1.args = 0
               t2.args = 0
 {
@@ -211,25 +215,14 @@ sem ATm
 createCase :: Exp -> Exp -> Exp
 createCase e1@(SExp s) e2 = Let (Bind (getRef s) (Eval e1)) e2
 
+evalVar :: Exp -> Exp
+evalVar v@(SExp (Var r)) = Eval v
+evalVar exp = exp
+
 getRef :: SExp -> Ref
 getRef (Var x) = x
 getRef _ = error "It did not solve"
 
 incrOffSet' :: Map String Ref -> Int -> Map String Ref
 incrOffSet' (n,xs) i = (n + i, xs)
-
-checkIf :: ATm -> Exp -> Exp
-checkIf (AIf _ _ _) (Lam a s)  = s
-checkIf _ e = e
-
-joinAppValue :: Exp -> Exp -> Exp
-joinAppValue (Let (Bind r t1) t2) exp2 = Let (Bind r (joinParentAppValue t1 t2)) exp2
-
-joinChildAppValue :: Exp -> SExpL
-joinChildAppValue (App x y) = y
-joinChildAppValue (SExp x) = [x]
-joinChildAppValue (Let x y) = joinChildAppValue y --Hier gaat het verkeerd
-
-joinParentAppValue :: Exp -> Exp -> Exp
-joinParentAppValue (App x y) app2 = App x (y ++ joinChildAppValue app2)
 }

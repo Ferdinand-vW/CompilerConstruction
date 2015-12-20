@@ -1,5 +1,5 @@
 Mod(
-  SExp(Var(Glob(7)))
+  SExp(Var(Glob(18)))
 , [ Bind(Glob(0), Nil)
   , Bind(
       Glob(1)
@@ -37,7 +37,7 @@ Mod(
         [Loc(0, 0)]
       , Let(
           Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
-        , Case(Var(Tag(Loc(0, 1))), [SExp(Int(0)), SExp(Int(1))])
+        , Case(Var(Tag(Loc(0, 1))), [SExp(Var(Glob(7))), SExp(Var(Glob(6)))])
         )
       )
     )
@@ -47,23 +47,103 @@ Mod(
         [Loc(0, 0)]
       , Let(
           Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
-        , Case(Var(Tag(Loc(0, 1))), [SExp(Int(1)), SExp(Int(0))])
+        , Case(Var(Tag(Loc(0, 1))), [SExp(Var(Glob(6))), SExp(Var(Glob(7)))])
         )
       )
     )
+  , Bind(Glob(7), True_)
+  , Bind(Glob(6), False_)
   , Bind(
-      Glob(6)
+      Glob(8)
+    , Lam(
+        [Loc(0, 0), Loc(0, 0)]
+      , Prim("primAddInt", [Var(Loc(0, 0)), Var(Loc(0, 1))])
+      )
+    )
+  , Bind(
+      Glob(9)
+    , Lam(
+        [Loc(0, 0), Loc(0, 0)]
+      , Prim("primEqInt", [Var(Loc(0, 0)), Var(Loc(0, 1))])
+      )
+    )
+  , Bind(Glob(10), Lam([], SExp(Int(3))))
+  , Bind(Glob(11), Lam([], SExp(Int(4))))
+  , Bind(
+      Glob(12)
     , Lam(
         []
       , Let(
-          Bind(Loc(0, 0), Eval(SExp(Var(Glob(0)))))
+          Bind(Loc(0, 0), App(SExp(Var(Glob(1))), [Int(1), Var(Glob(0))]))
         , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Glob(2)))))
+            Bind(Loc(0, 1), App(SExp(Var(Glob(1))), [Int(2), Var(Loc(0, 0))]))
+          , SExp(Var(Loc(0, 1)))
+          )
+        )
+      )
+    )
+  , Bind(Glob(13), Lam([], SExp(Int(10))))
+  , Bind(
+      Glob(14)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Var(Glob(13)))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(8)))))
           , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
           )
         )
       )
     )
-  , Bind(Glob(7), Lam([], Eval(SExp(Var(Glob(6))))))
+  , Bind(
+      Glob(15)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Int(14))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(9)))))
+          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(16)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Var(Glob(11)))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(14)))))
+          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(17)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Var(Glob(16)))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(15)))))
+          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(18)
+    , Lam(
+        []
+      , Let(
+          Bind(Glob(17), Eval(SExp(Var(Glob(17)))))
+        , Case(Var(Tag(Loc(0, 0))), [SExp(Int(10)), Eval(SExp(Var(Glob(12))))])
+        )
+      )
+    )
   ]
 )

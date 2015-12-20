@@ -1,1 +1,41 @@
-ALet("x", AApp(AVar("head"), ANil), AVar("x"))
+ALet(
+  "plus"
+, ALam("x", ALam("y", APrim("primAddInt", AVar("x"), AVar("y"))))
+, ALet(
+    "eq"
+  , ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
+  , ALet(
+      "matthew"
+    , ANat(3)
+    , ALet(
+        "matthew"
+      , ANat(4)
+      , ALet(
+          "list"
+        , ACons(ANat(2), ACons(ANat(1), ANil))
+        , ALet(
+            "henk"
+          , ANat(10)
+          , ALet(
+              "plushenk"
+            , AApp(AVar("plus"), AVar("henk"))
+            , ALet(
+                "eq14"
+              , AApp(AVar("eq"), ANat(14))
+              , ALet(
+                  "plushenkmatthew"
+                , AApp(AVar("plushenk"), AVar("matthew"))
+                , ALet(
+                    "eq14plushenkmatthew"
+                  , AApp(AVar("eq14"), AVar("plushenkmatthew"))
+                  , AIf(AVar("eq14plushenkmatthew"), AVar("list"), ANat(10))
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
