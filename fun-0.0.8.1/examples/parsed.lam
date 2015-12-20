@@ -2,24 +2,104 @@ ALet(
   "plus"
 , ALam("x", ALam("y", APrim("primAddInt", AVar("x"), AVar("y"))))
 , ALet(
-    "eq"
-  , ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
+    "minus"
+  , ALam("x", ALam("y", APrim("primSubInt", AVar("x"), AVar("y"))))
   , ALet(
-      "matthew"
-    , ANat(3)
+      "eq"
+    , ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
     , ALet(
-        "matthew"
-      , ANat(4)
+        "l"
+      , ACons(ANat(1), ACons(ANat(2), ACons(ANat(10), ACons(ANat(8), ANil))))
       , ALet(
-          "list"
-        , ACons(ANat(2), ACons(ANat(1), ANil))
+          "sum"
+        , ALam(
+            "l"
+          , ALet(
+              "isNill"
+            , AApp(AVar("isNil"), AVar("l"))
+            , AIf(
+                AVar("isNill")
+              , ANat(0)
+              , ALet(
+                  "headl"
+                , AApp(AVar("head"), AVar("l"))
+                , ALet(
+                    "taill"
+                  , AApp(AVar("tail"), AVar("l"))
+                  , ALet(
+                      "plusheadl"
+                    , AApp(AVar("plus"), AVar("headl"))
+                    , ALet(
+                        "sumtaill"
+                      , AApp(AVar("sum"), AVar("taill"))
+                      , AApp(AVar("plusheadl"), AVar("sumtaill"))
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
         , ALet(
-            "henk"
-          , ANat(10)
-          , AIf(
-              AVar("True")
-            , ALet("x1", ALam("x", ANat(1)), AApp(AVar("x1"), ANat(2)))
-            , ANat(10)
+            "take"
+          , ALam(
+              "n"
+            , ALam(
+                "l"
+              , ALet(
+                  "eqn"
+                , AApp(AVar("eq"), AVar("n"))
+                , ALet(
+                    "eqn0"
+                  , AApp(AVar("eqn"), ANat(0))
+                  , AIf(
+                      AVar("eqn0")
+                    , ANil
+                    , ALet(
+                        "isNill"
+                      , AApp(AVar("isNil"), AVar("l"))
+                      , AIf(
+                          AVar("isNill")
+                        , ANil
+                        , ALet(
+                            "headl"
+                          , AApp(AVar("head"), AVar("l"))
+                          , ALet(
+                              "minusn"
+                            , AApp(AVar("minus"), AVar("n"))
+                            , ALet(
+                                "minusn1"
+                              , AApp(AVar("minusn"), ANat(1))
+                              , ALet(
+                                  "takeminusn1"
+                                , AApp(AVar("take"), AVar("minusn1"))
+                                , ALet(
+                                    "taill"
+                                  , AApp(AVar("tail"), AVar("l"))
+                                  , ALet(
+                                      "takeminusn1taill"
+                                    , AApp(AVar("takeminusn1"), AVar("taill"))
+                                    , ACons(
+                                        AVar("headl")
+                                      , AVar("takeminusn1taill")
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          , ALet(
+              "take3"
+            , AApp(AVar("take"), ANat(3))
+            , AApp(AVar("take3"), AVar("l"))
             )
           )
         )

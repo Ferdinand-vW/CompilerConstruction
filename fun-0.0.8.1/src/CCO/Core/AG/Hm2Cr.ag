@@ -63,8 +63,8 @@ sem ATm
               lhs.exp = SExp $ findVarRef' @lhs.genv "nil"
               lhs.binds = [Bind (next @lhs.genv) $ nilBind' @lhs.genv]
     |   ACons lhs.main = next @lhs.genv
-              lhs.exp = mkCons @lhs.genv (0,[]) (ACons @t1.tm @t2.tm)
-              lhs.binds = [Bind (next @lhs.genv) $ mkCons @lhs.genv (0,[]) (ACons @t1.tm @t2.tm)]
+              lhs.exp = mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)
+              lhs.binds = [Bind (next @lhs.genv) $ mkCons @lhs.genv @lhs.lenv (ACons @t1.tm @t2.tm)]
 
 {
 
@@ -72,20 +72,23 @@ nilBind' :: Map String Ref -> Exp
 nilBind' genv = SExp $ findVarRef' genv "nil"
 
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
-mkCons genv lenv atm = consExp genv offset atm (SExp $ Var $ Loc 0 offset)
+mkCons genv lenv atm = consExp genv lenv offset atm (SExp $ Var $ Loc 0 offset)
   where
-    offset = getOffSet lenv + (listLength atm) - 1
+    offset = (listLength atm) - 1
 
-consExp :: Map String Ref -> Int -> ATm -> Exp -> Exp
-consExp genv n (ACons t1 t2) t3 = case t2 of
-                            ACons _ _ -> consExp genv (n-1) t2 (Let (Bind curr (App cons [toInt t1,Var prev])) t3)
-                            ANil -> Let (Bind curr (App cons [toInt t1, nil])) t3
+consExp :: Map String Ref -> Map String Ref -> Int -> ATm -> Exp -> Exp
+consExp genv lenv n (ACons t1 t2) t3 = case t2 of
+                            ACons _ _ -> consExp genv lenv (n-1) t2 (Let (Bind curr (App cons [toSExp t1,Var prev])) t3)
+                            ANil -> Let (Bind curr (App cons [toSExp t1, nil])) t3
+                            AVar x -> Let (Bind curr (App cons [toSExp t1,ref x])) t3
       where
         cons = SExp $ findVarRef' genv "cons"
         nil = findVarRef' genv "nil"
         curr = Loc 0 n
         prev = Loc 0 (n - 1)
-        toInt (ANat n) = Int n
+        toSExp (ANat n) = Int n
+        toSExp (AVar x) = ref x
+        ref x = findVarRef genv lenv x
 
 listLength :: ATm -> Int
 listLength (ACons _ l) = 1 + listLength l
@@ -147,7 +150,7 @@ sem ATm
               t1.genv = @lhs.genv
               loc.genv = globalLet @lhs.genv @lhs.lvl @x
               t2.genv = @loc.genv
-              t1.lenv = incrEnv @lhs.lenv
+              t1.lenv = incrEnv $ insertRecursion @loc.genv @lhs.lenv @x @lhs.lvl
               t2.lenv = localLet @lhs.lenv @lhs.lvl @x
               t1.lvl = localLetLvl @lhs.lvl
               t2.lvl = @lhs.lvl
@@ -155,6 +158,11 @@ sem ATm
               t2.args = 0
 
 {
+insertRecursion :: Map String Ref -> Map String Ref -> String -> Int -> Map String Ref
+insertRecursion genv lenv s lvl 
+  | lvl == 0 = insertl' lenv s (getRef $ findVarRef' genv s)
+  | otherwise = insertl lenv s
+
 globalLet :: Map String Ref -> Int -> String -> Map String Ref
 globalLet genv lvl x 
   | lvl == 0 = insertg genv x

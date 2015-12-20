@@ -21,17 +21,16 @@ insertl :: Map String Ref -> String -> Map String Ref
 insertl (n,xs) s = (n + 1, (s, Loc 0 n) : xs)
 
 insertl' :: Map String Ref -> String -> Ref -> Map String Ref
-insertl' (n,xs) s (Loc lvl off) = (n + 1,(s,Loc lvl off) : xs)
+insertl' (n,xs) s r = (n + 1,(s,r) : xs)
 
---insertl' :: Map String Ref -> String -> Int -> Map String Ref
---insertl' (n,xs) s i = (n + 1, (s, Loc 0 (n - i)) : xs)
-
+insrec :: Map String Ref -> String -> Ref -> Map String Ref
+insrec (n,xs) s r= (n,(s,r):xs)
 
 incrEnv :: Map String Ref -> Map String Ref
 incrEnv (n,lenv) = (0, incr lenv)
   where incr [] = []
-        incr ((s,(Loc lvl x)):xs) = (s,Loc (lvl + 1) x) : incr xs 
-        incr env = env
+        incr ((s,(Loc lvl x)):xs) = (s,Loc (lvl + 1) x) : incr xs
+        incr ((s,r):xs) = (s,r) : incr xs
 
 newOffSet :: Map String Ref -> Int -> Map String Ref
 newOffSet (n,lenv) i

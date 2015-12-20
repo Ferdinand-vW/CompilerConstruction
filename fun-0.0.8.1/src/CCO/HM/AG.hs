@@ -21,6 +21,13 @@ import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 19 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
 
+consLets :: ATm -> ATm
+consLets (ACons (ALet x lt1 lt2) t2) = ALet x lt1 (consLets $ ACons lt2 t2)
+consLets (ACons (AApp at1 at2) t2) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons (AVar $ letName at1 at2) t2)
+consLets (ACons t1 (ALet x lt1 lt2)) = ALet x lt1 (consLets $ ACons t1 lt2)
+consLets (ACons t1 (AApp at1 at2)) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons t1 $ AVar $ letName at1 at2)
+consLets atm = atm
+
 pullOutLets :: ATm -> ATm
 pullOutLets (AIf (ALet x lt1 lt2) t2 t3) = ALet x lt1 (pullOutLets $ AIf lt2 t2 t3)
 pullOutLets (AIf (AApp at1 at2) t2 t3) = ALet (letName at1 at2) (AApp at1 at2) (AIf (AVar $ letName at1 at2) t2 t3)
@@ -66,7 +73,7 @@ getname _ = ""
 letName :: ATm -> ATm -> String
 letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-{-# LINE 70 "CCO/HM/AG.hs" #-}
+{-# LINE 77 "CCO/HM/AG.hs" #-}
 
 {-# LINE 9 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
@@ -92,14 +99,14 @@ instance Tree ATm where
                      , app "AIf" (AIf <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 96 "CCO/HM/AG.hs" #-}
+{-# LINE 103 "CCO/HM/AG.hs" #-}
 
 {-# LINE 39 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 type Var = String
-{-# LINE 101 "CCO/HM/AG.hs" #-}
+{-# LINE 108 "CCO/HM/AG.hs" #-}
 
-{-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
+{-# LINE 14 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 instance Tree Tm where
   fromTree (Tm pos t) = T.App "Tm" [fromTree pos, fromTree t]
@@ -127,7 +134,7 @@ instance Tree Tm_ where
                      , app "If" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 131 "CCO/HM/AG.hs" #-}
+{-# LINE 138 "CCO/HM/AG.hs" #-}
 -- ATm ---------------------------------------------------------
 data ATm = ANat (Int)
          | AVar (Var)
@@ -138,6 +145,7 @@ data ATm = ANat (Int)
          | AApp (ATm) (ATm)
          | ALet (Var) (ATm) (ATm)
          | AIf (ATm) (ATm) (ATm)
+         deriving ( Show)
 -- cata
 sem_ATm :: ATm ->
            T_ATm
@@ -224,6 +232,7 @@ sem_ATm_AIf exp_ t1_ t2_ =
      in  ( ))
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
+        deriving ( Show)
 -- cata
 sem_Tm :: Tm ->
           T_Tm
@@ -248,7 +257,7 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm
-              {-# LINE 252 "CCO/HM/AG.hs" #-}
+              {-# LINE 261 "CCO/HM/AG.hs" #-}
               )
          ( _tItm) =
              t_
@@ -263,6 +272,7 @@ data Tm_ = Nat (Int)
          | App (Tm) (Tm)
          | Let (Var) (Tm) (Tm)
          | If (Tm) (Tm) (Tm)
+         deriving ( Show)
 -- cata
 sem_Tm_ :: Tm_ ->
            T_Tm_
@@ -301,7 +311,7 @@ sem_Tm__Nat i_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANat i_
-              {-# LINE 305 "CCO/HM/AG.hs" #-}
+              {-# LINE 315 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Var :: Var ->
@@ -311,7 +321,7 @@ sem_Tm__Var x_ =
          _lhsOtm =
              ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AVar x_
-              {-# LINE 315 "CCO/HM/AG.hs" #-}
+              {-# LINE 325 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Nil :: T_Tm_
@@ -320,7 +330,7 @@ sem_Tm__Nil =
          _lhsOtm =
              ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANil
-              {-# LINE 324 "CCO/HM/AG.hs" #-}
+              {-# LINE 334 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Cons :: T_Tm ->
@@ -332,8 +342,8 @@ sem_Tm__Cons t1_ t2_ =
          _t2Itm :: ATm
          _lhsOtm =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
-              ACons _t1Itm _t2Itm
-              {-# LINE 337 "CCO/HM/AG.hs" #-}
+              consLets $ ACons _t1Itm _t2Itm
+              {-# LINE 347 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -351,7 +361,7 @@ sem_Tm__Prim f_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
               APrim f_ _t1Itm _t2Itm
-              {-# LINE 355 "CCO/HM/AG.hs" #-}
+              {-# LINE 365 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -367,7 +377,7 @@ sem_Tm__Lam x_ t1_ =
          _lhsOtm =
              ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALam x_ _t1Itm
-              {-# LINE 371 "CCO/HM/AG.hs" #-}
+              {-# LINE 381 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -382,7 +392,7 @@ sem_Tm__App t1_ t2_ =
          _lhsOtm =
              ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
               removeDup [] $ transform (AApp _t1Itm _t2Itm)
-              {-# LINE 386 "CCO/HM/AG.hs" #-}
+              {-# LINE 396 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -400,7 +410,7 @@ sem_Tm__Let x_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALet x_ _t1Itm _t2Itm
-              {-# LINE 404 "CCO/HM/AG.hs" #-}
+              {-# LINE 414 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -419,7 +429,7 @@ sem_Tm__If exp_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
               pullOutLets $ AIf _expItm _t1Itm _t2Itm
-              {-# LINE 423 "CCO/HM/AG.hs" #-}
+              {-# LINE 433 "CCO/HM/AG.hs" #-}
               )
          ( _expItm) =
              exp_
