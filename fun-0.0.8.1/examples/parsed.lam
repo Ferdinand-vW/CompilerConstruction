@@ -1,9 +1,12 @@
 ALet(
   "x"
-, ALet(
-    "123nil"
-  , ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ANil)))
-  , AApp(AVar("tail"), AVar("123nil"))
+, ALam(
+    "y"
+  , ALet(
+      "123nil"
+    , ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ANil)))
+    , AApp(AVar("tail"), AVar("123nil"))
+    )
   )
-, AVar("x")
+, AApp(AVar("x"), ANat(5))
 )

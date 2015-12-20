@@ -9,13 +9,16 @@ maintainer:          m.a.swart@students.uu.nl
 -- copyright:           
 category:            Education
 build-type:          Simple
-extra-source-files:    AUTHORS, README, Makefile,
+extra-source-files:    README, Makefile,
                        examples/t1.lam,
                        examples/t1.tcrr,
                        examples/sumtake.tcrr,
                        src/CCO/HM/AG.ag,
+                       src/CCO/HM/Base.hs,
+                       src/CCO/HM/Lexer.hs,
+                       src/CCO/HM/Parser.hs,
+                       src/CCO/HM/Ag/ToANormal.ag
                        src/CCO/Core/AG.ag,
-                       src/CCO/Core/AG/Base.ag,
                        src/CCO/Core/AG/ToCoreRun.ag,
                        src/CCO/SystemF/AG.ag,
                        src/CCO/SystemF/AG/Base.ag,
@@ -24,7 +27,12 @@ extra-source-files:    AUTHORS, README, Makefile,
                        src/CCO/AG/Core.ag,
                        src/CCO/AG/HM.ag,
                        src/CCO/Core/Ag/Hm2Cr.ag,
-                       src/CCO/HM/Ag/ToANormal.ag
+                       src/CCO/Core/Ag/BuildIn.ag,
+                       src/CCO/Core/Ag/EnvMap.ag,
+                       src/CCO/Core/Ag/ToCoreRun.ag,
+                       src/CCO/Core.hs,
+                       src/CCO/HM.hs,
+                       src/CCO/SystemF.hs
 cabal-version:       >=1.10
 
 executable parse-hm
@@ -33,21 +41,25 @@ executable parse-hm
   other-modules:       CCO.HM, CCO.HM.AG, CCO.HM.Base, CCO.HM.Lexer,
                        CCO.HM.Parser
   hs-source-dirs:      src
+  default-language:    Haskell2010
 
 executable pp-systemf
   main-is:             PpSystemF.hs
   build-depends:       base >= 4 && < 5, uu-cco >= 0.1.0.1
   other-modules:       CCO.SystemF, CCO.SystemF.AG, CCO.SystemF.Base
   hs-source-dirs:      src
+  default-language:    Haskell2010
 
 executable pp-core
   main-is:             PpCore.hs
   build-depends:       base >= 4 && < 5, uu-cco >= 0.1.0.1, uhc-light >= 1.1.9.2, uhc-util >= 0.1.6.3
   other-modules:       CCO.Core, CCO.Core.AG, CCO.Core.Base
   hs-source-dirs:      src
+  default-language:    Haskell2010
 
 executable pp-hm2cr
   main-is:             hm2cr.hs
   build-depends:       base >= 4 && < 5, uu-cco >= 0.1.0.1, uhc-light >= 1.1.9.2, uhc-util >= 0.1.6.3
   other-modules:       CCO.Core, CCO.Core.AG, CCO.Core.Base
   hs-source-dirs:      src
+  default-language:    Haskell2010
