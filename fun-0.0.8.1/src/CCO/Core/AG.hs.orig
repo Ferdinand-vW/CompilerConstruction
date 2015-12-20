@@ -107,7 +107,7 @@ newOffSet (n,lenv) i
 {-# LINE 1 "CCO\\Core\\AG\\BuildIn.ag" #-}
 
 defaultBinds :: BindL
-defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind, trueBind, falseBind]
+defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind, falseBind, trueBind]
 
 trueBind :: Bind
 trueBind = Bind (Glob 7) True_
@@ -1245,8 +1245,13 @@ sem_Core_Core tm_ =
               )
          _tmOgenv =
              ({-# LINE 14 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
+<<<<<<< HEAD
+              (8,[("False", Glob 7),("True", Glob 6),("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
+              {-# LINE 1243 "CCO/Core/AG.hs" #-}
+=======
               (8,[("True", Glob 7),("False", Glob 6),("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
               {-# LINE 1250 "CCO/Core/AG.hs" #-}
+>>>>>>> 5983dbb4c9e0bb734d6b2f4e75c23e1415ad9c2e
               )
          _tmOlenv =
              ({-# LINE 15 "CCO\\Core\\AG\\Hm2Cr.ag" #-}
