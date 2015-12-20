@@ -82,10 +82,10 @@ Mod(
             )
           )
         , Let(
-            Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+            Bind(Loc(0, 2), Eval(SExp(Var(Loc(0, 1)))))
           , Let(
-              Bind(Loc(0, 2), Eval(SExp(Var(Glob(3)))))
-            , App(SExp(Var(Loc(0, 2))), [Var(Loc(0, 1))])
+              Bind(Loc(0, 3), Eval(SExp(Var(Glob(3)))))
+            , App(SExp(Var(Loc(0, 3))), [Var(Loc(0, 2))])
             )
           )
         )
