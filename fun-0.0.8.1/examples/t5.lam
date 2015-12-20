@@ -1,14 +1,10 @@
 let eq = \x .\y.prim "primEqInt" x y in
-let test = \x.\y.\z. (x y) z in
-let id = \x .x in
-let ma = cons 3 (cons 2 nil) in
 let matthew = 
-    if isCons ma
-        then if eq 2 (head ma)
-                then id (id (head ma))
-                else tail ma
-             fi
+    if eq 2 2
+        then (\y. if eq 2 1
+                    then head (tail (cons 1 (cons 2 (cons 3 nil))))
+                    else tail (cons 1 (cons 2 (cons 3 nil))) fi) 5
         else 3
     fi 
 in matthew
-ni ni ni ni ni
+ni ni

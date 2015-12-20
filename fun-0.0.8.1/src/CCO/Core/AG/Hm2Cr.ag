@@ -60,7 +60,7 @@ toSExp (SExp s) = s
 
 sem ATm
     |   ANil  lhs.main = next @lhs.genv
-              lhs.exp = Nil
+              lhs.exp = SExp $ findVarRef' @lhs.genv "nil"
               lhs.binds = [Bind (next @lhs.genv) $ nilBind' @lhs.genv]
     |   ACons lhs.main = next @lhs.genv
               lhs.exp = mkCons @lhs.genv (0,[]) (ACons @t1.tm @t2.tm)
@@ -162,7 +162,7 @@ globalLet genv lvl x
 
 localLetLvl :: Int -> Int
 localLetLvl 0 = 1
-localLetlvl lvl = lvl
+localLetLvl lvl = lvl
 
 localLet :: Map String Ref -> Int -> String -> Map String Ref
 localLet lenv lvl x
@@ -171,6 +171,7 @@ localLet lenv lvl x
 
 letExp :: Map String Ref -> Exp -> Exp -> Exp
 letExp genv (Let b t1) exp2 = Let (Bind (next genv) (Lam [] (Let b t1))) exp2
+letExp genv exp exp2 = Let (Bind (next genv) exp) exp2
 
 letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
 letBinds (n,_) (ALam _ _) exp t2binds = Bind (Glob n) exp : t2binds
