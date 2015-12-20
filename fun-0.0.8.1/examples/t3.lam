@@ -1,4 +1,4 @@
 let fv = 5 in
-let id = \x . y. x in
+let id = \x . \y. x in
 id fv
 ni ni

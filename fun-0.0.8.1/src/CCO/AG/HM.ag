@@ -7,6 +7,9 @@ import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
 }
 
+deriving ATm : Show
+deriving Tm : Show
+deriving Tm_ : Show
 
 {
 instance Tree Tm where
