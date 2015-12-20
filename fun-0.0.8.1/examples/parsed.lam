@@ -1,12 +1,62 @@
 ALet(
-  "x"
-, ALam(
-    "y"
+  "eq"
+, ALam("x", ALam("y", APrim("primEqInt", AVar("x"), AVar("y"))))
+, ALet(
+    "test"
+  , ALam(
+      "x"
+    , ALam(
+        "y"
+      , ALam(
+          "z"
+        , ALet("xy", AApp(AVar("x"), AVar("y")), AApp(AVar("xy"), AVar("z")))
+        )
+      )
+    )
   , ALet(
-      "123nil"
-    , ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ANil)))
-    , AApp(AVar("tail"), AVar("123nil"))
+      "id"
+    , ALam("x", AVar("x"))
+    , ALet(
+        "ma"
+      , ACons(ANat(3), ACons(ANat(2), ANil))
+      , ALet(
+          "matthew"
+        , ALet(
+            "isConsma"
+          , AApp(AVar("isCons"), AVar("ma"))
+          , AIf(
+              AVar("isConsma")
+            , ALet(
+                "eq2"
+              , AApp(AVar("eq"), ANat(2))
+              , ALet(
+                  "headma"
+                , AApp(AVar("head"), AVar("ma"))
+                , ALet(
+                    "eq2headma"
+                  , AApp(AVar("eq2"), AVar("headma"))
+                  , AIf(
+                      AVar("eq2headma")
+                    , ALet(
+                        "headma"
+                      , AApp(AVar("head"), AVar("ma"))
+                      , ALet(
+                          "idheadma"
+                        , AApp(AVar("id"), AVar("headma"))
+                        , AApp(AVar("id"), AVar("idheadma"))
+                        )
+                      )
+                    , AApp(AVar("tail"), AVar("ma"))
+                    )
+                  )
+                )
+              )
+            , ANat(3)
+            )
+          )
+        , AVar("matthew")
+        )
+      )
     )
   )
-, AApp(AVar("x"), ANat(5))
 )
