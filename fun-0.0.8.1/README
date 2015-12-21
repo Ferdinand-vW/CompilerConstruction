@@ -43,9 +43,7 @@ The following transformations from HM to AHM occur:
 - ALets and AApps that are inside a ACons are pulled out of the ACons:
         ACons (ALet x b e) l -> ALet x b (ACons e l)
 - Similarly both are also taken out of the expression of an AIf
-- In the case of having multiple nested AApp's we have to create
-- new ALet's for each nested AApp, we then also pull those out of the parent
-- AApp. Finally we remove duplicate ALets
+- In the case of having multiple nested AApp's we have to create new ALet's for each nested AApp, we then also pull those out of the parent AApp. Finally we remove duplicate ALets
 
 Next we do the compilation from AHM to Exp
 - We first create the dataconstructor Mod. We pass it it's main and it's bindings.
