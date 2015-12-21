@@ -11,30 +11,33 @@ attr Core
 
 sem Core
     | Core  lhs.core = Mod (SExp (Var @tm.main)) (defaultBinds ++ @tm.binds)
-            tm.genv = (8,[("True", Glob 7),("False", Glob 6),("isNil", Glob 5),("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),("cons", Glob 1),("nil",Glob 0)])
+            tm.genv = (8,[("True", Glob 7),("False", Glob 6),("isNil", Glob 5), --We have to fill up the environment with the build in features
+                        ("isCons", Glob 4),("tail", Glob 3),("head", Glob 2),
+                        ("cons", Glob 1),("nil",Glob 0)])
             tm.lenv = (0,[])
             tm.lvl = 0
             tm.args = 0
 
 attr ATm
     syn tm :: self 
-    syn main :: {Ref} --Is used to get the offset of the main. 
-    syn exp :: {Exp} --We transform it to the exp type.
-    syn binds use {++} {[]} :: {BindL} --Bind is used to bind the bind the exp together
-    inh genv :: {Map String Ref} --We use this attribute to store all global ref
-    inh lenv :: {Map String Ref} -- We use this attribut to store all local ref
-    inh lvl :: {Int} --lvl difference
-    inh args :: {Int} --The total number of arguments
+    syn main :: {Ref} --main of the Module 
+    syn exp :: {Exp} --ATm is transformed to the corresponding Core expression
+    syn binds use {++} {[]} :: {BindL} --bindings of the module
+    inh genv :: {Map String Ref} --Environment for our global ref's
+    inh lenv :: {Map String Ref} --Environment for our local ref's
+    inh lvl :: {Int} --Determines whether we are at global or local lvl. 0 is global and higher is local.
+    inh args :: {Int} --Number of consecutive lambda arguments
 
 sem ATm
     |   ANat lhs.main = next @lhs.genv
               lhs.exp  = natExp @i
-              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ natExp @i]
+              lhs.binds = [Bind (next @lhs.genv) $ natExp @i]
     |   AVar lhs.main = next @lhs.genv
              lhs.exp  = varExp @lhs.genv @lhs.lenv @x
               lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ varBind @lhs.genv @x]
 
 {
+
 natExp :: Int -> Exp
 natExp i = SExp $ Int i
 
@@ -45,7 +48,9 @@ varBind :: Map String Ref -> String -> Exp
 varBind genv s = Eval $ SExp $ findVarRef' genv s
 
 --First it looks for the Ref in the local environment, if it cannot find it, then
---it will check the global environment. If it wasn't found, then the program crashes
+--it will check the global environment. If it wasn't found, then the program crashes.
+--It is assumed that the Ref exists in either one of the two environments. If it does not
+--then there must be a programming error.
 findVarRef :: Map String Ref -> Map String Ref -> String -> SExp
 findVarRef (_,genv) (_,lenv) s = Var $ fromMaybe (fromJust (lookup s genv))  (lookup s lenv)
 
@@ -72,16 +77,17 @@ sem ATm
 nilBind' :: Map String Ref -> Exp
 nilBind' genv = SExp $ findVarRef' genv "nil"
 
---mkCons uses the consExp function to transform the Cons Type to the correct corerun form. 
+--makes a new expression for lists. We first determine the length of the list, which we can then
+--use to determine the offset for the top of the list.
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
 mkCons genv lenv atm = consExp genv lenv offset atm (SExp $ Var $ Loc 0 offset)
   where
-    offset = (listLength atm) - 1
+    offset = listLength atm - 1 + (getOffSet lenv)
 
---consExp will transform the cons type to the correct corerun form by recursively going over this function, till it does not contain any cons.
+--Recursively go through the given list and add a let binding for each cons
 consExp :: Map String Ref -> Map String Ref -> Int -> ATm -> Exp -> Exp
 consExp genv lenv n (ACons t1 t2) t3 = case t2 of
-                            ACons _ _ -> consExp genv lenv (n-1) t2 (Let (Bind curr (App cons [toSExp t1,Var prev])) t3)
+                            ACons _ _ -> consExp genv lenv (n-1) t2 (evalVar (toSExp t1))
                             ANil -> Let (Bind curr (App cons [toSExp t1, nil])) t3
                             AVar x -> Let (Bind curr (App cons [toSExp t1,ref x])) t3
       where
@@ -92,6 +98,7 @@ consExp genv lenv n (ACons t1 t2) t3 = case t2 of
         toSExp (ANat n) = Int n
         toSExp (AVar x) = ref x
         ref x = findVarRef genv lenv x
+        evalVar r = Let (Bind curr $ App cons [r,Var prev]) t3
 
 listLength :: ATm -> Int
 listLength (ACons _ l) = 1 + listLength l
@@ -110,22 +117,34 @@ sem ATm
               t1.args = 1 + @lhs.args
 {
 
---Consecutive lambda's are joined
+--We join the bindings of two consecutive lambda's, so that
+--they do not appear as consecutive lambda's
 joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
 joinLam xs exp = Lam xs exp
 
---updateEnv needs as input the map of the local ref, number of arguments and the name of the var, to insert it in the map.
---It results into the new map
+--When we find a lambda we have to increment the lvls of all the variables
+--already stored in the local environment. the function incrEnv does this for us.
+--However if we have multiple consecutive lambda's they shouldn't all increment the lvl
+--it should only happen once. newOffSetIncr does this for us, we also pass it the offset
+--it should be given after insertion of all the lambda arguments.
 updateEnv :: Map String Ref -> Int -> String -> Map String Ref
-updateEnv lenv numArgs s = insertl' (newOffSet lenv (numArgs)) s (Loc 0 numArgs)
+updateEnv lenv numArgs s = insertref (newOffSetIncr lenv (numArgs)) s (Loc 0 numArgs)
+
+--We check whether this is the first lambda argument, if it is we increment the lvls of
+--the local variables and pass it the new offset. Otherwise we only pass the new offset.
+newOffSetIncr :: Map String Ref -> Int -> Map String Ref
+newOffSetIncr (n,lenv) i
+    | i >= 1 = (i,lenv)
+    | i < 1 = (i,lenv')
+    where (_,lenv') = incrEnv (n,lenv)
 
 }
 
 
 sem ATm
     |   AApp lhs.main = next @lhs.genv
-              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp --If @t2.exp is Let, we will add a Lambda
+              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp
               lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (Lam [] $ appExp @lhs.lenv @t1.exp @t2.exp)]
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
@@ -135,14 +154,9 @@ sem ATm
               t2.lvl = @lhs.lvl
 
 {
---If the second type is a let, we add a Lam before the type.
-appExp' :: Map String Ref -> Exp -> Exp -> Exp
-appExp' lenv exp (Let b exp2) = Lam [] (appExp lenv exp (Let b exp2))
-appExp' lenv exp exp2 = appExp lenv exp exp2
-
---This function is used to transform the AApp to a correct form. It removes the Lets that is inside an App, because it is not allowed to have Let inside an App.
+--Before we do an application, we want to evaluate both arguments given.
+--So we create a let binding to do both evaluations.
 appExp :: Map String Ref -> Exp -> Exp -> Exp
-appExp lenv exp (Let b exp2) = Let b (appExp lenv exp exp2)
 appExp lenv (SExp sexp1) (SExp sexp2) = Let (Bind (Loc 0 $ getOffSet lenv) (Eval (SExp sexp2))) (
                                 Let (Bind (Loc 0 $ getOffSet lenv + 1) (Eval (SExp sexp1))) $ 
                                     App (SExp $ Var $ Loc 0 (getOffSet lenv + 1)) [Var $ Loc 0 (getOffSet lenv)])
@@ -165,13 +179,14 @@ sem ATm
               t2.args = 0
 
 {
---This function is used to allow recursion.
--- if lvl=0 then it will add (getRef $ findVarRef' genv s) to the local environment map
-  --otherwise just insert the a new environment
+
+--This function inserts a global let's variable into the local environment of it's own binding
+--and thus creating recursion. As the variable was inserted into the global environment, we 
+--simply have to ask for it
 insertRecursion :: Map String Ref -> Map String Ref -> String -> Int -> Map String Ref
 insertRecursion genv lenv s lvl 
-  | lvl == 0 = insertl' lenv s (getRef $ findVarRef' genv s)
-  | otherwise = insertl lenv s
+  | lvl == 0 = insertref lenv s (getRef $ findVarRef' genv s)
+  | otherwise = lenv
 
 --GlobalLet only adds a new ref to the global map when its level is 0.
 globalLet :: Map String Ref -> Int -> String -> Map String Ref
@@ -190,15 +205,17 @@ localLet lenv lvl x
   | lvl > 0 = insertl lenv x
   | otherwise = lenv
 
---letExp is used to transform the ALet to get correct form. 
--- next genv will 
+
+--Thus function creates a let expression for us, but depending on its binding
+--it might have to add a lambda
 letExp :: Map String Ref -> Exp -> Exp -> Exp
 letExp genv (Let b t1) exp2 = Let (Bind (next genv) (Lam [] (Let b t1))) exp2
 letExp genv exp exp2 = Let (Bind (next genv) exp) exp2
 
---letBinds is used to add a Lambda in the Bindl of a Let. 
+--Similar to letExp except for bindings.
 letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
 letBinds (n,_) (ALam _ _) exp t2binds = Bind (Glob n) exp : t2binds
+letBinds (n,_) (ANat _) exp t2binds = Bind (Glob n) exp : t2binds
 letBinds (n,_) _ exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
 }
 
@@ -227,7 +244,7 @@ sem ATm
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
               exp.lenv = @lhs.lenv
-              t1.lenv = incrOffSet' @lhs.lenv 1
+              t1.lenv = incrOffSet' @lhs.lenv 1 --We have to increase the offset by 1, because of the added let
               t2.lenv = incrOffSet' @lhs.lenv 1
               exp.lvl = @lhs.lvl + 1
               t1.lvl = @lhs.lvl + 1
@@ -250,7 +267,5 @@ getRef :: SExp -> Ref
 getRef (Var x) = x
 getRef _ = error "Pattern match does not exist."
 
---This will increment the offset of the map
-incrOffSet' :: Map String Ref -> Int -> Map String Ref
-incrOffSet' (n,xs) i = (n + i, xs)
+
 }

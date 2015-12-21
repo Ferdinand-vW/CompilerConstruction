@@ -21,7 +21,7 @@ import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 19 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
 
---ConsLets is used to transform all the Cons in ALet, because it is not allowed to have an ALet in an ACons.
+--ConsLets is used to move all the ALets/AApps in an ACons out of the ACons, because it is not allowed to have an ALet/AApps in an ACons.
 consLets :: ATm -> ATm
 consLets (ACons (ALet x lt1 lt2) t2) = ALet x lt1 (consLets $ ACons lt2 t2)
 consLets (ACons (AApp at1 at2) t2) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons (AVar $ letName at1 at2) t2)
@@ -29,13 +29,13 @@ consLets (ACons t1 (ALet x lt1 lt2)) = ALet x lt1 (consLets $ ACons t1 lt2)
 consLets (ACons t1 (AApp at1 at2)) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons t1 $ AVar $ letName at1 at2)
 consLets atm = atm
 
---This functon is used to transform an AIf in lets, because it is not allowed to have a let in an if expression.  
+--This functon is used to move all the ALets/AApps in the expression of an AIf out of the AIf, because it is not allowed to have an ALet/AApps in an AIf.  
 pullOutLets :: ATm -> ATm
 pullOutLets (AIf (ALet x lt1 lt2) t2 t3) = ALet x lt1 (pullOutLets $ AIf lt2 t2 t3)
 pullOutLets (AIf (AApp at1 at2) t2 t3) = ALet (letName at1 at2) (AApp at1 at2) (AIf (AVar $ letName at1 at2) t2 t3)
 pullOutLets atm = atm
 
---removeDup is used to remove duplicate types
+--removeDup is used to remove duplicate ALet bindings
 removeDup :: [String] -> ATm -> ATm
 removeDup env (ALet x t1 t2)
     | x `elem` env = removeDup env t2
@@ -43,7 +43,8 @@ removeDup env (ALet x t1 t2)
 removeDup _ tm = tm
 
 
---In this function all of the ALet are removed from the AApp, because it is not allowed to have a let in an app
+--In this function all of the ALet are moved out of the AApp, because it is not allowed to have an ALet in an AApp
+
 transform :: ATm -> ATm
 transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
 transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
@@ -51,7 +52,7 @@ transform (AApp t1 (ACons x l)) = ALet (getName (ACons x l)) (ACons x l) (transf
 transform (AApp (ALam x t1) t2) = ALet (x ++ getName t1) (ALam x t1) (transform $ AApp (AVar $ x ++ getName t1) t2)
 transform tm = newLets tm
 
---This function is used in the transform function to add a let before AAp.
+--This function is used in the transform function to add an ALet before an AAp.
 newLets :: ATm -> ATm
 newLets (AApp (AApp lt1 lt2) t2) = 
         ALet (letName lt1 lt2) (AApp lt1 lt2) $ newLets $
@@ -62,7 +63,7 @@ newLets (AApp t1 (AApp rt1 rt2)) =
 newLets tm = tm
 
 
---This function is used to retrieve information from an Atm, which is used to make an name for the type.
+--This function is used to retrieve information from an ATm, which is used to make an name for the type.
 getName :: ATm -> String
 getName (ANat i) = show i
 getName (ACons x l) = getName x ++ getName l
@@ -73,11 +74,11 @@ getName (ALam x _) = x
 getName (ALet x _ _) = x
 getname _ = ""
 
---Combine two types to get a name.
+--Combine two terms to get a name.
 letName :: ATm -> ATm -> String
 letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-{-# LINE 81 "CCO/HM/AG.hs" #-}
+{-# LINE 82 "CCO/HM/AG.hs" #-}
 
 {-# LINE 10 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
@@ -103,12 +104,12 @@ instance Tree ATm where
                      , app "AIf"   (AIf   <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 107 "CCO/HM/AG.hs" #-}
+{-# LINE 108 "CCO/HM/AG.hs" #-}
 
 {-# LINE 40 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 type Var = String
-{-# LINE 112 "CCO/HM/AG.hs" #-}
+{-# LINE 113 "CCO/HM/AG.hs" #-}
 
 {-# LINE 14 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
@@ -138,7 +139,7 @@ instance Tree Tm_ where
                      , app "If" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 142 "CCO/HM/AG.hs" #-}
+{-# LINE 143 "CCO/HM/AG.hs" #-}
 -- ATm ---------------------------------------------------------
 data ATm = ANat (Int)
          | AVar (Var)
@@ -261,7 +262,7 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm
-              {-# LINE 265 "CCO/HM/AG.hs" #-}
+              {-# LINE 266 "CCO/HM/AG.hs" #-}
               )
          ( _tItm) =
              t_
@@ -315,7 +316,7 @@ sem_Tm__Nat i_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANat i_
-              {-# LINE 319 "CCO/HM/AG.hs" #-}
+              {-# LINE 320 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Var :: Var ->
@@ -325,7 +326,7 @@ sem_Tm__Var x_ =
          _lhsOtm =
              ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AVar x_
-              {-# LINE 329 "CCO/HM/AG.hs" #-}
+              {-# LINE 330 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Nil :: T_Tm_
@@ -334,7 +335,7 @@ sem_Tm__Nil =
          _lhsOtm =
              ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANil
-              {-# LINE 338 "CCO/HM/AG.hs" #-}
+              {-# LINE 339 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Cons :: T_Tm ->
@@ -347,7 +348,7 @@ sem_Tm__Cons t1_ t2_ =
          _lhsOtm =
              ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
               consLets $ ACons _t1Itm _t2Itm
-              {-# LINE 351 "CCO/HM/AG.hs" #-}
+              {-# LINE 352 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -365,7 +366,7 @@ sem_Tm__Prim f_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
               APrim f_ _t1Itm _t2Itm
-              {-# LINE 369 "CCO/HM/AG.hs" #-}
+              {-# LINE 370 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -381,7 +382,7 @@ sem_Tm__Lam x_ t1_ =
          _lhsOtm =
              ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALam x_ _t1Itm
-              {-# LINE 385 "CCO/HM/AG.hs" #-}
+              {-# LINE 386 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -396,7 +397,7 @@ sem_Tm__App t1_ t2_ =
          _lhsOtm =
              ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
               removeDup [] $ transform (AApp _t1Itm _t2Itm)
-              {-# LINE 400 "CCO/HM/AG.hs" #-}
+              {-# LINE 401 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -414,7 +415,7 @@ sem_Tm__Let x_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALet x_ _t1Itm _t2Itm
-              {-# LINE 418 "CCO/HM/AG.hs" #-}
+              {-# LINE 419 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -433,7 +434,7 @@ sem_Tm__If exp_ t1_ t2_ =
          _lhsOtm =
              ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
               pullOutLets $ AIf _expItm _t1Itm _t2Itm
-              {-# LINE 437 "CCO/HM/AG.hs" #-}
+              {-# LINE 438 "CCO/HM/AG.hs" #-}
               )
          ( _expItm) =
              exp_

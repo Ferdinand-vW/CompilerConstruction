@@ -12,24 +12,17 @@ next (n,_) = Glob n
 getOffSet :: Map String Ref -> Int
 getOffSet (n,_) = n
 
-lookup'  :: String -> Map String Ref -> Maybe Ref
-lookup' s (_,env) = lookup s env
-
 --insertg will increment the offset and add the new global to the map
 insertg :: Map String Ref -> String -> Map String Ref
 insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
-
---insertgWithValue is used to insert a new ref into the map
-insertgWithValue :: Map String Ref -> String -> Ref -> Map String Ref
-insertgWithValue (n,xs) s r = (n,(s,r):xs)
 
 --insertl is used to insert a new Var with a Loc to the map and increment the offset.
 insertl :: Map String Ref -> String -> Map String Ref
 insertl (n,xs) s = (n + 1, (s, Loc 0 n) : xs)
 
 --insertl' is used to insert a value into the map and increment the offset.
-insertl' :: Map String Ref -> String -> Ref -> Map String Ref
-insertl' (n,xs) s r = (n + 1,(s,r) : xs)
+insertref :: Map String Ref -> String -> Ref -> Map String Ref
+insertref (n,xs) s r = (n + 1,(s,r) : xs)
 
 --incrEnv is used to increment the lvldiff and resets the offset
 incrEnv :: Map String Ref -> Map String Ref
@@ -38,10 +31,7 @@ incrEnv (n,lenv) = (0, incr lenv)
         incr ((s,(Loc lvl x)):xs) = (s,Loc (lvl + 1) x) : incr xs
         incr ((s,r):xs) = (s,r) : incr xs
 
---newOffSet is used to set a new offset 
-newOffSet :: Map String Ref -> Int -> Map String Ref
-newOffSet (n,lenv) i
-    | i >= 1 = (i,lenv)
-    | i < 1 = (i,lenv')
-    where (_,lenv') = incrEnv (n,lenv)
+--This will increment the offset of the map
+incrOffSet' :: Map String Ref -> Int -> Map String Ref
+incrOffSet' (n,xs) i = (n + i, xs)
 }

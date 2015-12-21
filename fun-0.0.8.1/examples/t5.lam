@@ -1,0 +1,10 @@
+let l = cons 1 (cons 2 (cons 3 (cons 4 nil))) in
+let f = \l. if isCons l
+                then
+                    (\x. if isNil x
+                                then 0
+                                else tail x fi) (tail l)
+                else nil
+            fi in
+f l
+ni ni
