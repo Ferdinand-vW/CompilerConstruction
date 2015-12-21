@@ -29,7 +29,7 @@ attr ATm
 sem ATm
     |   ANat lhs.main = next @lhs.genv
               lhs.exp  = natExp @i
-              lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ natExp @i]
+              lhs.binds = [Bind (next @lhs.genv) $ natExp @i]
     |   AVar lhs.main = next @lhs.genv
              lhs.exp  = varExp @lhs.genv @lhs.lenv @x
               lhs.binds = [Bind (next @lhs.genv) $ Lam [] $ varBind @lhs.genv @x]
@@ -76,12 +76,12 @@ nilBind' genv = SExp $ findVarRef' genv "nil"
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
 mkCons genv lenv atm = consExp genv lenv offset atm (SExp $ Var $ Loc 0 offset)
   where
-    offset = (listLength atm) - 1
+    offset = listLength atm - 1 + (getOffSet lenv)
 
 --consExp will transform the cons type to the correct corerun form by recursively going over this function, till it does not contain any cons.
 consExp :: Map String Ref -> Map String Ref -> Int -> ATm -> Exp -> Exp
 consExp genv lenv n (ACons t1 t2) t3 = case t2 of
-                            ACons _ _ -> consExp genv lenv (n-1) t2 (Let (Bind curr (App cons [toSExp t1,Var prev])) t3)
+                            ACons _ _ -> consExp genv lenv (n-1) t2 (evalVar (toSExp t1))
                             ANil -> Let (Bind curr (App cons [toSExp t1, nil])) t3
                             AVar x -> Let (Bind curr (App cons [toSExp t1,ref x])) t3
       where
@@ -92,6 +92,7 @@ consExp genv lenv n (ACons t1 t2) t3 = case t2 of
         toSExp (ANat n) = Int n
         toSExp (AVar x) = ref x
         ref x = findVarRef genv lenv x
+        evalVar r = Let (Bind curr $ App cons [r,Var prev]) t3
 
 listLength :: ATm -> Int
 listLength (ACons _ l) = 1 + listLength l
@@ -199,6 +200,7 @@ letExp genv exp exp2 = Let (Bind (next genv) exp) exp2
 --letBinds is used to add a Lambda in the Bindl of a Let. 
 letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
 letBinds (n,_) (ALam _ _) exp t2binds = Bind (Glob n) exp : t2binds
+letBinds (n,_) (ANat _) exp t2binds = Bind (Glob n) exp : t2binds
 letBinds (n,_) _ exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
 }
 
