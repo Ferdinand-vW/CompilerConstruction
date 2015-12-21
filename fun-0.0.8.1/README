@@ -10,21 +10,14 @@ To build the package it is necessary to follow the following instructions:
 - Go to the root directory in a bash console;
 - Type in the console "./Build.sh".
 
-We have choosen to implement special builtin syntax to deal with the following features:
+We have chosen to implement special builtin syntax to deal with the following features:
 -   Bool: True and False
 -   List: cons and nil, you can make a list by typing: "cons 1 (cons 2 nil)".
 -   isCons; this function checks if it a cons
 -   isNil; This function checks if the type is nil
 -   head; This function will result into the head of a list. For example head (cons 1 (cons 2 nil)) results in 1.
 -   tail; This function will result into the tail of a list. For example tail (cons 1 (cons 2 nil)) results in 1[2,0[]]
--   prim; This keyword allows you to use features from corerun. You can use the following feature: "primAddInt", "primSubInt", "primEqINt"
 
-Futhermore, it is possible to use the following sysntax:
-prim <name> <var1> <var2>
-let <name> '=' "value" in <expr> ni
-if <expr> then <value1> else <value2> fi
-nil
-cons
 
 To see how the language looks like you can look at the "examples" directory in the root, which contains several examples on how to use the language. 
 To compile the examples, run the "compile.sh" to compile the examples. It is also possible 
