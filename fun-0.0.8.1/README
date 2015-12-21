@@ -10,61 +10,35 @@ To build the package it is necessary to follow the following instructions:
 - Go to the root directory in a bash console;
 - Type in the console "./Build.sh".
 
-This will build all of the relevance file to use it yourself
-
-How can you use the langauge
 We have choosen to implement special builtin syntax to deal with the following features:
 -   Bool: True and False
 -   List: cons and nil, you can make a list by typing: "cons 1 (cons 2 nil)".
--   isCons; this function check if it a cons
--   isNil; This function checks if it is nil
--   head; This function will return the head of a list. For example head (cons 1 (cons 2 nil)) wil result in 1.
--   tail; This function will return the end of a list. For example tail (cons 1 (cons 2 nil)) results in 1[2,0[]]
--   prim; This keyword makes it possible to use feature from corerun
+-   isCons; this function checks if it a cons
+-   isNil; This function checks if the type is nil
+-   head; This function will result into the head of a list. For example head (cons 1 (cons 2 nil)) results in 1.
+-   tail; This function will result into the tail of a list. For example tail (cons 1 (cons 2 nil)) results in 1[2,0[]]
+-   prim; This keyword allows you to use features from corerun. You can use the following feature: "primAddInt", "primSubInt", "primEqINt"
 
-To see how the language looks like you can look at the :examples" directory in the root, which contains several examples on how to use the language. 
-To compile the examples, we added in the src directory a "run.sh" , which you can use to compile the langauge.
+Futhermore, it is possible to use the following sysntax:
+prim <name> <var1> <var2>
+let <name> '=' "value" in <expr> ni
+if <expr> then <value1> else <value2> fi
+nil
+cons
 
---Need to tell something about the recursion and laziness.
+To see how the language looks like you can look at the "examples" directory in the root, which contains several examples on how to use the language. 
+To compile the examples, run the "compile.sh" to compile the examples. It is also possible 
+
 
 Technical explanation
-This section gives an overview about the technical implemenentation about our solution. For a detailed explanation we recommenend you to read the code and the comments that we added in each the code.
+This section gives an overview about the technical implemenentation of our solution. For a more detailed explanation we recommenend you to read the code and the comments that we added into all of the files. 
 
-First we added the "AG" directory in the CCO folder to get a general location for all of the datatype that are used to compile the language. First we moved the Core.ag and the HM.ag to that folder, then we added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to modify the HM file to a more usuable form.
+First we added the "AG" directory in the CCO folder to get a general location for all of the datatype that are used to compile the language. Then we moved the Core.ag and the HM.ag to that folder, And added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to transform the HM file into an aNormal form. 
 
+Secondly, we added into "src/ParserHM.hs" the hm2cr function, which transforms the the Tm to an ANormal form. It uses the "src/CCO/HM/AG/ToANormal.ag" file to do this.
 
-We added manually 
-if expression
-Recursion
-Laziness
+Then we added the "src/hm2cr.hs" file. This file uses the "src/Core/AG/Hm2Cr.ag" file to transform the AHM to a EXP. We divided the code in HM2Cr in several files to make it more readable. The first functions we added to a seperate file were the function that apply operations on an Env map. In that map we store the Reff. We added all of these function in the "src/CCO/Core/Ag/EnvMap.ag". Second category are the buildin functions. You can find them in "src/CCO/Core/Ag/BuildIn.ag". All of the other functions for transforming to an EXp are in the HM2Cr.ag file.
 
 
-
-
-The language allows the following cases
-Numbers
-Var
-Nil
-Cons
-Prim -> to accept features of the corerun compiler.
-App
-Let
-
-It also possible to use a list. We did this by adding it manually in the Hm2Cr.ag. These functions will always be included in the outputfile, so that they can be used by the uses defined function. The following features are possible on a list.
--   isNil
--   isCons
--   tail
--   head
--   cons
--   nil
-
-
-Design
-ParseHM.hs -> added after parsing, the toANormal, to change the structure of the program, to make it easier for us to get the relevance information from the datatype. 
-toANormal...
-hm2cr.hs
-
-AHM.ag -> ANormal forms
-Core.ag -> This is the standard form
-HM.ag -> These are used to 
-
+Notes
+Unfortunately, due lack of time we did not implemenent lazy evaluation into the language. Also we could not get the "take" function provided in the assignment pdf working, however the sum is working. So, the recursion is partially working.

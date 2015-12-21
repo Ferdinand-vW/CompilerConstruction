@@ -13,7 +13,9 @@ attr Mod
   syn crmod :: {CR.Mod}
 
 sem Mod
-  | Mod  lhs    .   crmod   =   CR.mkModWithMetas (mkHNm "Main") Nothing (length @binds.crbindl + 100) [CR.mkMetaDataType (mkHNm "Bool") [CR.mkMetaDataCon (mkHNm "False") 0,CR.mkMetaDataCon (mkHNm "True") 1]] (CRI.crarrayFromList @binds.crbindl) (CR.mkEval @main.crexp)
+  | Mod  lhs    .   crmod   =   CR.mkModWithMetas (mkHNm "Main") Nothing (length @binds.crbindl + 100)
+                                [CR.mkMetaDataType (mkHNm "Bool") [CR.mkMetaDataCon (mkHNm "False") 0, CR.mkMetaDataCon (mkHNm "True") 1]] 
+                                (CRI.crarrayFromList @binds.crbindl) (CR.mkEval @main.crexp)
 
 attr SExpL SExp
   syn crsexpl use {++} {[]} :: {[CR.SExp]}
@@ -31,19 +33,19 @@ attr Exp ExpL
   syn crexpl use {++} {[]} :: {[CR.Exp]}
 
 sem Exp
-  | SExp loc    .   crexp   =   CR.mkExp (head @sexp.crsexpl)
-  | False_  loc  .   crexp   =   CR.mkTup  0 []
-  | True_  loc    .   crexp   = CR.mkTup 1 []
-  | Nil  loc    .   crexp   = CR.mkTup 0 []
-  | Cons loc    .   crexp   = CR.mkTup 1 [head @t1.crsexpl, head @t2.crsexpl]
-  | Lam  loc    .   crexp   =   CR.mkLam (length @args.crrefl) 100 @body.crexp
-  | App  loc    .   crexp   =   CR.mkApp @func.crexp @args.crsexpl
-  | Prim loc    .   crexp   =   CR.mkFFI @func       @args.crsexpl
-  | Node loc    .   crexp   =   CR.mkTup @tag        @args.crsexpl
-  | Case loc    .   crexp   =   CR.mkCase (head @sexp.crsexpl) @alts.crexpl
-  | Let  loc    .   crexp   =   CR.mkLet @lhs.stkoff @bind.crbindl @body.crexp
-  | Dbg  loc    .   crexp   =   CR.mkDbg @info
-  | Eval loc    .   crexp   = CR.mkEval @body.crexp
+  | SExp loc    .   crexp   =   CR.mkExp  (head       @sexp.crsexpl)
+  | False_  loc .   crexp   =   CR.mkTup  0 []
+  | True_  loc  .   crexp   =   CR.mkTup  1 []
+  | Nil  loc    .   crexp   =   CR.mkTup  0 []
+  | Cons loc    .   crexp   =   CR.mkTup  1 [head     @t1.crsexpl,    head @t2.crsexpl]
+  | Lam  loc    .   crexp   =   CR.mkLam  (length     @args.crrefl)   100 @body.crexp
+  | App  loc    .   crexp   =   CR.mkApp  @func.crexp @args.crsexpl
+  | Prim loc    .   crexp   =   CR.mkFFI  @func       @args.crsexpl
+  | Node loc    .   crexp   =   CR.mkTup  @tag        @args.crsexpl
+  | Case loc    .   crexp   =   CR.mkCase (head       @sexp.crsexpl)  @alts.crexpl
+  | Let  loc    .   crexp   =   CR.mkLet  @lhs.stkoff @bind.crbindl   @body.crexp
+  | Dbg  loc    .   crexp   =   CR.mkDbg  @info
+  | Eval loc    .   crexp   =   CR.mkEval @body.crexp
 
 
 
@@ -69,8 +71,8 @@ sem Ref
           lhs   .   crref   =   CR.mkModRef @offset
   | Loc   lhs   .   crrefl  =   [CR.mkLocDifRef @levdiff @offset]
           lhs   .   crref   =   CR.mkLocDifRef @levdiff @offset
-  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag @ref.crref]
-  | Field lhs   .   crrefl  =   [CRI.RRef_Fld @ref.crref @fld]
+  | Tag   lhs   .   crrefl  =   [CRI.RRef_Tag @ref.crref] --Added is used in the case
+  | Field lhs   .   crrefl  =   [CRI.RRef_Fld @ref.crref @fld] --Field is used in the cons
 
 -------------------------------------------------------------------------------
 -- Stack offset for Let

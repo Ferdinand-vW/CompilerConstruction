@@ -33,7 +33,12 @@ extra-source-files:    README, Build.sh, Makefile,
                        src/CCO/HM.hs,
                        src/CCO/SystemF.hs,
                        src/compile.sh,
-                       src/run.sh
+                       src/run.sh,
+                       examples/checkList.lam,
+                       examples/ifLambdaIf.lam,
+                       examples/t1.lam,examples/t2.lam,
+                       examples/t3.lam, examples/t4.lam, exaples/compile.sh,
+                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.txt, translated.lam
 cabal-version:       >=1.10
 
 executable parse-hm

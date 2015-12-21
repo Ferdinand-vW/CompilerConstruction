@@ -14,17 +14,17 @@ deriving Tm_ : Show
 {
 instance Tree Tm where
   fromTree (Tm pos t) = T.App "Tm" [fromTree pos, fromTree t]
-  toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
+  toTree              = parseTree [app "Tm" (Tm <$> arg <*> arg)]
 
 instance Tree Tm_ where
-  fromTree (Nat x)       = T.App "Nat" [fromTree x]
-  fromTree (Var x)       = T.App "Var" [fromTree x]
-  fromTree Nil           = T.App "Nil" []
+  fromTree (Nat x)        = T.App "Nat" [fromTree x]
+  fromTree (Var x)        = T.App "Var" [fromTree x]
+  fromTree Nil            = T.App "Nil" []
   fromTree (Cons t1 t2)   = T.App "Cons" [fromTree t1, fromTree t2]
   fromTree (Prim x t1 t2) = T.App "Prim" [fromTree x,fromTree t1, fromTree t2] --Added here
-  fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
-  fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
-  fromTree (Let x t1 t2) = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (Lam x t1)     = T.App "Lam" [fromTree x, fromTree t1]
+  fromTree (App t1 t2)    = T.App "App" [fromTree t1, fromTree t2]
+  fromTree (Let x t1 t2)  = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
   fromTree (If exp t1 t2) = T.App "If" [fromTree exp, fromTree t1, fromTree t2]
 
   toTree = parseTree [ app "Nat" (Nat <$> arg                )

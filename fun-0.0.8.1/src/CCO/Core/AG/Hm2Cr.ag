@@ -17,14 +17,14 @@ sem Core
             tm.args = 0
 
 attr ATm
-    syn tm :: self
-    syn main :: {Ref}
-    syn exp :: {Exp}
-    syn binds use {++} {[]} :: {BindL}
-    inh genv :: {Map String Ref}
-    inh lenv :: {Map String Ref}
-    inh lvl :: {Int}
-    inh args :: {Int}
+    syn tm :: self 
+    syn main :: {Ref} --Is used to get the offset of the main. 
+    syn exp :: {Exp} --We transform it to the exp type.
+    syn binds use {++} {[]} :: {BindL} --Bind is used to bind the bind the exp together
+    inh genv :: {Map String Ref} --We use this attribute to store all global ref
+    inh lenv :: {Map String Ref} -- We use this attribut to store all local ref
+    inh lvl :: {Int} --lvl difference
+    inh args :: {Int} --The total number of arguments
 
 sem ATm
     |   ANat lhs.main = next @lhs.genv
@@ -44,7 +44,7 @@ varExp genv lenv s = SExp $ findVarRef genv lenv s
 varBind :: Map String Ref -> String -> Exp
 varBind genv s = Eval $ SExp $ findVarRef' genv s
 
---First looks for the Ref in the local environment, if it cannot find it, then
+--First it looks for the Ref in the local environment, if it cannot find it, then
 --it will check the global environment. If it wasn't found, then the program crashes
 findVarRef :: Map String Ref -> Map String Ref -> String -> SExp
 findVarRef (_,genv) (_,lenv) s = Var $ fromMaybe (fromJust (lookup s genv))  (lookup s lenv)
@@ -68,14 +68,17 @@ sem ATm
 
 {
 
+
 nilBind' :: Map String Ref -> Exp
 nilBind' genv = SExp $ findVarRef' genv "nil"
 
+--mkCons uses the consExp function to transform the Cons Type to the correct corerun form. 
 mkCons :: Map String Ref -> Map String Ref -> ATm -> Exp
 mkCons genv lenv atm = consExp genv lenv offset atm (SExp $ Var $ Loc 0 offset)
   where
     offset = (listLength atm) - 1
 
+--consExp will transform the cons type to the correct corerun form by recursively going over this function, till it does not contain any cons.
 consExp :: Map String Ref -> Map String Ref -> Int -> ATm -> Exp -> Exp
 consExp genv lenv n (ACons t1 t2) t3 = case t2 of
                             ACons _ _ -> consExp genv lenv (n-1) t2 (Let (Bind curr (App cons [toSExp t1,Var prev])) t3)
@@ -112,6 +115,8 @@ joinLam :: RefL -> Exp -> Exp
 joinLam xs (Lam ys t1) = Lam (xs ++ ys) t1
 joinLam xs exp = Lam xs exp
 
+--updateEnv needs as input the map of the local ref, number of arguments and the name of the var, to insert it in the map.
+--It results into the new map
 updateEnv :: Map String Ref -> Int -> String -> Map String Ref
 updateEnv lenv numArgs s = insertl' (newOffSet lenv (numArgs)) s (Loc 0 numArgs)
 
@@ -120,7 +125,7 @@ updateEnv lenv numArgs s = insertl' (newOffSet lenv (numArgs)) s (Loc 0 numArgs)
 
 sem ATm
     |   AApp lhs.main = next @lhs.genv
-              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp
+              lhs.exp = appExp @lhs.lenv @t1.exp @t2.exp --If @t2.exp is Let, we will add a Lambda
               lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) (Lam [] $ appExp @lhs.lenv @t1.exp @t2.exp)]
               t1.genv = @lhs.genv
               t2.genv = @lhs.genv
@@ -130,10 +135,12 @@ sem ATm
               t2.lvl = @lhs.lvl
 
 {
+--If the second type is a let, we add a Lam before the type.
 appExp' :: Map String Ref -> Exp -> Exp -> Exp
 appExp' lenv exp (Let b exp2) = Lam [] (appExp lenv exp (Let b exp2))
 appExp' lenv exp exp2 = appExp lenv exp exp2
 
+--This function is used to transform the AApp to a correct form. It removes the Lets that are inside an App, because it is not allowed to have Let inside an App.
 appExp :: Map String Ref -> Exp -> Exp -> Exp
 appExp lenv exp (Let b exp2) = Let b (appExp lenv exp exp2)
 appExp lenv (SExp sexp1) (SExp sexp2) = Let (Bind (Loc 0 $ getOffSet lenv) (Eval (SExp sexp2))) (
@@ -148,7 +155,7 @@ sem ATm
               lhs.exp  = letExp @lhs.genv @t1.exp @t2.exp
               lhs.binds = letBinds @lhs.genv @t1.tm @t1.exp @t2.binds
               t1.genv = @lhs.genv
-              loc.genv = globalLet @lhs.genv @lhs.lvl @x
+              loc.genv = globalLet @lhs.genv @lhs.lvl @x 
               t2.genv = @loc.genv
               t1.lenv = incrEnv $ insertRecursion @loc.genv @lhs.lenv @x @lhs.lvl
               t2.lenv = localLet @lhs.lenv @lhs.lvl @x
@@ -158,29 +165,38 @@ sem ATm
               t2.args = 0
 
 {
+--This function is used to allow recursion.
+-- if lvl=0 then it will add (getRef $ findVarRef' genv s) to the local environment map
+  --otherwise just insert the a new environment
 insertRecursion :: Map String Ref -> Map String Ref -> String -> Int -> Map String Ref
 insertRecursion genv lenv s lvl 
   | lvl == 0 = insertl' lenv s (getRef $ findVarRef' genv s)
   | otherwise = insertl lenv s
 
+--GlobalLet only adds a new ref to the global map when its level is 0.
 globalLet :: Map String Ref -> Int -> String -> Map String Ref
 globalLet genv lvl x 
   | lvl == 0 = insertg genv x
   | otherwise = genv
 
+--LocalLetLvl needs to be > 0, because it already contains a local lvl zero.
 localLetLvl :: Int -> Int
 localLetLvl 0 = 1
 localLetLvl lvl = lvl
 
+--LocalLet will only insert a new local environment, when its level is higher then 0
 localLet :: Map String Ref -> Int -> String -> Map String Ref
 localLet lenv lvl x
   | lvl > 0 = insertl lenv x
   | otherwise = lenv
 
+--letExp is used to transform the ALet to get correct form. 
+-- next genv will 
 letExp :: Map String Ref -> Exp -> Exp -> Exp
 letExp genv (Let b t1) exp2 = Let (Bind (next genv) (Lam [] (Let b t1))) exp2
 letExp genv exp exp2 = Let (Bind (next genv) exp) exp2
 
+--letBinds is used to add a Lambda in the Bindl of a Let. 
 letBinds :: Map String Ref -> ATm -> Exp -> BindL -> BindL
 letBinds (n,_) (ALam _ _) exp t2binds = Bind (Glob n) exp : t2binds
 letBinds (n,_) _ exp t2binds = Bind (Glob n) (Lam [] exp) : t2binds
@@ -196,14 +212,15 @@ sem ATm
               t2.lenv = @lhs.lenv
 
 {
+--toPrim is used to get SExp for the prim
 toPrim :: Exp -> SExp
 toPrim (SExp s) = Var $ Loc 0 (off s)
               where off (Var (Loc l o)) = o  
 }
 
 sem ATm
-    |   AIf lhs.main = Glob (getOffSet @lhs.genv)
-              lhs.exp = createCase @exp.exp @loc.exp
+    |   AIf lhs.main = Glob (getOffSet @lhs.genv) --
+              lhs.exp = createCase @exp.exp @loc.exp --
               loc.exp = Case (Var $ Tag $ Loc 0 $ getOffSet @lhs.lenv) [evalVar @t2.exp, evalVar @t1.exp]
               lhs.binds = [Bind (Glob (getOffSet @lhs.genv)) $ Lam [] $ createCase @exp.exp @loc.exp]
               exp.genv = @lhs.genv
@@ -220,17 +237,20 @@ sem ATm
               t2.args = 0
 {
 
+--AddCases adds a Let before the case for the AIf expr
 createCase :: Exp -> Exp -> Exp
 createCase e1@(SExp s) e2 = Let (Bind (getRef s) (Eval e1)) e2
 
+--EvalVar evaluates a SExp. This is neccesary in the AIf.
 evalVar :: Exp -> Exp
 evalVar v@(SExp (Var r)) = Eval v
 evalVar exp = exp
 
 getRef :: SExp -> Ref
 getRef (Var x) = x
-getRef _ = error "It did not solve"
+getRef _ = error "Pattern match does not exist."
 
+--This will increment the offset of the map
 incrOffSet' :: Map String Ref -> Int -> Map String Ref
 incrOffSet' (n,xs) i = (n + i, xs)
 }
