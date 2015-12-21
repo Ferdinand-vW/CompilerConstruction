@@ -1,6 +1,0 @@
-let test = if True
-                then 1
-                else 0
-            fi
-in test
-ni

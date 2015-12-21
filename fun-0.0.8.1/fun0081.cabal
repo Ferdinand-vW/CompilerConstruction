@@ -10,9 +10,6 @@ maintainer:          m.a.swart@students.uu.nl
 category:            Education
 build-type:          Simple
 extra-source-files:    README, Build.sh, Makefile,
-                       examples/t1.lam,
-                       examples/t1.tcrr,
-                       examples/sumtake.tcrr,
                        src/CCO/HM/AG.ag,
                        src/CCO/HM/Base.hs,
                        src/CCO/HM/Lexer.hs,
@@ -36,9 +33,11 @@ extra-source-files:    README, Build.sh, Makefile,
                        src/run.sh,
                        examples/checkList.lam,
                        examples/ifLambdaIf.lam,
-                       examples/t1.lam,examples/t2.lam,
-                       examples/t3.lam, examples/t4.lam, exaples/compile.sh,
-                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.txt, translated.lam
+                       examples/t1.lam, examples/t2.lam, examples/3args.lam,
+                       examples/allThreePrim.lam, examples/shadowing.lam,
+                       examples/functionInList.lam,
+                       examples/t3.lam, examples/t4.lam, examples/t5.lam, examples/compile.sh,
+                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.tcrr.txt, examples/extra/translated.lam
 cabal-version:       >=1.10
 
 executable parse-hm
