@@ -140,7 +140,7 @@ appExp' :: Map String Ref -> Exp -> Exp -> Exp
 appExp' lenv exp (Let b exp2) = Lam [] (appExp lenv exp (Let b exp2))
 appExp' lenv exp exp2 = appExp lenv exp exp2
 
---This function is used to transform the AApp to a correct form. It removes the Lets that are inside an App, because it is not allowed to have Let inside an App.
+--This function is used to transform the AApp to a correct form. It removes the Lets that is inside an App, because it is not allowed to have Let inside an App.
 appExp :: Map String Ref -> Exp -> Exp -> Exp
 appExp lenv exp (Let b exp2) = Let b (appExp lenv exp exp2)
 appExp lenv (SExp sexp1) (SExp sexp2) = Let (Bind (Loc 0 $ getOffSet lenv) (Eval (SExp sexp2))) (
