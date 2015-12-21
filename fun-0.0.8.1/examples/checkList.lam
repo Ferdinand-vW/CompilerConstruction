@@ -1,0 +1,18 @@
+let eq = \x .\y.prim "primEqInt" x y in
+let list = cons 3 (cons 2 nil) in
+let checkList = 
+    if isCons list
+        then 
+            if eq 2 (head list)
+                then 
+                    (head list)
+                else 
+                    if (isCons (tail list))
+                        then (head list)
+                        else (list)
+                    fi
+             fi
+        else (list)
+    fi 
+in (checkList)
+ni ni ni

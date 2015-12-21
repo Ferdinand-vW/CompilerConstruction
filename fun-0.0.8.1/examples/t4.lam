@@ -1,5 +1,17 @@
-let plus = \x. \y. prim "primAddInt" x y in
-let fv = 5 in
-let id = \x .x
-in id (plus (id fv) 4)
-ni ni ni
+let plus = \x .\y .prim "primAddInt" x y in
+let minus = \x .\y.prim "primSubInt" x y in
+let eq = \x .\y. prim "primEqInt" x y in
+let l = cons 3 l in
+let sum = \l. if isnil l 
+                then 0 
+                else head l ‘plus‘ sum (tail l) fi in
+let take = \n.\l.if eq n 0
+                    then ni1l
+                    else 
+                        if isnil l
+                            then nil
+                            else cons (head l) (take (minus n 1) (tail l)) 
+                        fi 
+                    fi
+in sum (take 3 l)
+ni ni ni ni ni ni ni

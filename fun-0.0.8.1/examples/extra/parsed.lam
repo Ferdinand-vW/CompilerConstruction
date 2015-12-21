@@ -1,0 +1,5 @@
+ALet(
+  "matthew"
+, ANat(3)
+, ALet("list", ACons(AVar("matthew"), ACons(ANat(3), ANil)), AVar("list"))
+)

@@ -1,0 +1,27 @@
+module Main 111 -> eval(m.10);
+data "Bool" = "False" -> 0, "True" -> 1;
+alloc 0();
+\2,100 -> alloc 1(d.0.0,d.0.1);
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.0;
+           -> d.0.1.0;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.0;
+           -> d.0.1.1;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.7;
+           -> m.6;;
+\1,100 -> let 1 -> eval(d.0.0); in
+          case d.0.1.tag of
+           -> m.6;
+           -> m.7;;
+alloc 1();
+alloc 0();
+\0,100 -> 3;
+\0,100 -> let 0 -> app (m.1)(3,m.0); in
+          let 1 -> app (m.1)(m.8,d.0.0); in
+          d.0.1;
+\0,100 -> eval(m.9);
