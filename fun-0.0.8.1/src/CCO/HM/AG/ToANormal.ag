@@ -41,6 +41,7 @@ removeDup _ tm = tm
 
 
 --In this function all of the ALet are moved out of the AApp, because it is not allowed to have an ALet in an AApp
+
 transform :: ATm -> ATm
 transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
 transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
