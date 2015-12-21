@@ -1,6 +1,6 @@
 {
 --We're using the map type to store refs of variables. 
---The int is used as offset
+--The int is used as an offset
 --The a is used as a key. 
 --The b is the Ref 
 type Map a b = (Int,[(a,b)])
@@ -15,7 +15,7 @@ getOffSet (n,_) = n
 lookup'  :: String -> Map String Ref -> Maybe Ref
 lookup' s (_,env) = lookup s env
 
---insertG will increment the offset and add the new global to the map
+--insertg will increment the offset and add the new global to the map
 insertg :: Map String Ref -> String -> Map String Ref
 insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
 
