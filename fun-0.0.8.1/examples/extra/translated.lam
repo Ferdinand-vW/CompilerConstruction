@@ -1,5 +1,5 @@
 Mod(
-  SExp(Var(Glob(10)))
+  SExp(Var(Glob(9)))
 , [ Bind(Glob(0), Nil)
   , Bind(
       Glob(1)
@@ -53,23 +53,16 @@ Mod(
     )
   , Bind(Glob(7), True_)
   , Bind(Glob(6), False_)
-  , Bind(Glob(8), Lam([], SExp(Int(3))))
   , Bind(
-      Glob(9)
+      Glob(8)
     , Lam(
         []
       , Let(
-          Bind(Loc(0, 0), App(SExp(Var(Glob(1))), [Int(3), Var(Glob(0))]))
-        , Let(
-            Bind(
-              Loc(0, 1)
-            , App(SExp(Var(Glob(1))), [Var(Glob(8)), Var(Loc(0, 0))])
-            )
-          , SExp(Var(Loc(0, 1)))
-          )
+          Bind(Glob(7), Eval(SExp(Var(Glob(7)))))
+        , Case(Var(Tag(Loc(0, 0))), [SExp(Int(0)), SExp(Int(1))])
         )
       )
     )
-  , Bind(Glob(10), Lam([], Eval(SExp(Var(Glob(9))))))
+  , Bind(Glob(9), Lam([], Eval(SExp(Var(Glob(8))))))
   ]
 )

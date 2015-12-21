@@ -7,8 +7,8 @@ This project uses the following compiler verions:
 - uuagc-0.9.52.1
 - uhc-light
 To build the package it is necessary to follow the following instructions:
-- Go to the root directory in a bash console;
-- Type in the console "./Build.sh".
+- Go to the root directory in a bash console; In this directory there is file called "Build.sh"
+- Type in the console "./Build.sh". This script build caball in a sandbox and compile all necesarry code.
 
 We have chosen to implement special builtin syntax to deal with the following features:
 -   Bool: True and False
@@ -20,18 +20,28 @@ We have chosen to implement special builtin syntax to deal with the following fe
 
 
 To see how the language looks like you can look at the "examples" directory in the root, which contains several examples on how to use the language. 
-To compile the examples, run the "compile.sh" to compile the examples. It is also possible 
+To compile the examples, run the "compile.sh" in the "examples" directory. to compile the examples.
 
 
 Technical explanation
 This section gives an overview about the technical implemenentation of our solution. For a more detailed explanation we recommenend you to read the code and the comments that we added into all of the files. 
 
-First we added the "AG" directory in the CCO folder to get a general location for all of the datatype that are used to compile the language. Then we moved the Core.ag and the HM.ag to that folder, And added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to transform the HM file into an aNormal form. 
+In the CCO directory we added the folder "AG" to get a more general location for all of the datatypes that are used to compile the language. In this directory we included the Core.ag and the HM.ag, also we added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to transform the HM file into an aNormal form. 
 
-Secondly, we added into "src/ParserHM.hs" the hm2cr function, which transforms the the Tm to an ANormal form. It uses the "src/CCO/HM/AG/ToANormal.ag" file to do this.
+After this change we modified "src/ParserHM.hs" by adding the hm2cr function after the parser. This function transforms the Tm into an ANormal form. We did this in the "src/CCO/HM/AG/ToANormal.ag". 
 
-Then we added the "src/hm2cr.hs" file. This file uses the "src/Core/AG/Hm2Cr.ag" file to transform the AHM to a EXP. We divided the code in HM2Cr in several files to make it more readable. The first functions we added to a seperate file were the function that apply operations on an Env map. In that map we store the Reff. We added all of these function in the "src/CCO/Core/Ag/EnvMap.ag". Second category are the buildin functions. You can find them in "src/CCO/Core/Ag/BuildIn.ag". All of the other functions for transforming to an EXp are in the HM2Cr.ag file.
+After that we added the "src/hm2cr.hs" file. This file uses the "src/Core/AG/Hm2Cr.ag" file to transform the AHM to a EXP. We did the following translations: 
+ANat consist of a numerical value and is transformed into a SExp int. 
+AVar is a String and is transformed into a SExp that contains a ref
+ALam is is transformed into The Lam exp.
+AApp is transformed into the App exp. 
+ALet is transformed into the Let exp
+APrim is transformed into the prim exp
+AIf is transformed into a let that contains as bind the expression of the if and as body the case exp.
+ACons is transformed into a binding of Lets 
+ANil is transfromed into SExp, which contain the reference to the nil node.
 
+In the hm2cr.ag we created a Core datatype, that contains the Mod constructor to combine all of the transformed exp. In the Core datatype we also always include True, False, isNil, isCons, tail, head, cons and nil. We did this by defining a global ref for all of these features manually in the "src/CCO/Core/Ag/BuildIn.ag". After the transformation is done the Core datatype is the result of the transformation and will return to the hm2cr.hs.
 
 Notes
 Unfortunately, due lack of time we did not implemenent lazy evaluation into the language. Also we could not get the "take" function provided in the assignment pdf working, however the sum is working. So, the recursion is partially working.

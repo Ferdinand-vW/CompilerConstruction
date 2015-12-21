@@ -1,5 +1,1 @@
-ALet(
-  "matthew"
-, ANat(3)
-, ALet("list", ACons(AVar("matthew"), ACons(ANat(3), ANil)), AVar("list"))
-)
+ALet("test", AIf(AVar("True"), ANat(1), ANat(0)), AVar("test"))
