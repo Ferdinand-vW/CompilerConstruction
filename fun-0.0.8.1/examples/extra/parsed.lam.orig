@@ -1,0 +1,39 @@
+<<<<<<< HEAD
+ALet("test", AIf(AVar("True"), ANat(1), ANat(0)), AVar("test"))
+=======
+ALet(
+  "l"
+, ACons(ANat(1), ACons(ANat(2), ACons(ANat(3), ACons(ANat(4), ANil))))
+, ALet(
+    "f"
+  , ALam(
+      "l"
+    , ALet(
+        "isConsl"
+      , AApp(AVar("isCons"), AVar("l"))
+      , AIf(
+          AVar("isConsl")
+        , ALet(
+            "xisNilx"
+          , ALam(
+              "x"
+            , ALet(
+                "isNilx"
+              , AApp(AVar("isNil"), AVar("x"))
+              , AIf(AVar("isNilx"), ANat(0), AApp(AVar("tail"), AVar("x")))
+              )
+            )
+          , ALet(
+              "taill"
+            , AApp(AVar("tail"), AVar("l"))
+            , AApp(AVar("xisNilx"), AVar("taill"))
+            )
+          )
+        , ANil
+        )
+      )
+    )
+  , AApp(AVar("f"), AVar("l"))
+  )
+)
+>>>>>>> 27c061d02c61d7202ca59c2ad49d65ac7f90e7df
