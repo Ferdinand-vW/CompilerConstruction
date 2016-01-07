@@ -1,0 +1,39 @@
+{
+type Label = Int
+}
+
+data ProgramInfo
+    | ProgramInfo labels :: {[Label]} init :: {Label}
+                  finals :: {[Label]} flow :: {[Label]}
+
+attr Program
+    pinfo :: ProgramInfo
+
+sem Program
+    | Program lhs.pinfo = ProgramInfo [0..@stats.maxLabel] 0 @stats.final @stats.flow
+              stats.label = 0
+
+attr Stat
+    inh label :: {Int}
+    syn maxLabel :: {Int}
+    syn finals :: {[Label]}
+    syn flow :: {[Label]}
+
+sem Stat
+    | Skip lhs.maxLabel = @lhs.label
+    | IfThenElse stat1.label = @lhs.label + 1
+                 stat2.label = stat1.maxLabel + 1
+                 lhs.maxLabel = @stat2.maxLabel
+    | While      stat1.label = @lhs.label + 1
+                 lhs.maxLabel = @stat1.maxLabel
+    | Call       lhs.maxLabel = @lhs.label
+    | IAssign    lhs.maxLabel = @lhs.label
+    | BAssign    lhs.maxLabel = @lhs.label
+    | Seq        stat1.label = @lhs.label + 1
+                 stat2.label = stat1.maxLabel + 1
+                 lhs.maxLabel = @stat2.maxLabel
+    | Malloc     lhs.maxLabel = @lhs.label
+    | Free       lhs.maxLabel = @lhs.label
+    | RefAssign  lhs.maxLabel = @lhs.label
+    | Continue   lhs.maxLabel = @lhs.label
+    | Break      lhs.maxLabel = @lhs.label

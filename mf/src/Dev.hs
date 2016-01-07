@@ -18,6 +18,7 @@ ghci> run slv "fib"
 
 --}
 
+slv,cp :: Program' -> Analysis a
 slv = undefined
 cp  = undefined
 
