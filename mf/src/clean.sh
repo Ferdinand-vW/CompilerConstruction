@@ -1,0 +1,1 @@
+rm -f AttributeGrammar.hs Parser.hs Lexer.hs *.hi *.o Main Main.exe
