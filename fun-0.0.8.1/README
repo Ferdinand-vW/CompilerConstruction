@@ -1,6 +1,66 @@
-Build
------
+Compiler Construction Project E Code generation for a lazy functional language
 
-First invoke make to generate .hs files out of .ag files, then use cabal to build.
-This distribution is not yet using using the cabal-uuagc plugin.
+Ferdinand van Walree 3874389 and Matthew Swart 5597250
 
+This project uses the following compiler verions:
+- Haskell version: 7.10.2-a
+- uuagc-0.9.52.1
+- uhc-light
+To build the package it is necessary to follow the following instructions:
+- Go to the root directory in a bash console; In this directory there is file called "Build.sh"
+- Type in the console "./Build.sh". This script build caball in a sandbox and compile all necesarry code.
+
+
+--Syntax
+
+We allow for syntax as can be seen in the project.pdf (HM code), furthermore we also allow the following:
+
+We have chosen to implement special builtin syntax to deal with the following features:
+-   Bool: True and False
+-   List: cons and nil, you can make a list by typing: "cons 1 (cons 2 nil)".
+-   isCons; this function checks if it a cons
+-   isNil; This function checks if the type is nil
+-   head; This function will result into the head of a list. For example head (cons 1 (cons 2 nil)) results in 1.
+-   tail; This function will result into the tail of a list. For example tail (cons 1 (cons 2 nil)) results in 1[2,0[]]
+
+
+To see how the language looks like you can look at the "examples" directory in the root, which contains several examples on how to use the language. 
+To compile the examples, run the "compile.sh" in the "examples" directory. to compile the examples.
+
+
+Technical explanation
+This section gives an overview about the technical implemenentation of our solution. For a more detailed explanation we recommend you to read the code and the comments that we added into all of the files. 
+
+Our compiler compiles code written in HM to CoreRun code. This happens in two steps:
+
+HM -> AHM -> Exp
+
+HM is simply the code that we are compiling.
+AHM is HM code but in A-normal form.
+Exp is Corerun code and thus also the output of our compiler.
+
+The following transformations from HM to AHM occur:
+- ALets and AApps that are inside a ACons are pulled out of the ACons:
+        ACons (ALet x b e) l -> ALet x b (ACons e l)
+- Similarly both are also taken out of the expression of an AIf
+- In the case of having multiple nested AApp's we have to create new ALet's for each nested AApp, we then also pull those out of the parent AApp. Finally we remove duplicate ALets
+
+Next we do the compilation from AHM to Exp
+- We first create the dataconstructor Mod. We pass it it's main and it's bindings.
+- Each ATm, which is a AHM term, defines a main. For al ATm's this is simply the last Ref on the stack. We get this Ref from the global environment, which is a map which contains all global Ref's.
+- Each ATm defines a binds. This is a list of bindings, but only ALet actually creates more then one bind. The bindings have a pointer, which is the global ref which is stored inside the global environment.
+- Also a local environment exists, everytime an argument or a letbinding within a Lambda is created we store it's pointer into the local environment. These pointer's have a lvl difference, which is increased everytime the local environment is passed to a lambda.
+
+
+The following files were modified/moved/deleted:
+
+In the CCO directory we added the folder "AG" to get a more general location for all of the datatypes that are used to compile the language. In this directory we included the Core.ag and the HM.ag, also we added AHM.ag to the directory. AHM.ag looks like hm.ag, but we omited the pos from it, because we did not use it. We use AHM datatype to transform the HM file into an aNormal form. 
+
+After this change we modified "src/ParserHM.hs" by adding the hm2cr function after the parser. This function transforms the Tm into an A-Normal form. We did this in the "src/CCO/HM/AG/ToANormal.ag". 
+
+After that we added the "src/hm2cr.hs" file. This file uses the "src/Core/AG/Hm2Cr.ag" file to transform the AHM to a EXP.
+
+In the hm2cr.ag we created a Core datatype, that contains the Mod constructor to combine all of the transformed exp. In the Core datatype we also include isNil, isCons, tail, head, cons and nil. We did this by defining a global ref for all of these features manually in the "src/CCO/Core/Ag/BuildIn.ag". After the transformation is done the Core datatype is the result of the transformation and will return to the hm2cr.hs.
+
+Notes
+Unfortunately, due lack of time we did not implemenent lazy evaluation into the language. Also we could not get the "take" function provided in the assignment pdf working, however the sum is working. So, the recursion is partially working.

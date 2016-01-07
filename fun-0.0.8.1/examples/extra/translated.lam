@@ -1,0 +1,184 @@
+Mod(
+  SExp(Var(Glob(10)))
+, [ Bind(Glob(0), Nil)
+  , Bind(
+      Glob(1)
+    , Lam([Loc(0, 0), Loc(0, 1)], Cons(Var(Loc(0, 0)), Var(Loc(0, 1))))
+    )
+  , Bind(
+      Glob(2)
+    , Lam(
+        [Loc(0, 0)]
+      , Let(
+          Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+        , Case(
+            Var(Tag(Field(1, Loc(0, 1))))
+          , [SExp(Var(Glob(0))), SExp(Var(Field(0, Loc(0, 1))))]
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(3)
+    , Lam(
+        [Loc(0, 0)]
+      , Let(
+          Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+        , Case(
+            Var(Tag(Field(1, Loc(0, 1))))
+          , [SExp(Var(Glob(0))), SExp(Var(Field(1, Loc(0, 1))))]
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(4)
+    , Lam(
+        [Loc(0, 0)]
+      , Let(
+          Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+        , Case(Var(Tag(Loc(0, 1))), [SExp(Var(Glob(7))), SExp(Var(Glob(6)))])
+        )
+      )
+    )
+  , Bind(
+      Glob(5)
+    , Lam(
+        [Loc(0, 0)]
+      , Let(
+          Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 0)))))
+        , Case(Var(Tag(Loc(0, 1))), [SExp(Var(Glob(6))), SExp(Var(Glob(7)))])
+        )
+      )
+    )
+  , Bind(Glob(7), True_)
+  , Bind(Glob(6), False_)
+  , Bind(
+      Glob(8)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), App(SExp(Var(Glob(1))), [Int(4), Var(Glob(0))]))
+        , Let(
+            Bind(Loc(0, 1), App(SExp(Var(Glob(1))), [Int(3), Var(Loc(0, 0))]))
+          , Let(
+              Bind(
+                Loc(0, 2)
+              , App(SExp(Var(Glob(1))), [Int(2), Var(Loc(0, 1))])
+              )
+            , Let(
+                Bind(
+                  Loc(0, 3)
+                , App(SExp(Var(Glob(1))), [Int(1), Var(Loc(0, 2))])
+                )
+              , SExp(Var(Loc(0, 3)))
+              )
+            )
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(9)
+    , Lam(
+        [Loc(0, 0)]
+      , Let(
+          Bind(
+            Glob(9)
+          , Lam(
+              []
+            , Let(
+                Bind(Loc(0, 0), Eval(SExp(Var(Loc(1, 0)))))
+              , Let(
+                  Bind(Loc(0, 1), Eval(SExp(Var(Glob(4)))))
+                , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+                )
+              )
+            )
+          )
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 1)))))
+          , Case(
+              Var(Tag(Loc(0, 2)))
+            , [ Eval(SExp(Var(Glob(0))))
+              , Let(
+                  Bind(
+                    Glob(9)
+                  , Lam(
+                      [Loc(0, 0)]
+                    , Let(
+                        Bind(
+                          Glob(9)
+                        , Lam(
+                            []
+                          , Let(
+                              Bind(Loc(0, 0), Eval(SExp(Var(Loc(1, 0)))))
+                            , Let(
+                                Bind(Loc(0, 1), Eval(SExp(Var(Glob(5)))))
+                              , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+                              )
+                            )
+                          )
+                        )
+                      , Let(
+                          Bind(Loc(0, 1), Eval(SExp(Var(Loc(0, 1)))))
+                        , Case(
+                            Var(Tag(Loc(0, 2)))
+                          , [ Let(
+                                Bind(Loc(0, 3), Eval(SExp(Var(Loc(0, 0)))))
+                              , Let(
+                                  Bind(Loc(0, 4), Eval(SExp(Var(Glob(3)))))
+                                , App(SExp(Var(Loc(0, 4))), [Var(Loc(0, 3))])
+                                )
+                              )
+                            , SExp(Int(0))
+                            ]
+                          )
+                        )
+                      )
+                    )
+                  )
+                , Let(
+                    Bind(
+                      Glob(9)
+                    , Lam(
+                        []
+                      , Let(
+                          Bind(Loc(0, 0), Eval(SExp(Var(Loc(1, 0)))))
+                        , Let(
+                            Bind(Loc(0, 1), Eval(SExp(Var(Glob(3)))))
+                          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+                          )
+                        )
+                      )
+                    )
+                  , Let(
+                      Bind(Loc(0, 5), Eval(SExp(Var(Loc(0, 4)))))
+                    , Let(
+                        Bind(Loc(0, 6), Eval(SExp(Var(Loc(0, 3)))))
+                      , App(SExp(Var(Loc(0, 6))), [Var(Loc(0, 5))])
+                      )
+                    )
+                  )
+                )
+              ]
+            )
+          )
+        )
+      )
+    )
+  , Bind(
+      Glob(10)
+    , Lam(
+        []
+      , Let(
+          Bind(Loc(0, 0), Eval(SExp(Var(Glob(8)))))
+        , Let(
+            Bind(Loc(0, 1), Eval(SExp(Var(Glob(9)))))
+          , App(SExp(Var(Loc(0, 1))), [Var(Loc(0, 0))])
+          )
+        )
+      )
+    )
+  ]
+)

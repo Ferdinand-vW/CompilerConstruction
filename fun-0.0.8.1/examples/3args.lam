@@ -1,0 +1,4 @@
+let plus = \x.\y. prim "primAddInt" x y in
+let sum = \a.\b.\c. plus (plus a b) c in
+sum 5 9 10
+ni ni

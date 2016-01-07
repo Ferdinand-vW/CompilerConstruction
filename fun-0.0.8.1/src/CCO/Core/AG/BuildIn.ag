@@ -1,0 +1,56 @@
+{
+--This file is used to bind all of the builtin features we added to our language. These features are always added into the file.
+--We added the following features: cons, nil, tail, head True, False.
+
+--DefaultBinds is used in the Hm2cr.ag, to add all the bindings to the language.
+defaultBinds :: BindL
+defaultBinds = [nilBind,consBind,headBind,tailBind, isConsBind, isNilBind, trueBind, falseBind]
+
+
+trueBind :: Bind
+trueBind = Bind (Glob 7) True_
+
+falseBind :: Bind
+falseBind = Bind (Glob 6) False_
+
+--IsNil as Glob 5, and is used to check if it is nil
+isNilBind :: Bind
+isNilBind = Bind (Glob 5) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 6] ++ [SExp $ Var $ Glob 7]
+
+--isCons has as ref Glob 4 and checks if it is a cons. It uses the Boolbinds to refer to the correct Ref.
+isConsBind :: Bind
+isConsBind = Bind (Glob 4) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 7] ++ [SExp $ Var $ Glob 6]
+
+--tailBinds has as ref Glob 3 and refers to Field 1, which is the tail of the list
+tailBind :: Bind
+tailBind = Bind (Glob 3) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 0] ++ [SExp $ Var $ Field 1 $ Loc 0 1]
+
+--headBinds has as ref Glob 2 and refers to Field 0, which is the tail of the list
+headBind :: Bind
+headBind = Bind (Glob 2) exp
+  where exp = Lam [Loc 0 0] $
+                Let (Bind (Loc 0 1) (Eval (SExp $ Var $ Loc 0 0))) $
+                  Case (Var $ Tag $ Field 1 $ (Loc 0 1)) $
+                    [SExp $ Var $ Glob 0] ++ [SExp $ Var $ Field 0 $ Loc 0 1]
+
+--consBind has as ref Glob 1 and makes a Cons
+consBind :: Bind
+consBind = Bind (Glob 1) exp
+  where exp = Lam [Loc 0 0, Loc 0 1] 
+                (Cons (Var $ Loc 0 0) (Var $ Loc 0 1))
+
+nilBind :: Bind
+nilBind = Bind (Glob 0) Nil
+}

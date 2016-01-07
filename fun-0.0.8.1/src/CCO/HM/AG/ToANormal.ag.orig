@@ -40,8 +40,12 @@ removeDup env (ALet x t1 t2)
 removeDup _ tm = tm
 
 
---In this function all of the ALet are moved out of the AApp, because it is not allowed to have an ALet in an AApp
+<<<<<<< HEAD
+--In this function all of the ALet are removed from the AApp, because it is not allowed to have a let in an app
 
+=======
+--In this function all of the ALet are moved out of the AApp, because it is not allowed to have an ALet in an AApp
+>>>>>>> e17a9d9b92d73760717154883d74004db3989792
 transform :: ATm -> ATm
 transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
 transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2

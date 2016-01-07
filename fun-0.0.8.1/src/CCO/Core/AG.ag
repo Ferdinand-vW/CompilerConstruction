@@ -24,6 +24,8 @@ include "../AG/Core.ag"
 include "../AG/AHM.ag"
 include "AG/ToCoreRun.ag"
 include "AG/Hm2Cr.ag"
+include "AG/BuildIn.ag"
+include "AG/EnvMap.ag"
 
 {
 crprinter :: Component Mod String

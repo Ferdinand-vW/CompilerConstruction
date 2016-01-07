@@ -1,0 +1,6 @@
+let plusPrim = \x .\y .prim "primAddInt" x y in
+let minPrim = \x .\y.prim "primSubInt" x y in
+let plus = plusPrim 9 2 in
+let minus = minPrim 4 2 in 
+plusPrim plus minus
+ni ni ni ni

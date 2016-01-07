@@ -1,0 +1,69 @@
+name:                CCO3874389N5597250CCO
+version:             0.1.0.0
+synopsis:            Project e of the course Compiler Construction
+description:         This package contains project E Code generation for a lazy functional language of the course Compiler onstruction developed by Ferdinand(3874389) van Walree en Matthew Swart(5597250)
+license:             GPL-2
+license-file:        LICENSE
+author:              Ferdinand van Walree(3874389) Matthew Swart(5597250)
+maintainer:          m.a.swart@students.uu.nl
+-- copyright:           
+category:            Education
+build-type:          Simple
+extra-source-files:    README, Build.sh, Makefile,
+                       src/CCO/HM/AG.ag,
+                       src/CCO/HM/Base.hs,
+                       src/CCO/HM/Lexer.hs,
+                       src/CCO/HM/Parser.hs,
+                       src/CCO/HM/Ag/ToANormal.ag
+                       src/CCO/Core/AG.ag,
+                       src/CCO/Core/AG/ToCoreRun.ag,
+                       src/CCO/SystemF/AG.ag,
+                       src/CCO/SystemF/AG/Base.ag,
+                       src/CCO/SystemF/AG/Printing.ag,
+                       src/CCO/AG/AHM.ag,
+                       src/CCO/AG/Core.ag,
+                       src/CCO/AG/HM.ag,
+                       src/CCO/Core/Ag/Hm2Cr.ag,
+                       src/CCO/Core/Ag/BuildIn.ag,
+                       src/CCO/Core/Ag/EnvMap.ag,
+                       src/CCO/Core.hs,
+                       src/CCO/HM.hs,
+                       src/CCO/SystemF.hs,
+                       src/compile.sh,
+                       src/run.sh,
+                       examples/checkList.lam,
+                       examples/ifLambdaIf.lam,
+                       examples/t1.lam, examples/t2.lam,
+                       examples/t3.lam, examples/t4.lam, examples/t5.lam, examples/3args.lam, examples/allThreePrim.lam, examples/shadowing.lam, examples/calculation.lam,
+                       examples/functionInList.lam, examples/compile.sh,
+                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.tcrr.txt, examples/extra/translated.lam
+cabal-version:       >=1.10
+
+executable parse-hm
+  main-is:             ParseHM.hs
+  build-depends:       base >=4.8 && <4.9, uu-cco >=0.1 && <0.2, uhc-util >=0.1 && <0.2, uhc-light >=1.1 && <1.2
+  other-modules:       CCO.HM, CCO.HM.AG, CCO.HM.Base, CCO.HM.Lexer,
+                       CCO.HM.Parser
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+executable pp-systemf
+  main-is:             PpSystemF.hs
+  build-depends:       base >=4.8 && <4.9, uu-cco >=0.1 && <0.2, uhc-util >=0.1 && <0.2, uhc-light >=1.1 && <1.2
+  other-modules:       CCO.SystemF, CCO.SystemF.AG, CCO.SystemF.Base
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+executable pp-core
+  main-is:             PpCore.hs
+  build-depends:       base >=4.8 && <4.9, uu-cco >=0.1 && <0.2, uhc-util >=0.1 && <0.2, uhc-light >=1.1 && <1.2
+  other-modules:       CCO.Core, CCO.Core.AG, CCO.Core.Base
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+executable pp-hm2cr
+  main-is:             hm2cr.hs
+  build-depends:       base >=4.8 && <4.9, uu-cco >=0.1 && <0.2, uhc-util >=0.1 && <0.2, uhc-light >=1.1 && <1.2
+  other-modules:       CCO.Core, CCO.Core.AG, CCO.Core.Base
+  hs-source-dirs:      src
+  default-language:    Haskell2010

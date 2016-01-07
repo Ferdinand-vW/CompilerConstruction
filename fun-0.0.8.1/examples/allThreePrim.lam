@@ -1,0 +1,11 @@
+let plus = \x .\y .prim "primAddInt" x y in
+let min = \x .\y.prim "primSubInt" x y in
+let eq = \x .\y.prim "primEqInt" x y in
+let test = if eq 2 (plus 1 1)
+                then 
+                    (plus 10 3)
+                else
+                    (min 3 1) 
+                fi
+in test
+ni ni ni ni

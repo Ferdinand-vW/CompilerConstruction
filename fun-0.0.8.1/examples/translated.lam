@@ -1,8 +1,0 @@
-Mod(
-  SExp(Var(Glob(3)))
-, [ Bind(Glob(0), SExp(Int(5)))
-  , Bind(Glob(1), Lam([Loc(0, 0)], SExp(Var(Loc(0, 0)))))
-  , Bind(Glob(2), App(SExp(Var(Glob(1))), [Var(Glob(1))]))
-  , Bind(Glob(3), App(SExp(Var(Glob(2))), [Var(Glob(2))]))
-  ]
-)

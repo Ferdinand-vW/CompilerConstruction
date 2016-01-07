@@ -1,0 +1,37 @@
+{
+--We're using the map type to store refs of variables. 
+--The int is used as an offset
+--The a is used as a key. 
+--The b is the Ref 
+type Map a b = (Int,[(a,b)])
+
+--Next will return the next offset of a type and add this as a global ref
+next :: Map String Ref -> Ref
+next (n,_) = Glob n
+
+getOffSet :: Map String Ref -> Int
+getOffSet (n,_) = n
+
+--insertg will increment the offset and add the new global to the map
+insertg :: Map String Ref -> String -> Map String Ref
+insertg (n,xs) s = (n + 1,(s, Glob n) : xs)
+
+--insertl is used to insert a new Var with a Loc to the map and increment the offset.
+insertl :: Map String Ref -> String -> Map String Ref
+insertl (n,xs) s = (n + 1, (s, Loc 0 n) : xs)
+
+--insertl' is used to insert a value into the map and increment the offset.
+insertref :: Map String Ref -> String -> Ref -> Map String Ref
+insertref (n,xs) s r = (n + 1,(s,r) : xs)
+
+--incrEnv is used to increment the lvldiff and resets the offset
+incrEnv :: Map String Ref -> Map String Ref
+incrEnv (n,lenv) = (0, incr lenv)
+  where incr [] = []
+        incr ((s,(Loc lvl x)):xs) = (s,Loc (lvl + 1) x) : incr xs
+        incr ((s,r):xs) = (s,r) : incr xs
+
+--This will increment the offset of the map
+incrOffSet' :: Map String Ref -> Int -> Map String Ref
+incrOffSet' (n,xs) i = (n + i, xs)
+}

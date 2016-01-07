@@ -3,4 +3,5 @@ import CCO.HM           (parser, toANormal)
 import CCO.Tree         (fromTree)
 import Control.Arrow    (arr, (>>>))
 
-main = ioWrap (parser >>> component toANormal >>>  arr fromTree >>> printer)
+--main = ioWrap (parser >>>  arr fromTree >>> printer)
+main = ioWrap (parser >>> component toANormal >>> arr fromTree >>> printer)

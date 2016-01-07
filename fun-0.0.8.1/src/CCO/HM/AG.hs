@@ -3,7 +3,7 @@
 -- UUAGC 0.9.52.1 (CCO/HM/AG.ag)
 module CCO.HM.AG where
 
-{-# LINE 2 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+{-# LINE 4 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 import CCO.Tree (Tree (fromTree, toTree))
 import qualified CCO.Tree as T (ATerm (App))
@@ -18,30 +18,41 @@ import qualified CCO.Tree as T    (ATerm (App))
 import CCO.Tree.Parser            (parseTree, app, arg)
 import Control.Applicative        (Applicative ((<*>)), (<$>))
 {-# LINE 21 "CCO/HM/AG.hs" #-}
-{-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
+{-# LINE 19 "CCO\\HM\\AG\\ToANormal.ag" #-}
 
 
+--ConsLets is used to move all the ALets/AApps in an ACons out of the ACons, because it is not allowed to have an ALet/AApps in an ACons.
+consLets :: ATm -> ATm
+consLets (ACons (ALet x lt1 lt2) t2) = ALet x lt1 (consLets $ ACons lt2 t2)
+consLets (ACons (AApp at1 at2) t2) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons (AVar $ letName at1 at2) t2)
+consLets (ACons t1 (ALet x lt1 lt2)) = ALet x lt1 (consLets $ ACons t1 lt2)
+consLets (ACons t1 (AApp at1 at2)) = ALet (letName at1 at2) (AApp at1 at2) (consLets $ ACons t1 $ AVar $ letName at1 at2)
+consLets atm = atm
+
+--This functon is used to move all the ALets/AApps in the expression of an AIf out of the AIf, because it is not allowed to have an ALet/AApps in an AIf.  
+pullOutLets :: ATm -> ATm
+pullOutLets (AIf (ALet x lt1 lt2) t2 t3) = ALet x lt1 (pullOutLets $ AIf lt2 t2 t3)
+pullOutLets (AIf (AApp at1 at2) t2 t3) = ALet (letName at1 at2) (AApp at1 at2) (AIf (AVar $ letName at1 at2) t2 t3)
+pullOutLets atm = atm
+
+--removeDup is used to remove duplicate ALet bindings
 removeDup :: [String] -> ATm -> ATm
-removeDup env tm =
-    case tm of
-        ALet x t1 t2 -> if x `elem` env
-                        then removeDup env t2
-                        else ALet x t1 $ removeDup (x:env) t2
-        AApp t1 t2 -> if eitherAApp t1 t2
-                        then removeDup env (newLets (AApp t1 t2))
-                      else tm
-        _ -> tm
+removeDup env (ALet x t1 t2)
+    | x `elem` env = removeDup env t2
+    | otherwise    = ALet x t1 $ removeDup (x:env) t2
+removeDup _ tm = tm
 
-eitherAApp :: ATm -> ATm -> Bool
-eitherAApp (AApp _ _) _ = True
-eitherAApp _ (AApp _ _) = True
-eitherAApp _ _ = False
+
+--In this function all of the ALet are moved out of the AApp, because it is not allowed to have an ALet in an AApp
 
 transform :: ATm -> ATm
 transform (AApp (ALet x lt1 lt2) t2) = ALet x lt1 $ transform $ AApp lt2 t2
 transform (AApp t1 (ALet x rt1 rt2)) = ALet x rt1 $ transform $ AApp t1 rt2
+transform (AApp t1 (ACons x l)) = ALet (getName (ACons x l)) (ACons x l) (transform $ AApp t1 (AVar $ getName (ACons x l)))
+transform (AApp (ALam x t1) t2) = ALet (x ++ getName t1) (ALam x t1) (transform $ AApp (AVar $ x ++ getName t1) t2)
 transform tm = newLets tm
 
+--This function is used in the transform function to add an ALet before an AAp.
 newLets :: ATm -> ATm
 newLets (AApp (AApp lt1 lt2) t2) = 
         ALet (letName lt1 lt2) (AApp lt1 lt2) $ newLets $
@@ -52,68 +63,94 @@ newLets (AApp t1 (AApp rt1 rt2)) =
 newLets tm = tm
 
 
+--This function is used to retrieve information from an ATm, which is used to make an name for the type.
 getName :: ATm -> String
 getName (ANat i) = show i
+getName (ACons x l) = getName x ++ getName l
+getName (ANil) = "nil"
+getName (APrim x _ _) = x
 getName (AVar x) = x
 getName (ALam x _) = x
 getName (ALet x _ _) = x
 getname _ = ""
 
+--Combine two terms to get a name.
 letName :: ATm -> ATm -> String
 letName tm1 tm2 = (getName tm1) ++ (getName tm2)
 
-{-# LINE 66 "CCO/HM/AG.hs" #-}
+{-# LINE 82 "CCO/HM/AG.hs" #-}
 
-{-# LINE 9 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+{-# LINE 10 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 instance Tree ATm where
-  fromTree (ANat x)       = T.App "ANat" [fromTree x]
-  fromTree (AVar x)       = T.App "AVar" [fromTree x]
-  fromTree (ALam x t1)    = T.App "ALam" [fromTree x, fromTree t1]
-  fromTree (AApp t1 t2)   = T.App "AApp" [fromTree t1, fromTree t2]
-  fromTree (ALet x t1 t2) = T.App "ALet" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (ANat x)        = T.App "ANat"   [fromTree x]
+  fromTree (AVar x)        = T.App "AVar"   [fromTree x]
+  fromTree (ANil)          = T.App "ANil"   [] 
+  fromTree (ACons t1 t2)   = T.App "ACons"  [fromTree t1, fromTree t2]
+  fromTree (APrim f t1 t2) = T.App "APrim"  [fromTree f, fromTree t1, fromTree t2]
+  fromTree (ALam x t1)     = T.App "ALam"   [fromTree x, fromTree t1]
+  fromTree (AApp t1 t2)    = T.App "AApp"   [fromTree t1, fromTree t2]
+  fromTree (ALet x t1 t2)  = T.App "ALet"   [fromTree x, fromTree t1, fromTree t2]
+  fromTree (AIf exp t1 t2) = T.App "AIf"    [fromTree exp, fromTree t1, fromTree t2]
 
-  toTree = parseTree [ app "ANat" (ANat <$> arg                )
-                     , app "AVar" (AVar <$> arg                )
-                     , app "ALam" (ALam <$> arg <*> arg        )
-                     , app "AApp" (AApp <$> arg <*> arg        )
-                     , app "ALet" (ALet <$> arg <*> arg <*> arg)
+  toTree = parseTree [ app "ANat"  (ANat  <$> arg                )
+                     , app "AVar"  (AVar  <$> arg                )
+                     , app "ANil"  (pure ANil                    )
+                     , app "ACons" (ACons <$> arg <*> arg        )
+                     , app "APrim" (APrim <$> arg <*> arg <*> arg)
+                     , app "ALam"  (ALam  <$> arg <*> arg        )
+                     , app "AApp"  (AApp  <$> arg <*> arg        )
+                     , app "ALet"  (ALet  <$> arg <*> arg <*> arg)
+                     , app "AIf"   (AIf   <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 84 "CCO/HM/AG.hs" #-}
+{-# LINE 108 "CCO/HM/AG.hs" #-}
 
-{-# LINE 31 "CCO\\HM\\..\\AG\\AHM.ag" #-}
+{-# LINE 40 "CCO\\HM\\..\\AG\\AHM.ag" #-}
 
 type Var = String
-{-# LINE 89 "CCO/HM/AG.hs" #-}
+{-# LINE 113 "CCO/HM/AG.hs" #-}
 
-{-# LINE 11 "CCO\\HM\\..\\AG\\HM.ag" #-}
+{-# LINE 14 "CCO\\HM\\..\\AG\\HM.ag" #-}
 
 instance Tree Tm where
   fromTree (Tm pos t) = T.App "Tm" [fromTree pos, fromTree t]
-  toTree = parseTree [app "Tm" (Tm <$> arg <*> arg)]
+  toTree              = parseTree [app "Tm" (Tm <$> arg <*> arg)]
 
 instance Tree Tm_ where
-  fromTree (Nat x)       = T.App "Nat" [fromTree x]
-  fromTree (Var x)       = T.App "Var" [fromTree x]
-  fromTree (Lam x t1)    = T.App "Lam" [fromTree x, fromTree t1]
-  fromTree (App t1 t2)   = T.App "App" [fromTree t1, fromTree t2]
-  fromTree (Let x t1 t2) = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (Nat x)        = T.App "Nat" [fromTree x]
+  fromTree (Var x)        = T.App "Var" [fromTree x]
+  fromTree Nil            = T.App "Nil" []
+  fromTree (Cons t1 t2)   = T.App "Cons" [fromTree t1, fromTree t2]
+  fromTree (Prim x t1 t2) = T.App "Prim" [fromTree x,fromTree t1, fromTree t2] --Added here
+  fromTree (Lam x t1)     = T.App "Lam" [fromTree x, fromTree t1]
+  fromTree (App t1 t2)    = T.App "App" [fromTree t1, fromTree t2]
+  fromTree (Let x t1 t2)  = T.App "Let" [fromTree x, fromTree t1, fromTree t2]
+  fromTree (If exp t1 t2) = T.App "If" [fromTree exp, fromTree t1, fromTree t2]
 
   toTree = parseTree [ app "Nat" (Nat <$> arg                )
                      , app "Var" (Var <$> arg                )
+                     , app "Nil" (pure Nil                   )
+                     , app "Cons" (Cons <$> arg <*> arg      )
+                     , app "Prim" (Prim <$> arg <*> arg <*> arg)
                      , app "Lam" (Lam <$> arg <*> arg        )
                      , app "App" (App <$> arg <*> arg        )
                      , app "Let" (Let <$> arg <*> arg <*> arg)
+                     , app "If" (Let <$> arg <*> arg <*> arg)
                      ]
 
-{-# LINE 111 "CCO/HM/AG.hs" #-}
+{-# LINE 143 "CCO/HM/AG.hs" #-}
 -- ATm ---------------------------------------------------------
 data ATm = ANat (Int)
          | AVar (Var)
+         | ANil
+         | ACons (ATm) (ATm)
+         | APrim (Var) (ATm) (ATm)
          | ALam (Var) (ATm)
          | AApp (ATm) (ATm)
          | ALet (Var) (ATm) (ATm)
+         | AIf (ATm) (ATm) (ATm)
+         deriving ( Show)
 -- cata
 sem_ATm :: ATm ->
            T_ATm
@@ -121,12 +158,20 @@ sem_ATm (ANat _i) =
     (sem_ATm_ANat _i)
 sem_ATm (AVar _x) =
     (sem_ATm_AVar _x)
+sem_ATm (ANil) =
+    (sem_ATm_ANil)
+sem_ATm (ACons _t1 _t2) =
+    (sem_ATm_ACons (sem_ATm _t1) (sem_ATm _t2))
+sem_ATm (APrim _f _t1 _t2) =
+    (sem_ATm_APrim _f (sem_ATm _t1) (sem_ATm _t2))
 sem_ATm (ALam _x _t1) =
     (sem_ATm_ALam _x (sem_ATm _t1))
 sem_ATm (AApp _t1 _t2) =
     (sem_ATm_AApp (sem_ATm _t1) (sem_ATm _t2))
 sem_ATm (ALet _x _t1 _t2) =
     (sem_ATm_ALet _x (sem_ATm _t1) (sem_ATm _t2))
+sem_ATm (AIf _exp _t1 _t2) =
+    (sem_ATm_AIf (sem_ATm _exp) (sem_ATm _t1) (sem_ATm _t2))
 -- semantic domain
 type T_ATm = ( )
 data Inh_ATm = Inh_ATm {}
@@ -145,6 +190,23 @@ sem_ATm_ANat i_ =
 sem_ATm_AVar :: Var ->
                 T_ATm
 sem_ATm_AVar x_ =
+    (let
+     in  ( ))
+sem_ATm_ANil :: T_ATm
+sem_ATm_ANil =
+    (let
+     in  ( ))
+sem_ATm_ACons :: T_ATm ->
+                 T_ATm ->
+                 T_ATm
+sem_ATm_ACons t1_ t2_ =
+    (let
+     in  ( ))
+sem_ATm_APrim :: Var ->
+                 T_ATm ->
+                 T_ATm ->
+                 T_ATm
+sem_ATm_APrim f_ t1_ t2_ =
     (let
      in  ( ))
 sem_ATm_ALam :: Var ->
@@ -166,8 +228,16 @@ sem_ATm_ALet :: Var ->
 sem_ATm_ALet x_ t1_ t2_ =
     (let
      in  ( ))
+sem_ATm_AIf :: T_ATm ->
+               T_ATm ->
+               T_ATm ->
+               T_ATm
+sem_ATm_AIf exp_ t1_ t2_ =
+    (let
+     in  ( ))
 -- Tm ----------------------------------------------------------
 data Tm = Tm (SourcePos) (Tm_)
+        deriving ( Show)
 -- cata
 sem_Tm :: Tm ->
           T_Tm
@@ -192,7 +262,7 @@ sem_Tm_Tm pos_ t_ =
          _lhsOtm =
              ({-# LINE 7 "CCO\\HM\\AG\\ToANormal.ag" #-}
               _tItm
-              {-# LINE 196 "CCO/HM/AG.hs" #-}
+              {-# LINE 266 "CCO/HM/AG.hs" #-}
               )
          ( _tItm) =
              t_
@@ -200,9 +270,14 @@ sem_Tm_Tm pos_ t_ =
 -- Tm_ ---------------------------------------------------------
 data Tm_ = Nat (Int)
          | Var (Var)
+         | Nil
+         | Cons (Tm) (Tm)
+         | Prim (Var) (Tm) (Tm)
          | Lam (Var) (Tm)
          | App (Tm) (Tm)
          | Let (Var) (Tm) (Tm)
+         | If (Tm) (Tm) (Tm)
+         deriving ( Show)
 -- cata
 sem_Tm_ :: Tm_ ->
            T_Tm_
@@ -210,12 +285,20 @@ sem_Tm_ (Nat _i) =
     (sem_Tm__Nat _i)
 sem_Tm_ (Var _x) =
     (sem_Tm__Var _x)
+sem_Tm_ (Nil) =
+    (sem_Tm__Nil)
+sem_Tm_ (Cons _t1 _t2) =
+    (sem_Tm__Cons (sem_Tm _t1) (sem_Tm _t2))
+sem_Tm_ (Prim _f _t1 _t2) =
+    (sem_Tm__Prim _f (sem_Tm _t1) (sem_Tm _t2))
 sem_Tm_ (Lam _x _t1) =
     (sem_Tm__Lam _x (sem_Tm _t1))
 sem_Tm_ (App _t1 _t2) =
     (sem_Tm__App (sem_Tm _t1) (sem_Tm _t2))
 sem_Tm_ (Let _x _t1 _t2) =
     (sem_Tm__Let _x (sem_Tm _t1) (sem_Tm _t2))
+sem_Tm_ (If _exp _t1 _t2) =
+    (sem_Tm__If (sem_Tm _exp) (sem_Tm _t1) (sem_Tm _t2))
 -- semantic domain
 type T_Tm_ = ( ATm)
 data Inh_Tm_ = Inh_Tm_ {}
@@ -233,7 +316,7 @@ sem_Tm__Nat i_ =
          _lhsOtm =
              ({-# LINE 10 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ANat i_
-              {-# LINE 237 "CCO/HM/AG.hs" #-}
+              {-# LINE 320 "CCO/HM/AG.hs" #-}
               )
      in  ( _lhsOtm))
 sem_Tm__Var :: Var ->
@@ -243,8 +326,52 @@ sem_Tm__Var x_ =
          _lhsOtm =
              ({-# LINE 11 "CCO\\HM\\AG\\ToANormal.ag" #-}
               AVar x_
-              {-# LINE 247 "CCO/HM/AG.hs" #-}
+              {-# LINE 330 "CCO/HM/AG.hs" #-}
               )
+     in  ( _lhsOtm))
+sem_Tm__Nil :: T_Tm_
+sem_Tm__Nil =
+    (let _lhsOtm :: ATm
+         _lhsOtm =
+             ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              ANil
+              {-# LINE 339 "CCO/HM/AG.hs" #-}
+              )
+     in  ( _lhsOtm))
+sem_Tm__Cons :: T_Tm ->
+                T_Tm ->
+                T_Tm_
+sem_Tm__Cons t1_ t2_ =
+    (let _lhsOtm :: ATm
+         _t1Itm :: ATm
+         _t2Itm :: ATm
+         _lhsOtm =
+             ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              consLets $ ACons _t1Itm _t2Itm
+              {-# LINE 352 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Itm) =
+             t1_
+         ( _t2Itm) =
+             t2_
+     in  ( _lhsOtm))
+sem_Tm__Prim :: Var ->
+                T_Tm ->
+                T_Tm ->
+                T_Tm_
+sem_Tm__Prim f_ t1_ t2_ =
+    (let _lhsOtm :: ATm
+         _t1Itm :: ATm
+         _t2Itm :: ATm
+         _lhsOtm =
+             ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              APrim f_ _t1Itm _t2Itm
+              {-# LINE 370 "CCO/HM/AG.hs" #-}
+              )
+         ( _t1Itm) =
+             t1_
+         ( _t2Itm) =
+             t2_
      in  ( _lhsOtm))
 sem_Tm__Lam :: Var ->
                T_Tm ->
@@ -253,9 +380,9 @@ sem_Tm__Lam x_ t1_ =
     (let _lhsOtm :: ATm
          _t1Itm :: ATm
          _lhsOtm =
-             ({-# LINE 12 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 15 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALam x_ _t1Itm
-              {-# LINE 259 "CCO/HM/AG.hs" #-}
+              {-# LINE 386 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -268,9 +395,9 @@ sem_Tm__App t1_ t2_ =
          _t1Itm :: ATm
          _t2Itm :: ATm
          _lhsOtm =
-             ({-# LINE 13 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 16 "CCO\\HM\\AG\\ToANormal.ag" #-}
               removeDup [] $ transform (AApp _t1Itm _t2Itm)
-              {-# LINE 274 "CCO/HM/AG.hs" #-}
+              {-# LINE 401 "CCO/HM/AG.hs" #-}
               )
          ( _t1Itm) =
              t1_
@@ -286,10 +413,31 @@ sem_Tm__Let x_ t1_ t2_ =
          _t1Itm :: ATm
          _t2Itm :: ATm
          _lhsOtm =
-             ({-# LINE 14 "CCO\\HM\\AG\\ToANormal.ag" #-}
+             ({-# LINE 17 "CCO\\HM\\AG\\ToANormal.ag" #-}
               ALet x_ _t1Itm _t2Itm
-              {-# LINE 292 "CCO/HM/AG.hs" #-}
+              {-# LINE 419 "CCO/HM/AG.hs" #-}
               )
+         ( _t1Itm) =
+             t1_
+         ( _t2Itm) =
+             t2_
+     in  ( _lhsOtm))
+sem_Tm__If :: T_Tm ->
+              T_Tm ->
+              T_Tm ->
+              T_Tm_
+sem_Tm__If exp_ t1_ t2_ =
+    (let _lhsOtm :: ATm
+         _expItm :: ATm
+         _t1Itm :: ATm
+         _t2Itm :: ATm
+         _lhsOtm =
+             ({-# LINE 18 "CCO\\HM\\AG\\ToANormal.ag" #-}
+              pullOutLets $ AIf _expItm _t1Itm _t2Itm
+              {-# LINE 438 "CCO/HM/AG.hs" #-}
+              )
+         ( _expItm) =
+             exp_
          ( _t1Itm) =
              t1_
          ( _t2Itm) =
