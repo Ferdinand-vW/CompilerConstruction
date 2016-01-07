@@ -36,7 +36,8 @@ extra-source-files:    README, Build.sh, Makefile,
                        examples/t1.lam, examples/t2.lam,
                        examples/t3.lam, examples/t4.lam, examples/t5.lam, examples/3args.lam, examples/allThreePrim.lam, examples/shadowing.lam, examples/calculation.lam,
                        examples/functionInList.lam, examples/compile.sh,
-                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.tcrr.txt, examples/extra/translated.lam
+                       examples/extra/parsed.lam, examples/extra/printed.tcrr, examples/extra/printed.tcrr.txt, examples/extra/translated.lam,
+                       SandboxBuild.sh
 cabal-version:       >=1.10
 
 executable parse-hm
