@@ -8,7 +8,7 @@ This project uses the following compiler verions:
 - uhc-light
 To build the package it is necessary to follow the following instructions:
 - Go to the root directory in a bash console; In this directory there is file called "Build.sh"
-- Type in the console "./Build.sh". This script build caball in a sandbox and compile all necesarry code.
+- Type in the console "./Build.sh" or "SandboxBuild.sh" that first creates a sandbox. This script build caball in a sandbox and compile all necesarry code.
 
 
 --Syntax
