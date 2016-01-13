@@ -2,14 +2,18 @@ module Dev where
 
 import qualified Data.Map as M
 import qualified Data.List as L
+import Data.Char
+import Data.Maybe
 
 import AttributeGrammar
 import Lexer
 import Main
 import Parser
+import Analysis
+import ConstantPropagation
 
 -- To make it all compile for the moment:
-type Analysis a = [a]
+
 
 {-- How To Run (examples)
 
@@ -17,10 +21,6 @@ type Analysis a = [a]
 ghci> run slv "fib"
 
 --}
-
-slv,cp :: Program' -> Analysis a
-slv = undefined
-cp  = undefined
 
 run :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
 run = runAnalysis'

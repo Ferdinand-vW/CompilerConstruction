@@ -414,6 +414,30 @@ sem_Procs'_Nil :: (T_Procs')
 sem_Procs'_Nil =
     (let
      in  ( ))
+-- Program -----------------------------------------------------
+data Program = Program (Procs) (Stat)
+             deriving ( Show)
+-- cata
+sem_Program :: Program ->
+               T_Program
+sem_Program (Program _procs _stat) =
+    (sem_Program_Program (sem_Procs _procs) (sem_Stat _stat))
+-- semantic domain
+type T_Program = ( )
+data Inh_Program = Inh_Program {}
+data Syn_Program = Syn_Program {}
+wrap_Program :: T_Program ->
+                Inh_Program ->
+                Syn_Program
+wrap_Program sem (Inh_Program) =
+    (let ( ) = sem
+     in  (Syn_Program))
+sem_Program_Program :: T_Procs ->
+                       T_Stat ->
+                       T_Program
+sem_Program_Program procs_ stat_ =
+    (let
+     in  ( ))
 -- Program' ----------------------------------------------------
 data Program' = Program' (Procs') (Stat')
               deriving ( Show)

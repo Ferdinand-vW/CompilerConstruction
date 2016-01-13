@@ -51,6 +51,7 @@ data Stat'
   | Continue'      label :: Int
   | Break'         label :: Int
 deriving Stat' : Show
+deriving Stat' : Enum
 
 data IExpr 
   | IConst        val  :: Int
