@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -w #-}
 module Parser where
 import Lexer
-import AttributeGrammar
+import Administration
 import Control.Applicative(Applicative(..))
 import Control.Monad (ap)
 

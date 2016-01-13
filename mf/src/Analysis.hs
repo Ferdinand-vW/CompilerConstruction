@@ -6,7 +6,7 @@ import Data.Char
 import Data.Maybe
 
 import MonotoneFramework
-import AttributeGrammar
+import Administration
 
 type Analysis a = a
 

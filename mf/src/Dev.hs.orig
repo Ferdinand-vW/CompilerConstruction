@@ -2,10 +2,14 @@ module Dev where
 
 import qualified Data.Map as M
 import qualified Data.List as L
+<<<<<<< HEAD
 import Data.Char
 import Data.Maybe
 
-import Administration
+import AttributeGrammar
+=======
+import All
+>>>>>>> be5343416ac9155f74b280da00a75233d96f3798
 import Lexer
 import Main
 import Parser
@@ -35,11 +39,11 @@ runAnalysis' analyze programName = do
 
 -- parse program
 
-parse :: String -> IO Program
+parse :: String -> IO ProgramInfo
 parse programName = do
   let fileName = "../examples/"++programName++".c"
   content <- readFile fileName
-  return . happy . alex $ content
+  return $ to $ happy . alex $ content
 
 
 

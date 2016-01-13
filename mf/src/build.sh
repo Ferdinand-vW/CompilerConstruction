@@ -1,4 +1,4 @@
 alex Lexer.x
 happy Parser.y
-uuagc -Hdcfws AttributeGrammar.ag --module AttributeGrammar
+uuagc -Hdcfws Administration.ag --module Administration
 ghci Dev

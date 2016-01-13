@@ -8,11 +8,11 @@ import qualified Data.Map as M
 
 import Analysis
 import MonotoneFramework
-import AttributeGrammar
+import Administration
 
-data ProgramInfo = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blocks :: M.Map Label Stat', vars :: [Var]}
+data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blocks :: M.Map Label Stat', vars :: [Var]}
 
-cp :: ProgramInfo -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
+cp :: ProgramI -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
 cp p = let lm = setMeet
            tfunc = transferFunction
            fl = flow' p

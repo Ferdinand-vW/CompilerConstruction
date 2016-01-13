@@ -1,7 +1,7 @@
 {
-import qualified Data.Map as M
-import qualified Data.Maybe as Maybe
-import qualified Data.List as L
+--import qualified Data.Map as M
+--import qualified Data.Maybe as Maybe
+--import qualified Data.List as L
 }
 
 data Program
@@ -51,7 +51,6 @@ data Stat'
   | Continue'      label :: Int
   | Break'         label :: Int
 deriving Stat' : Show
-deriving Stat' : Enum
 
 data IExpr 
   | IConst        val  :: Int
@@ -87,8 +86,8 @@ data Code | CBExpr   BExpr
           | CStat    Stat'
           | CProc    Proc'
           | CProgram Program'
-
+{
 type Procs = [Proc]
 type Procs' = [Proc']
 type Exprs = [Expr]
-
+}

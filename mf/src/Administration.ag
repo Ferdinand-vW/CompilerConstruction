@@ -1,39 +1,211 @@
+include "AttributeGrammar.ag"
+
 {
-type Label = Int
+to :: Program -> ProgramInfo
+to program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
+
+
+toProgram' :: Program -> Program'
+toProgram' program = program_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
+
+data ProgramInfo = ProgramInfo {labels :: [Label], init :: Label, finals :: [Label], flow :: Flow}
+    deriving Show
 }
 
-data ProgramInfo
-    | ProgramInfo labels :: {[Label]} init :: {Label}
-                  finals :: {[Label]} flow :: {[Label]}
+--sem Program
+--    | Program lhs.pinfo = ProgramInfo (labels' @stat.flow) (init' @stat.flow) (finals @stat.flow) @stat.flow
+--              stat.label  = 0
+--              stat.root   = Nothing
+--              stat.parent = Nothing
+--              stat.flow = []
+--attr Stat
+--    syn maxLabel :: {Label}
+--    syn stat :: self
+--    syn flow :: {Flow}
+--    inh label :: {Label}
+--    inh root :: {Maybe Label}
+--    inh parent :: {Maybe Label}
+
+--sem Stat
+--    | IfThenElse loc.label    = increment @lhs.label
+--                 stat1.label  = increment @loc.label
+--                 stat1.parent = Just @loc.label
+--                 stat1.root   = Nothing
+--                 stat1.flow   = insert @stat1 @stat1.parent @stat1.root @stat1.label @lhs.flow
+--                 stat2.label  = increment @stat2.stat @stat1.label
+--                 stat2.root   = Nothing
+--                 stat2.parent = Just @loc.label
+--                 lhs.maxLabel = @stat2.maxLabel
+--                 stat2.flow  = insert @stat2 @stat2.parent @stat2.root @stat2.label @stat1.flow
+--    | While      loc.label = increment @lhs.label
+--                 stat.label  = increment @loc.label
+--                 stat.parent = Just @loc.label
+--                 stat.root   = Just @loc.label
+--                 stat.flow   = insert @stat @stat.parent Nothing @stat.label @lhs.flow
+--    | Seq        stat1.label  = @lhs.label
+--                 stat1.flow   = insert @stat1 @stat1.parent @stat1.root @stat.label @lhs.flow
+--                 stat1.root   = Nothing
+--                 stat1.parent = @lhs.parent
+--                 stat2.label  = increment @stat1.label
+--                 stat2.root   = @lhs.root
+--                 stat2.flow   = insertRight @stat2 @stat2.parent @stat2.root stat2.label @stat1.flow☺
+
 
 attr Program
-    pinfo :: ProgramInfo
+     syn program :: Program'
+     syn pinfo :: ProgramInfo
 
-sem Program
-    | Program lhs.pinfo = ProgramInfo [0..@stats.maxLabel] 0 @stats.final @stats.flow
-              stats.label = 0
+sem Program 
+    | Program lhs.program = Program' (snd @loc.procs) @stat.main
+              lhs.pinfo = ProgramInfo [1 .. @stat.maxLabel] 1 (finals' @stat.finalFlow) @stat.finalFlow
+              stat.label = fst @loc.procs
+              loc.procs = foldProcs @procs 
+              stat.root = Nothing
+              stat.parent = Nothing
+              stat.flow = []
 
 attr Stat
-    inh label :: {Int}
+    inh root :: {Maybe Label}
+    inh parent :: {Maybe Label}
+    inh label :: {Label}
+    inh flow :: {Flow}
+    syn main :: Stat'
+    syn stat :: self
     syn maxLabel :: {Int}
-    syn finals :: {[Label]}
-    syn flow :: {[Label]}
+    syn finalFlow :: {Flow}
+
+attr Proc
+    inh entryPoint :: {Label}
+    syn main :: {(Int,Proc')}
+
+sem Proc
+    | Proc lhs.main = (@stat.maxLabel + 1, Proc' @lhs.entryPoint (@stat.maxLabel + 1) @name @inp @out @stat.main)
+           stat.label = @lhs.entryPoint + 1
+           stat.root = Nothing
+           stat.parent = Nothing
+           stat.flow = []
 
 sem Stat
-    | Skip lhs.maxLabel = @lhs.label
-    | IfThenElse stat1.label = @lhs.label + 1
-                 stat2.label = stat1.maxLabel + 1
-                 lhs.maxLabel = @stat2.maxLabel
-    | While      stat1.label = @lhs.label + 1
-                 lhs.maxLabel = @stat1.maxLabel
-    | Call       lhs.maxLabel = @lhs.label
-    | IAssign    lhs.maxLabel = @lhs.label
-    | BAssign    lhs.maxLabel = @lhs.label
-    | Seq        stat1.label = @lhs.label + 1
-                 stat2.label = stat1.maxLabel + 1
-                 lhs.maxLabel = @stat2.maxLabel
-    | Malloc     lhs.maxLabel = @lhs.label
-    | Free       lhs.maxLabel = @lhs.label
-    | RefAssign  lhs.maxLabel = @lhs.label
-    | Continue   lhs.maxLabel = @lhs.label
-    | Break      lhs.maxLabel = @lhs.label
+    | Skip       lhs.main      = Skip' @lhs.label
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | IfThenElse lhs.main      = IfThenElse' @lhs.label @cond @stat1.main @stat2.main
+                 lhs.maxLabel  = @stat2.maxLabel
+                 lhs.finalFlow = @loc.finalFlow
+                 loc.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+                 stat1.label   = @loc.label1
+                 loc.label1    = increment @stat1.stat @lhs.label
+                 stat2.label   = increment @stat2.stat @stat1.maxLabel
+                 stat1.flow    = insert @stat1.stat @lhs.label @loc.label1       @loc.finalFlow
+                 stat2.flow    = insert @stat2.stat @lhs.label @stat1.maxLabel @stat1.finalFlow
+                 stat1.parent  = Just @lhs.label
+                 stat1.root    = Nothing
+                 stat2.parent  = Just @lhs.label
+                 stat2.root    = Nothing
+    | While      lhs.main      = While' @lhs.label @cond @stat.main
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+                 stat.label    = @loc.label1
+                 loc.label1    = increment @stat.stat @lhs.label
+                 lhs.maxLabel  = @stat.maxLabel
+                 stat.root     = Just @lhs.label
+                 stat.parent   = Nothing
+                 stat.flow     = insert @stat.stat @lhs.label @loc.label1 @lhs.flow
+    | Call       lhs.main      = Call' (@lhs.label - 1) @lhs.label @name @params @out
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | IAssign    lhs.main      = IAssign' @lhs.label @name @val
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | BAssign    lhs.main      = BAssign' @lhs.label @name @val
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | Seq        lhs.main      = Seq' @stat1.main @stat2.main
+                 lhs.maxLabel  = @stat2.maxLabel
+                 lhs.finalFlow = @stat2.finalFlow
+                 stat1.label   = increment @stat1.stat @lhs.label
+                 stat2.label   = increment @stat2.stat @stat1.maxLabel
+                 stat1.parent  = @lhs.parent
+                 stat2.parent  = Just @stat1.maxLabel
+                 stat1.root    = Nothing
+                 stat2.root    = @lhs.root
+                 stat1.flow    = @lhs.flow
+                 stat2.flow    = @stat1.finalFlow
+    | Malloc     lhs.main      = Malloc' @lhs.label @name @size
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | Free       lhs.main      = Free' @lhs.label @ptr
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | RefAssign  lhs.main      = RefAssign' @lhs.label @ptr @val
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | Continue   lhs.main      = Continue' @lhs.label
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+    | Break      lhs.main      = Break' @lhs.label
+                 lhs.maxLabel  = @lhs.label
+                 lhs.finalFlow = insertFinal @lhs.parent @lhs.root @lhs.label @lhs.flow
+
+
+
+{
+type Label = Int
+type Flow = [(Int, Int)]
+
+insert :: Stat -> Int -> Int -> Flow -> Flow
+insert s x y old = (x,y) : old
+
+
+foldProcs :: Procs -> (Int, Procs')
+foldProcs procs = foldr (\x y -> 
+                let (l,proc') = wrapproc x (fst y)
+                in (l + 1,proc' : snd y)) (0,[]) procs
+
+wrapproc :: Proc -> Int -> (Int, Proc')
+wrapproc proc label = main_Syn_Proc $ wrap_Proc (sem_Proc proc) (Inh_Proc label)
+
+--Insert flow.
+--P=parent
+--r=root
+--parent got a higher property
+insertFinal :: Maybe Int -> Maybe Int -> Int -> Flow -> Flow
+insertFinal (Just p) _       n old = (p,n) : old
+insertFinal Nothing (Just r) n old = (n,r) : old
+insertFinal Nothing Nothing  _ old = old
+
+--Insert flow.
+--P=parent
+--r=root
+insertRight :: Stat -> (Maybe Int) -> (Maybe Int) -> Int -> Flow -> Flow
+insertRight (Seq _ _) _       _        _ old = [(1,2)]
+insertRight s        (Just p) Nothing  n old = (p,n) : old
+insertRight s        (Just p) (Just r) n old = (p,n) : (n,r) : old
+insertRight s        Nothing (Just r)  n old = (n,r) : old
+insertRight s        Nothing Nothing   _ old = old
+
+
+--l=labels
+--l=labels
+increment :: Stat -> Int -> Int
+increment (Seq _ _) l = l
+increment (Call _ _ _) l = l + 2 --Call go call and return
+increment s   l = l + 1
+
+--get labels from flow
+labels' :: Flow -> [Int]
+labels' xs = [(minimum l)..(maximum l)]
+    where l = concatTuple $ unzip xs
+
+concatTuple :: ([a],[a]) -> [a]
+concatTuple (a,b) = a ++ b
+
+init' :: Flow -> Int
+init' = fst . head
+
+finals' :: Flow -> [Int]
+finals' [] = []
+finals' l@((_,y):xs) = if isFinal
+                         then y : finals' xs
+                         else finals' xs
+                      where isFinal = 0 == length [y1 | (x1,y1) <- xs, x1 == y]
+}

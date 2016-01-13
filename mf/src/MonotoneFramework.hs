@@ -1,9 +1,8 @@
 module MonotoneFramework where
 
 import qualified Data.Map as M
-import AttributeGrammar
+import Administration
 
-type Label = Int
 data Lattice a = Top | Bottom | Value a
 type Var = String
 data Block = Block Label Var Exp
