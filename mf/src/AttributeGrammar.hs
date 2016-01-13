@@ -1,13 +1,20 @@
 
 
--- UUAGC 0.9.52.1 (AttributeGrammar)
-module AttributeGrammar where
+-- UUAGC 0.9.52.1 (AttributeGrammar.ag)
+
 {-# LINE 1 "AttributeGrammar.ag" #-}
 
-import qualified Data.Map as M
-import qualified Data.Maybe as Maybe
-import qualified Data.List as L
+--import qualified Data.Map as M
+--import qualified Data.Maybe as Maybe
+--import qualified Data.List as L
 {-# LINE 11 "AttributeGrammar.hs" #-}
+
+{-# LINE 89 "AttributeGrammar.ag" #-}
+
+type Procs = [Proc]
+type Procs' = [Proc']
+type Exprs = [Expr]
+{-# LINE 18 "AttributeGrammar.hs" #-}
 -- BExpr -------------------------------------------------------
 data BExpr = BConst (Bool)
            | BVar (String)
@@ -204,33 +211,6 @@ sem_Expr_I :: T_IExpr ->
 sem_Expr_I iExpr_ =
     (let
      in  ( ))
--- Exprs -------------------------------------------------------
-type Exprs = [Expr]
--- cata
-sem_Exprs :: Exprs ->
-             T_Exprs
-sem_Exprs list =
-    (Prelude.foldr sem_Exprs_Cons sem_Exprs_Nil (Prelude.map sem_Expr list))
--- semantic domain
-type T_Exprs = ( )
-data Inh_Exprs = Inh_Exprs {}
-data Syn_Exprs = Syn_Exprs {}
-wrap_Exprs :: T_Exprs ->
-              Inh_Exprs ->
-              Syn_Exprs
-wrap_Exprs sem (Inh_Exprs) =
-    (let ( ) = sem
-     in  (Syn_Exprs))
-sem_Exprs_Cons :: T_Expr ->
-                  T_Exprs ->
-                  T_Exprs
-sem_Exprs_Cons hd_ tl_ =
-    (let
-     in  ( ))
-sem_Exprs_Nil :: T_Exprs
-sem_Exprs_Nil =
-    (let
-     in  ( ))
 -- IExpr -------------------------------------------------------
 data IExpr = IConst (Int)
            | Var (String)
@@ -360,68 +340,38 @@ sem_Proc'_Proc' :: Int ->
 sem_Proc'_Proc' labelEntry_ labelReturn_ name_ inp_ out_ stat_ =
     (let
      in  ( ))
--- Procs -------------------------------------------------------
-type Procs = [Proc]
+-- Program -----------------------------------------------------
+data Program = Program (Procs) (Stat)
+             deriving ( Show)
 -- cata
-sem_Procs :: Procs ->
-             T_Procs
-sem_Procs list =
-    (Prelude.foldr sem_Procs_Cons sem_Procs_Nil (Prelude.map sem_Proc list))
+sem_Program :: Program ->
+               T_Program
+sem_Program (Program _procs _stat) =
+    (sem_Program_Program _procs (sem_Stat _stat))
 -- semantic domain
-type T_Procs = ( )
-data Inh_Procs = Inh_Procs {}
-data Syn_Procs = Syn_Procs {}
-wrap_Procs :: T_Procs ->
-              Inh_Procs ->
-              Syn_Procs
-wrap_Procs sem (Inh_Procs) =
+type T_Program = ( )
+data Inh_Program = Inh_Program {}
+data Syn_Program = Syn_Program {}
+wrap_Program :: T_Program ->
+                Inh_Program ->
+                Syn_Program
+wrap_Program sem (Inh_Program) =
     (let ( ) = sem
-     in  (Syn_Procs))
-sem_Procs_Cons :: T_Proc ->
-                  T_Procs ->
-                  T_Procs
-sem_Procs_Cons hd_ tl_ =
-    (let
-     in  ( ))
-sem_Procs_Nil :: T_Procs
-sem_Procs_Nil =
-    (let
-     in  ( ))
--- Procs' ------------------------------------------------------
-type Procs' = [Proc']
--- cata
-sem_Procs' :: (Procs') ->
-              (T_Procs')
-sem_Procs' list =
-    (Prelude.foldr sem_Procs'_Cons sem_Procs'_Nil (Prelude.map sem_Proc' list))
--- semantic domain
-type T_Procs' = ( )
-data Inh_Procs' = Inh_Procs' {}
-data Syn_Procs' = Syn_Procs' {}
-wrap_Procs' :: (T_Procs') ->
-               (Inh_Procs') ->
-               (Syn_Procs')
-wrap_Procs' sem (Inh_Procs') =
-    (let ( ) = sem
-     in  (Syn_Procs'))
-sem_Procs'_Cons :: (T_Proc') ->
-                   (T_Procs') ->
-                   (T_Procs')
-sem_Procs'_Cons hd_ tl_ =
-    (let
-     in  ( ))
-sem_Procs'_Nil :: (T_Procs')
-sem_Procs'_Nil =
+     in  (Syn_Program))
+sem_Program_Program :: Procs ->
+                       T_Stat ->
+                       T_Program
+sem_Program_Program procs_ stat_ =
     (let
      in  ( ))
 -- Program' ----------------------------------------------------
-data Program' = Program' (Procs') (Stat')
+data Program' = Program' ((Procs')) (Stat')
               deriving ( Show)
 -- cata
 sem_Program' :: (Program') ->
                 (T_Program')
 sem_Program' (Program' _procs _stat) =
-    (sem_Program'_Program' (sem_Procs' _procs) (sem_Stat' _stat))
+    (sem_Program'_Program' _procs (sem_Stat' _stat))
 -- semantic domain
 type T_Program' = ( )
 data Inh_Program' = Inh_Program' {}
@@ -432,7 +382,7 @@ wrap_Program' :: (T_Program') ->
 wrap_Program' sem (Inh_Program') =
     (let ( ) = sem
      in  (Syn_Program'))
-sem_Program'_Program' :: (T_Procs') ->
+sem_Program'_Program' :: (Procs') ->
                          (T_Stat') ->
                          (T_Program')
 sem_Program'_Program' procs_ stat_ =
@@ -580,7 +530,7 @@ sem_Stat' (IfThenElse' _labelc _cond _stat1 _stat2) =
 sem_Stat' (While' _labelc _cond _stat) =
     (sem_Stat'_While' _labelc (sem_BExpr _cond) (sem_Stat' _stat))
 sem_Stat' (Call' _labelCall _labelExit _name _params _out) =
-    (sem_Stat'_Call' _labelCall _labelExit _name (sem_Exprs _params) _out)
+    (sem_Stat'_Call' _labelCall _labelExit _name _params _out)
 sem_Stat' (IAssign' _label _name _val) =
     (sem_Stat'_IAssign' _label _name (sem_IExpr _val))
 sem_Stat' (BAssign' _label _name _val) =
@@ -630,7 +580,7 @@ sem_Stat'_While' labelc_ cond_ stat_ =
 sem_Stat'_Call' :: Int ->
                    Int ->
                    String ->
-                   T_Exprs ->
+                   Exprs ->
                    String ->
                    (T_Stat')
 sem_Stat'_Call' labelCall_ labelExit_ name_ params_ out_ =

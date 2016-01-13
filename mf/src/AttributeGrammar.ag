@@ -1,7 +1,7 @@
 {
-import qualified Data.Map as M
-import qualified Data.Maybe as Maybe
-import qualified Data.List as L
+--import qualified Data.Map as M
+--import qualified Data.Maybe as Maybe
+--import qualified Data.List as L
 }
 
 data Program
@@ -86,8 +86,8 @@ data Code | CBExpr   BExpr
           | CStat    Stat'
           | CProc    Proc'
           | CProgram Program'
-
+{
 type Procs = [Proc]
 type Procs' = [Proc']
 type Exprs = [Expr]
-
+}

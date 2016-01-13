@@ -1,7 +1,7 @@
 {
 module Parser where
 import Lexer
-import AttributeGrammar
+import All
 }
 
 %name happy
