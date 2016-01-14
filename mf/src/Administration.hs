@@ -28,10 +28,6 @@ type Exprs = [Expr]
 toProgramInfo :: Program -> ProgramInfo
 toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
 
-
---toProgram' :: Program -> Program'
---toProgram' program = program_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
-
 data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: Label, finals :: [Label], flow :: Flow, vars :: [Var]}
     deriving Show
 
@@ -44,9 +40,9 @@ data Block =
 type Label = Int
 type Flow = [(Int, Int)]
 type Var = String
-{-# LINE 48 "Administration.hs" #-}
+{-# LINE 44 "Administration.hs" #-}
 
-{-# LINE 127 "Administration.ag" #-}
+{-# LINE 123 "Administration.ag" #-}
 
 
 foldProcs :: Procs -> (Int, M.Map String Proc')
@@ -59,7 +55,7 @@ getName (Proc' _ _ name _ _ _) = name
 
 wrapproc :: Proc -> Int -> (Int, Proc')
 wrapproc proc label = main_Syn_Proc $ wrap_Proc (sem_Proc proc) (Inh_Proc label)
-{-# LINE 63 "Administration.hs" #-}
+{-# LINE 59 "Administration.hs" #-}
 -- BExpr -------------------------------------------------------
 data BExpr = BConst (Bool)
            | BVar (String)
@@ -372,29 +368,29 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
               _statIst :: Stat
               _statIsvars :: (S.Set Var)
               _lhsOmain =
-                  ({-# LINE 62 "Administration.ag" #-}
+                  ({-# LINE 58 "Administration.ag" #-}
                    (_statImaxLabel + 1, Proc' _lhsIlabel (_statImaxLabel + 1) name_ inp_ out_ _statImain)
-                   {-# LINE 378 "Administration.hs" #-}
+                   {-# LINE 374 "Administration.hs" #-}
                    )
               _lhsOpmap =
-                  ({-# LINE 63 "Administration.ag" #-}
+                  ({-# LINE 59 "Administration.ag" #-}
                    M.singleton name_ (Proc name_ inp_ out_ _statIst)
-                   {-# LINE 383 "Administration.hs" #-}
+                   {-# LINE 379 "Administration.hs" #-}
                    )
               _lhsOname =
-                  ({-# LINE 64 "Administration.ag" #-}
+                  ({-# LINE 60 "Administration.ag" #-}
                    name_
-                   {-# LINE 388 "Administration.hs" #-}
+                   {-# LINE 384 "Administration.hs" #-}
                    )
               _statOlabel =
-                  ({-# LINE 65 "Administration.ag" #-}
+                  ({-# LINE 61 "Administration.ag" #-}
                    _lhsIlabel + 1
-                   {-# LINE 393 "Administration.hs" #-}
+                   {-# LINE 389 "Administration.hs" #-}
                    )
               _statOprocs =
-                  ({-# LINE 66 "Administration.ag" #-}
+                  ({-# LINE 62 "Administration.ag" #-}
                    M.empty
-                   {-# LINE 398 "Administration.hs" #-}
+                   {-# LINE 394 "Administration.hs" #-}
                    )
               ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
                   stat_ _statOlabel _statOprocs
@@ -462,24 +458,24 @@ sem_Program_Program procs_ stat_ =
          _statIst :: Stat
          _statIsvars :: (S.Set Var)
          _lhsOpinfo =
-             ({-# LINE 37 "Administration.ag" #-}
-              ProgramInfo _statIblocks 1 (_statIflabels) _statIflow (S.toList _statIsvars)
-              {-# LINE 468 "Administration.hs" #-}
+             ({-# LINE 33 "Administration.ag" #-}
+              ProgramInfo _statIblocks _statIinitl (_statIflabels) _statIflow (S.toList _statIsvars)
+              {-# LINE 464 "Administration.hs" #-}
               )
          _statOlabel =
-             ({-# LINE 38 "Administration.ag" #-}
+             ({-# LINE 34 "Administration.ag" #-}
               fst _procs
-              {-# LINE 473 "Administration.hs" #-}
+              {-# LINE 469 "Administration.hs" #-}
               )
          _procs =
-             ({-# LINE 39 "Administration.ag" #-}
+             ({-# LINE 35 "Administration.ag" #-}
               foldProcs procs_
-              {-# LINE 478 "Administration.hs" #-}
+              {-# LINE 474 "Administration.hs" #-}
               )
          _statOprocs =
-             ({-# LINE 40 "Administration.ag" #-}
+             ({-# LINE 36 "Administration.ag" #-}
               snd _procs
-              {-# LINE 483 "Administration.hs" #-}
+              {-# LINE 479 "Administration.hs" #-}
               )
          ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
              stat_ _statOlabel _statOprocs
@@ -557,54 +553,54 @@ sem_Stat_Skip =
               _lhsOflabels :: ([Label])
               _lhsOst :: Stat
               _lhsOmain =
-                  ({-# LINE 69 "Administration.ag" #-}
+                  ({-# LINE 65 "Administration.ag" #-}
                    Skip' _lhsIlabel
-                   {-# LINE 563 "Administration.hs" #-}
+                   {-# LINE 559 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 70 "Administration.ag" #-}
+                  ({-# LINE 66 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 568 "Administration.hs" #-}
+                   {-# LINE 564 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 71 "Administration.ag" #-}
+                  ({-# LINE 67 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 573 "Administration.hs" #-}
+                   {-# LINE 569 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 72 "Administration.ag" #-}
+                  ({-# LINE 68 "Administration.ag" #-}
                    M.singleton _lhsIlabel B_Skip
-                   {-# LINE 578 "Administration.hs" #-}
+                   {-# LINE 574 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 73 "Administration.ag" #-}
+                  ({-# LINE 69 "Administration.ag" #-}
                    S.empty
-                   {-# LINE 583 "Administration.hs" #-}
+                   {-# LINE 579 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 74 "Administration.ag" #-}
+                  ({-# LINE 70 "Administration.ag" #-}
                    []
-                   {-# LINE 588 "Administration.hs" #-}
+                   {-# LINE 584 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 75 "Administration.ag" #-}
+                  ({-# LINE 71 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 593 "Administration.hs" #-}
+                   {-# LINE 589 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 76 "Administration.ag" #-}
+                  ({-# LINE 72 "Administration.ag" #-}
                    [_lhsIlabel]
-                   {-# LINE 598 "Administration.hs" #-}
+                   {-# LINE 594 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    Skip
-                   {-# LINE 603 "Administration.hs" #-}
+                   {-# LINE 599 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 608 "Administration.hs" #-}
+                   {-# LINE 604 "Administration.hs" #-}
                    )
           in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_IfThenElse :: BExpr ->
@@ -646,84 +642,84 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
               _stat2Ist :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmain =
-                  ({-# LINE 77 "Administration.ag" #-}
+                  ({-# LINE 73 "Administration.ag" #-}
                    IfThenElse' _lhsIlabel cond_ _stat1Imain _stat2Imain
-                   {-# LINE 652 "Administration.hs" #-}
+                   {-# LINE 648 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 78 "Administration.ag" #-}
+                  ({-# LINE 74 "Administration.ag" #-}
                    _stat2ImaxLabel
-                   {-# LINE 657 "Administration.hs" #-}
+                   {-# LINE 653 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 79 "Administration.ag" #-}
+                  ({-# LINE 75 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 662 "Administration.hs" #-}
+                   {-# LINE 658 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 80 "Administration.ag" #-}
+                  ({-# LINE 76 "Administration.ag" #-}
                    (_lhsIlabel, _label1    ) : (_lhsIlabel, _label2    ) : _stat1Iflow ++ _stat2Iflow
-                   {-# LINE 667 "Administration.hs" #-}
+                   {-# LINE 663 "Administration.hs" #-}
                    )
               _stat1Olabel =
-                  ({-# LINE 81 "Administration.ag" #-}
+                  ({-# LINE 77 "Administration.ag" #-}
                    _label1
-                   {-# LINE 672 "Administration.hs" #-}
+                   {-# LINE 668 "Administration.hs" #-}
                    )
               _label1 =
-                  ({-# LINE 82 "Administration.ag" #-}
+                  ({-# LINE 78 "Administration.ag" #-}
                    _lhsIlabel + 1
-                   {-# LINE 677 "Administration.hs" #-}
+                   {-# LINE 673 "Administration.hs" #-}
                    )
               _label2 =
-                  ({-# LINE 83 "Administration.ag" #-}
+                  ({-# LINE 79 "Administration.ag" #-}
                    _stat1ImaxLabel + 1
-                   {-# LINE 682 "Administration.hs" #-}
+                   {-# LINE 678 "Administration.hs" #-}
                    )
               _stat2Olabel =
-                  ({-# LINE 84 "Administration.ag" #-}
+                  ({-# LINE 80 "Administration.ag" #-}
                    _label2
-                   {-# LINE 687 "Administration.hs" #-}
+                   {-# LINE 683 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 85 "Administration.ag" #-}
+                  ({-# LINE 81 "Administration.ag" #-}
                    M.union (M.union (M.singleton _lhsIlabel (B_Cond cond_)) _stat1Iblocks) _stat2Iblocks
-                   {-# LINE 692 "Administration.hs" #-}
+                   {-# LINE 688 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 86 "Administration.ag" #-}
+                  ({-# LINE 82 "Administration.ag" #-}
                    S.union _stat1Isvars _stat2Isvars
-                   {-# LINE 697 "Administration.hs" #-}
+                   {-# LINE 693 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 87 "Administration.ag" #-}
+                  ({-# LINE 83 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 702 "Administration.hs" #-}
+                   {-# LINE 698 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 88 "Administration.ag" #-}
+                  ({-# LINE 84 "Administration.ag" #-}
                    [_stat1ImaxLabel,_stat2ImaxLabel]
-                   {-# LINE 707 "Administration.hs" #-}
+                   {-# LINE 703 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    IfThenElse cond_ _stat1Ist _stat2Ist
-                   {-# LINE 712 "Administration.hs" #-}
+                   {-# LINE 708 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 717 "Administration.hs" #-}
+                   {-# LINE 713 "Administration.hs" #-}
                    )
               _stat1Oprocs =
-                  ({-# LINE 50 "Administration.ag" #-}
+                  ({-# LINE 46 "Administration.ag" #-}
                    _lhsIprocs
-                   {-# LINE 722 "Administration.hs" #-}
+                   {-# LINE 718 "Administration.hs" #-}
                    )
               _stat2Oprocs =
-                  ({-# LINE 50 "Administration.ag" #-}
+                  ({-# LINE 46 "Administration.ag" #-}
                    _lhsIprocs
-                   {-# LINE 727 "Administration.hs" #-}
+                   {-# LINE 723 "Administration.hs" #-}
                    )
               ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabel,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
                   stat1_ _stat1Olabel _stat1Oprocs
@@ -757,69 +753,69 @@ sem_Stat_While cond_ stat_ =
               _statIst :: Stat
               _statIsvars :: (S.Set Var)
               _lhsOmain =
-                  ({-# LINE 89 "Administration.ag" #-}
+                  ({-# LINE 85 "Administration.ag" #-}
                    While' _lhsIlabel cond_ _statImain
-                   {-# LINE 763 "Administration.hs" #-}
+                   {-# LINE 759 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 90 "Administration.ag" #-}
+                  ({-# LINE 86 "Administration.ag" #-}
                    _statImaxLabel
-                   {-# LINE 768 "Administration.hs" #-}
+                   {-# LINE 764 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 91 "Administration.ag" #-}
+                  ({-# LINE 87 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 773 "Administration.hs" #-}
+                   {-# LINE 769 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 92 "Administration.ag" #-}
+                  ({-# LINE 88 "Administration.ag" #-}
                    (_lhsIlabel, _label1    ) : (_statImaxLabel,_lhsIlabel) : _statIflow
-                   {-# LINE 778 "Administration.hs" #-}
+                   {-# LINE 774 "Administration.hs" #-}
                    )
               _label1 =
-                  ({-# LINE 93 "Administration.ag" #-}
+                  ({-# LINE 89 "Administration.ag" #-}
                    _lhsIlabel + 1
-                   {-# LINE 783 "Administration.hs" #-}
+                   {-# LINE 779 "Administration.hs" #-}
                    )
               _statOlabel =
-                  ({-# LINE 94 "Administration.ag" #-}
+                  ({-# LINE 90 "Administration.ag" #-}
                    _label1
-                   {-# LINE 788 "Administration.hs" #-}
+                   {-# LINE 784 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 95 "Administration.ag" #-}
+                  ({-# LINE 91 "Administration.ag" #-}
                    M.union (M.singleton _lhsIlabel (B_Cond cond_)) _statIblocks
-                   {-# LINE 793 "Administration.hs" #-}
+                   {-# LINE 789 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 96 "Administration.ag" #-}
+                  ({-# LINE 92 "Administration.ag" #-}
                    _statIsvars
-                   {-# LINE 798 "Administration.hs" #-}
+                   {-# LINE 794 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 97 "Administration.ag" #-}
+                  ({-# LINE 93 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 803 "Administration.hs" #-}
+                   {-# LINE 799 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 98 "Administration.ag" #-}
+                  ({-# LINE 94 "Administration.ag" #-}
                    [_lhsIlabel]
-                   {-# LINE 808 "Administration.hs" #-}
+                   {-# LINE 804 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    While cond_ _statIst
-                   {-# LINE 813 "Administration.hs" #-}
+                   {-# LINE 809 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 818 "Administration.hs" #-}
+                   {-# LINE 814 "Administration.hs" #-}
                    )
               _statOprocs =
-                  ({-# LINE 50 "Administration.ag" #-}
+                  ({-# LINE 46 "Administration.ag" #-}
                    _lhsIprocs
-                   {-# LINE 823 "Administration.hs" #-}
+                   {-# LINE 819 "Administration.hs" #-}
                    )
               ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
                   stat_ _statOlabel _statOprocs
@@ -840,54 +836,54 @@ sem_Stat_IAssign name_ val_ =
               _lhsOflabels :: ([Label])
               _lhsOst :: Stat
               _lhsOmain =
-                  ({-# LINE 99 "Administration.ag" #-}
+                  ({-# LINE 95 "Administration.ag" #-}
                    IAssign' _lhsIlabel name_ val_
-                   {-# LINE 846 "Administration.hs" #-}
+                   {-# LINE 842 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 100 "Administration.ag" #-}
+                  ({-# LINE 96 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 851 "Administration.hs" #-}
+                   {-# LINE 847 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 101 "Administration.ag" #-}
+                  ({-# LINE 97 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 856 "Administration.hs" #-}
+                   {-# LINE 852 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 102 "Administration.ag" #-}
+                  ({-# LINE 98 "Administration.ag" #-}
                    M.singleton _lhsIlabel $ B_IAssign name_ val_
-                   {-# LINE 861 "Administration.hs" #-}
+                   {-# LINE 857 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 103 "Administration.ag" #-}
+                  ({-# LINE 99 "Administration.ag" #-}
                    S.singleton name_
-                   {-# LINE 866 "Administration.hs" #-}
+                   {-# LINE 862 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 104 "Administration.ag" #-}
+                  ({-# LINE 100 "Administration.ag" #-}
                    []
-                   {-# LINE 871 "Administration.hs" #-}
+                   {-# LINE 867 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 105 "Administration.ag" #-}
+                  ({-# LINE 101 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 876 "Administration.hs" #-}
+                   {-# LINE 872 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 106 "Administration.ag" #-}
+                  ({-# LINE 102 "Administration.ag" #-}
                    [_lhsIlabel]
-                   {-# LINE 881 "Administration.hs" #-}
+                   {-# LINE 877 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    IAssign name_ val_
-                   {-# LINE 886 "Administration.hs" #-}
+                   {-# LINE 882 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 891 "Administration.hs" #-}
+                   {-# LINE 887 "Administration.hs" #-}
                    )
           in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_BAssign :: String ->
@@ -906,54 +902,54 @@ sem_Stat_BAssign name_ val_ =
               _lhsOflabels :: ([Label])
               _lhsOst :: Stat
               _lhsOmain =
-                  ({-# LINE 107 "Administration.ag" #-}
+                  ({-# LINE 103 "Administration.ag" #-}
                    BAssign' _lhsIlabel name_ val_
-                   {-# LINE 912 "Administration.hs" #-}
+                   {-# LINE 908 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 108 "Administration.ag" #-}
+                  ({-# LINE 104 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 917 "Administration.hs" #-}
+                   {-# LINE 913 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 109 "Administration.ag" #-}
+                  ({-# LINE 105 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 922 "Administration.hs" #-}
+                   {-# LINE 918 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 110 "Administration.ag" #-}
+                  ({-# LINE 106 "Administration.ag" #-}
                    M.singleton _lhsIlabel $ B_BAssign name_ val_
-                   {-# LINE 927 "Administration.hs" #-}
+                   {-# LINE 923 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 111 "Administration.ag" #-}
+                  ({-# LINE 107 "Administration.ag" #-}
                    S.singleton name_
-                   {-# LINE 932 "Administration.hs" #-}
+                   {-# LINE 928 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 112 "Administration.ag" #-}
+                  ({-# LINE 108 "Administration.ag" #-}
                    []
-                   {-# LINE 937 "Administration.hs" #-}
+                   {-# LINE 933 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 113 "Administration.ag" #-}
+                  ({-# LINE 109 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 942 "Administration.hs" #-}
+                   {-# LINE 938 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 114 "Administration.ag" #-}
+                  ({-# LINE 110 "Administration.ag" #-}
                    [_lhsIlabel]
-                   {-# LINE 947 "Administration.hs" #-}
+                   {-# LINE 943 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    BAssign name_ val_
-                   {-# LINE 952 "Administration.hs" #-}
+                   {-# LINE 948 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 957 "Administration.hs" #-}
+                   {-# LINE 953 "Administration.hs" #-}
                    )
           in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_Seq :: T_Stat ->
@@ -994,79 +990,79 @@ sem_Stat_Seq stat1_ stat2_ =
               _stat2Ist :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmain =
-                  ({-# LINE 115 "Administration.ag" #-}
+                  ({-# LINE 111 "Administration.ag" #-}
                    Seq' _stat1Imain _stat2Imain
-                   {-# LINE 1000 "Administration.hs" #-}
+                   {-# LINE 996 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
-                  ({-# LINE 116 "Administration.ag" #-}
+                  ({-# LINE 112 "Administration.ag" #-}
                    _stat2ImaxLabel
-                   {-# LINE 1005 "Administration.hs" #-}
+                   {-# LINE 1001 "Administration.hs" #-}
                    )
               _lhsOflowLabel =
-                  ({-# LINE 117 "Administration.ag" #-}
+                  ({-# LINE 113 "Administration.ag" #-}
                    _stat2IflowLabel
-                   {-# LINE 1010 "Administration.hs" #-}
+                   {-# LINE 1006 "Administration.hs" #-}
                    )
               _lhsOflow =
-                  ({-# LINE 118 "Administration.ag" #-}
+                  ({-# LINE 114 "Administration.ag" #-}
                    (_stat1IflowLabel,_label2    ) : _stat1Iflow ++ _stat2Iflow
-                   {-# LINE 1015 "Administration.hs" #-}
+                   {-# LINE 1011 "Administration.hs" #-}
                    )
               _lhsOblocks =
-                  ({-# LINE 119 "Administration.ag" #-}
+                  ({-# LINE 115 "Administration.ag" #-}
                    M.union _stat1Iblocks _stat2Iblocks
-                   {-# LINE 1020 "Administration.hs" #-}
+                   {-# LINE 1016 "Administration.hs" #-}
                    )
               _stat1Olabel =
-                  ({-# LINE 120 "Administration.ag" #-}
+                  ({-# LINE 116 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 1025 "Administration.hs" #-}
+                   {-# LINE 1021 "Administration.hs" #-}
                    )
               _label2 =
-                  ({-# LINE 121 "Administration.ag" #-}
+                  ({-# LINE 117 "Administration.ag" #-}
                    _stat1ImaxLabel + 1
-                   {-# LINE 1030 "Administration.hs" #-}
+                   {-# LINE 1026 "Administration.hs" #-}
                    )
               _stat2Olabel =
-                  ({-# LINE 122 "Administration.ag" #-}
+                  ({-# LINE 118 "Administration.ag" #-}
                    _label2
-                   {-# LINE 1035 "Administration.hs" #-}
+                   {-# LINE 1031 "Administration.hs" #-}
                    )
               _lhsOsvars =
-                  ({-# LINE 123 "Administration.ag" #-}
+                  ({-# LINE 119 "Administration.ag" #-}
                    S.union _stat1Isvars _stat2Isvars
-                   {-# LINE 1040 "Administration.hs" #-}
+                   {-# LINE 1036 "Administration.hs" #-}
                    )
               _lhsOinitl =
-                  ({-# LINE 124 "Administration.ag" #-}
+                  ({-# LINE 120 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 1045 "Administration.hs" #-}
+                   {-# LINE 1041 "Administration.hs" #-}
                    )
               _lhsOflabels =
-                  ({-# LINE 125 "Administration.ag" #-}
+                  ({-# LINE 121 "Administration.ag" #-}
                    _stat2Iflabels
-                   {-# LINE 1050 "Administration.hs" #-}
+                   {-# LINE 1046 "Administration.hs" #-}
                    )
               _st =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    Seq _stat1Ist _stat2Ist
-                   {-# LINE 1055 "Administration.hs" #-}
+                   {-# LINE 1051 "Administration.hs" #-}
                    )
               _lhsOst =
-                  ({-# LINE 46 "Administration.ag" #-}
+                  ({-# LINE 42 "Administration.ag" #-}
                    _st
-                   {-# LINE 1060 "Administration.hs" #-}
+                   {-# LINE 1056 "Administration.hs" #-}
                    )
               _stat1Oprocs =
-                  ({-# LINE 50 "Administration.ag" #-}
+                  ({-# LINE 46 "Administration.ag" #-}
                    _lhsIprocs
-                   {-# LINE 1065 "Administration.hs" #-}
+                   {-# LINE 1061 "Administration.hs" #-}
                    )
               _stat2Oprocs =
-                  ({-# LINE 50 "Administration.ag" #-}
+                  ({-# LINE 46 "Administration.ag" #-}
                    _lhsIprocs
-                   {-# LINE 1070 "Administration.hs" #-}
+                   {-# LINE 1066 "Administration.hs" #-}
                    )
               ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabel,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
                   stat1_ _stat1Olabel _stat1Oprocs
