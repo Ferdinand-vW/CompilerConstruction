@@ -10,16 +10,16 @@ import Analysis
 import MonotoneFramework
 import Administration
 
-data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blocks :: M.Map Label Stat', vars :: [Var]}
+data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blcks :: M.Map Label Stat', vrs :: [Var]}
 
 cp :: ProgramI -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
 cp p = let lm = setMeet
            tfunc = transferFunction
            fl = flow' p
            extrL = initl p
-           extrV = foldr (\x y -> M.insert x Top y) M.empty (vars p)
+           extrV = foldr (\x y -> M.insert x Top y) M.empty (vrs p)
            mframe = MonotoneFramework lm tfunc fl extrL extrV --Create a MonotoneFramework instance
-        in analyse mframe (blocks p) --Analyse the monotoneframework given the blocks
+        in analyse mframe (blcks p) --Analyse the monotoneframework given the blocks
 
 --If the left Map is empty then it is the bottom, thus it is at least as precise as the right map
 --Otherwise if foreach variable elements in the left map are at least a precise as the elements in the right map,

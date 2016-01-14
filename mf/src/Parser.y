@@ -1,7 +1,7 @@
 {
 module Parser where
 import Lexer
-import AttributeGrammar
+import Administration
 }
 
 %name happy
@@ -88,16 +88,16 @@ Stat  : if BExpr then Stat0 else Stat0 { IfThenElse $2 $4 $6 }
 Stat0 : skip ";"                         { Skip }
       | ident ":=" AExpr ";"             { IAssign $1 $3 }
       | ident ":=" BExpr ";"             { BAssign $1 $3 }
-      | "*" AExpr0 ":=" AExpr0 ";"       { RefAssign $2 $4 }
-      | call ident "(" CallArgs "," ident ")" ";"  { Call $2 $4 $6 }
-      | malloc "(" ident "," AExpr ")" ";"      { Malloc $3 $5 }
-      | free "(" AExpr0 ")" ";"          { Free $3 }
+     -- | "*" AExpr0 ":=" AExpr0 ";"       { RefAssign $2 $4 }
+      --| call ident "(" CallArgs "," ident ")" ";"  { Call $2 $4 $6 }
+      --| malloc "(" ident "," AExpr ")" ";"      { Malloc $3 $5 }
+      --| free "(" AExpr0 ")" ";"          { Free $3 }
       | "(" Stats ")"                    { $2 }
       | "{" Stats "}"                    { $2 }
-      | continue ";"                     { Continue }
-      | break ";"                        { Break }
-      | tyint ident "[" AExpr "]" ";"      { Malloc $2 $4 }
-      | ident "[" AExpr "]" ":=" AExpr0 ";"          { RefAssign (Plus (Var $1) $3) $6 }
+      --| continue ";"                     { Continue }
+      --| break ";"                        { Break }
+      --| tyint ident "[" AExpr "]" ";"      { Malloc $2 $4 }
+     -- | ident "[" AExpr "]" ":=" AExpr0 ";"          { RefAssign (Plus (Var $1) $3) $6 }
 
 CallArgs : CallArgs "," EitherExpr   { $1 ++ [ $3 ] }
          | EitherExpr                { [ $1 ] }

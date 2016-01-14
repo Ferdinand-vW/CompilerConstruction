@@ -22,6 +22,8 @@ ghci> run slv "fib"
 
 --}
 
+slv = undefined
+
 run :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
 run = runAnalysis'
 
@@ -35,11 +37,11 @@ runAnalysis' analyze programName = do
 
 -- parse program
 
-parse :: String -> IO Program
+parse :: String -> IO ProgramInfo
 parse programName = do
   let fileName = "../examples/"++programName++".c"
   content <- readFile fileName
-  return . happy . alex $ content
+  return . toProgramInfo . happy . alex $ content
 
 
 

@@ -4,7 +4,6 @@ import qualified Data.Map as M
 import Administration
 
 data Lattice a = Top | Bottom | Value a
-type Var = String
 data Block = Block Label Var Exp
 type Exp = String
 type TransferFunction a = Stat' -> a -> a
