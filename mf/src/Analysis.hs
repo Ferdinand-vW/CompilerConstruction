@@ -12,7 +12,7 @@ type Analysis a = a
 
 --Analyse a Program (M.Map Label Stat') using a MonotoneFramework
 --Return a Analysis that currently only works for ConstantPropagation
-analyse :: Framework (M.Map Var (Lattice Int)) -> M.Map Label Stat' -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
+analyse :: Framework (M.Map Var (Lattice Int)) -> M.Map Label Block -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
 analyse (MonotoneFramework lmeet tf fl el ev) bl = loop fl array'
   where array = foldr (\x y -> M.insert x M.empty y) M.empty (M.keys bl) --Create an empty Map for each Label
         array' = M.adjust (\x -> ev) el array --Insert the extreme value into the extreme label
@@ -31,9 +31,10 @@ analyse (MonotoneFramework lmeet tf fl el ev) bl = loop fl array'
                   loop w arr' --recurse
             else loop xs arr --recurse
         updateWorkSet :: Eq a => a -> [(a,b)] -> [(a,b)] -> [(a,b)]
-        updateWorkSet l w [] = []
+        updateWorkSet l w [] = w
         updateWorkSet l w (x:xs)
           | l == fst x = updateWorkSet l (x : w) xs
+          | otherwise  = updateWorkSet l w xs
 
 --We can assume that a Label always exists in a Map, otherwise
 --its a coding error
@@ -42,7 +43,10 @@ slookup l stats = fromJust $ M.lookup l stats
 
 --Joins two lattices
 joinOp :: Lattice Int -> Lattice Int -> Lattice Int
-joinOp (Value x) (Value y) = if x /= y
-                              then Top
-                              else Value x
+joinOp (Value x) (Value y) = if x == 2 || y == 2
+                              then error $ show x ++ " " ++ show y
+                              else
+                                if x /= y
+                                  then Top
+                                  else Value x
 joinOp _ _ = Top

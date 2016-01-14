@@ -3,10 +3,9 @@ module MonotoneFramework where
 import qualified Data.Map as M
 import Administration
 
-data Lattice a = Top | Bottom | Value a
-data Block = Block Label Var Exp
+data Lattice a = Top | Bottom | Value a deriving (Eq,Show)
 type Exp = String
-type TransferFunction a = Stat' -> a -> a
+type TransferFunction a = Block -> a -> a
 
 data Framework a =
     MonotoneFramework 

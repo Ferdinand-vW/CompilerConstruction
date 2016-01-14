@@ -24,15 +24,15 @@ ghci> run slv "fib"
 
 slv = undefined
 
-run :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
+run :: (Eq a, Show a) => (ProgramInfo -> Analysis a) -> String -> IO ()
 run = runAnalysis'
 
 -- run some analysis by passing an analysis function and a 'show' function to display the result
-runAnalysis' :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
+runAnalysis' :: (Eq a, Show a) => (ProgramInfo -> Analysis a) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
   putStrLn "OUTPUT:"
-  putStrLn (show p)
+  putStrLn (show $ analyze p)
   putStrLn "G'bye"
 
 -- parse program
