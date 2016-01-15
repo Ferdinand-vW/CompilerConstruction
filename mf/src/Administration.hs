@@ -769,7 +769,7 @@ sem_Stat_While cond_ stat_ =
                    )
               _lhsOflow =
                   ({-# LINE 88 "Administration.ag" #-}
-                   (_lhsIlabel, _label1    ) : (_statImaxLabel,_lhsIlabel) : _statIflow
+                   (_lhsIlabel, _label1    ) : map (\x -> (x,_lhsIlabel)) _statIflabels ++ _statIflow
                    {-# LINE 774 "Administration.hs" #-}
                    )
               _label1 =

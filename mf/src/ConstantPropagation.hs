@@ -12,7 +12,7 @@ import Administration
 
 --data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blcks :: M.Map Label Stat', vrs :: [Var]}
 
-cp :: ProgramInfo -> Analysis (M.Map Label (M.Map Var (Lattice Int)))
+cp :: ProgramInfo -> IO (Analysis (M.Map Label (M.Map Var (Lattice Int))))
 cp p = let lm = setMeet
            tfunc = transferFunction
            fl = Administration.flow p
@@ -35,7 +35,7 @@ setMeet lmap rmap
 --In constant propagation a Value is exactly as precise as another Value
 --A Value is also more precise than a Top
 lMeet :: Lattice Int -> Lattice Int -> Bool
-lMeet (Value x) (Value y) = True
+lMeet (Value x) (Value y) = x == y
 lMeet _ Top = True
 lMeet _ _ = False
 
@@ -44,6 +44,7 @@ lMeet _ _ = False
 --Just parse the expression, obviously only works for IAssign right now
 transferFunction :: Block -> M.Map Var (Lattice Int) -> M.Map Var (Lattice Int)
 transferFunction (B_IAssign var expr) st = M.adjust (\_ -> parseExp expr st) var st
+transferFunction _ st = st
 
 parseExp :: IExpr -> M.Map Var (Lattice Int) -> Lattice Int
 parseExp (IConst x) _ = Value x

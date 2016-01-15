@@ -85,7 +85,7 @@ sem Stat
     | While      lhs.main      = While' @lhs.label @cond @stat.main
                  lhs.maxLabel  = @stat.maxLabel
                  lhs.flowLabel = @lhs.label
-                 lhs.flow      = (@lhs.label, @loc.label1) : (@stat.maxLabel,@lhs.label) : @stat.flow
+                 lhs.flow      = (@lhs.label, @loc.label1) : map (\x -> (x,@lhs.label)) @stat.flabels ++ @stat.flow
                  loc.label1    = @lhs.label + 1
                  stat.label    = @loc.label1
                  lhs.blocks    = M.union (M.singleton @lhs.label (B_Cond @cond)) @stat.blocks
