@@ -27,8 +27,6 @@ transferFunction bl set = if kill bl `S.isSubsetOf` set
                                 then S.union (S.difference set (kill bl)) (gen bl)
                                 else set
 
-{--}
-
 kill :: Block -> S.Set Var
 kill (B_IAssign n _) = S.singleton n
 kill (B_BAssign n _) = S.singleton n
