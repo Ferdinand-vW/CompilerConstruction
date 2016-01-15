@@ -8,12 +8,16 @@ import Data.Maybe
 import MonotoneFramework
 import Administration
 
-type Analysis a = a
+--First element is the context
+--second element is the effect on the context (transferfunction)
+type Analysis a = M.Map Label (a,a)
 
 --Analyse a Program (M.Map Label Stat') using a MonotoneFramework
 --Return a Analysis that currently only works for ConstantPropagation
-analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis (M.Map Label a))
-analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = loop fl array'
+analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis a)
+analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = do
+                                                              anl <- loop fl array'
+                                                              return $ finalize anl
   where array = foldr (\x y -> M.insert x btm y) M.empty (M.keys bl) --Create an empty Map for each Label
         array' = foldr (\x y -> M.adjust (\_ -> ev) x y) array el --Insert the extreme value into the extreme label
         loop [] arr = return arr
@@ -45,6 +49,7 @@ analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = loop fl array'
         updateWorkSet l w (x:xs)
           | l == fst x = updateWorkSet l (x : w) xs
           | otherwise  = updateWorkSet l w xs
+        finalize arr = M.mapWithKey (\k a -> (a, tf (slookup k bl) a)) arr
 
 --We can assume that a Label always exists in a Map, otherwise
 --its a coding error

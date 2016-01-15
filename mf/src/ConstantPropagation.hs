@@ -14,7 +14,7 @@ data Lattice a = Top | Bottom | Value a deriving (Eq,Show)
 
 --data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blcks :: M.Map Label Stat', vrs :: [Var]}
 
-cp :: ProgramInfo -> IO (Analysis (M.Map Label (M.Map Var (Lattice Int))))
+cp :: ProgramInfo -> IO (Analysis (M.Map Var (Lattice Int)))
 cp p = let join = joinOp
            lm = setMeet
            tfunc = transferFunction

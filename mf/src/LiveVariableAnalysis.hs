@@ -9,7 +9,7 @@ import Analysis
 import MonotoneFramework
 import Administration
 
-slv :: ProgramInfo -> IO (Analysis (M.Map Label (S.Set Var)))
+slv :: ProgramInfo -> IO (Analysis (S.Set Var))
 slv p = let join = S.union
             btm  = S.empty
             lmeet = S.isSubsetOf
