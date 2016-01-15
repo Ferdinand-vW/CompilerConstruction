@@ -12,7 +12,7 @@ import qualified Data.Set as S
 toProgramInfo :: Program -> ProgramInfo
 toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
 
-data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: Label, finals :: [Label], flow :: Flow, vars :: [Var]}
+data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: [Label], finals :: [Label], flow :: Flow, vars :: [Var]}
     deriving Show
 
 data Block = 
@@ -30,7 +30,7 @@ attr Program
      syn pinfo :: ProgramInfo
 
 sem Program 
-    | Program lhs.pinfo = ProgramInfo @stat.blocks @stat.initl (@stat.flabels) @stat.flow (S.toList @stat.svars)
+    | Program lhs.pinfo = ProgramInfo @stat.blocks [@stat.initl] (@stat.flabels) @stat.flow (S.toList @stat.svars)
               stat.label = fst @loc.procs
               loc.procs = foldProcs @procs
               stat.procs = snd @loc.procs

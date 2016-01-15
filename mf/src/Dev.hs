@@ -11,6 +11,7 @@ import Main
 import Parser
 import Analysis
 import ConstantPropagation
+import LiveVariableAnalysis
 
 -- To make it all compile for the moment:
 
@@ -21,8 +22,6 @@ import ConstantPropagation
 ghci> run slv "fib"
 
 --}
-
-slv = undefined
 
 run :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
 run = runAnalysis'

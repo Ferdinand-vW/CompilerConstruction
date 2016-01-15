@@ -10,16 +10,29 @@ import Analysis
 import MonotoneFramework
 import Administration
 
+data Lattice a = Top | Bottom | Value a deriving (Eq,Show)
+
 --data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blcks :: M.Map Label Stat', vrs :: [Var]}
 
 cp :: ProgramInfo -> IO (Analysis (M.Map Label (M.Map Var (Lattice Int))))
-cp p = let lm = setMeet
+cp p = let join = joinOp
+           lm = setMeet
            tfunc = transferFunction
            fl = Administration.flow p
            extrL = Administration.init p
            extrV = foldr (\x y -> M.insert x Top y) M.empty (vars p)
-           mframe = MonotoneFramework lm tfunc fl extrL extrV --Create a MonotoneFramework instance
+           mframe = MonotoneFramework join M.empty lm tfunc fl extrL extrV --Create a MonotoneFramework instance
         in analyse mframe (blocks p) --Analyse the monotoneframework given the blocks
+
+joinOp :: M.Map Var (Lattice Int) -> M.Map Var (Lattice Int) -> M.Map Var (Lattice Int)
+joinOp lmap rmap = M.unionWith joinLattice lmap rmap
+
+--Joins two lattices
+joinLattice :: Lattice Int -> Lattice Int -> Lattice Int
+joinLattice (Value x) (Value y) = if x /= y
+                                  then Top
+                                  else Value x
+joinLattice _ _ = Top
 
 --If the left Map is empty then it is the bottom, thus it is at least as precise as the right map
 --Otherwise if foreach variable elements in the left map are at least a precise as the elements in the right map,

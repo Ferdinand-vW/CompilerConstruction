@@ -28,7 +28,7 @@ type Exprs = [Expr]
 toProgramInfo :: Program -> ProgramInfo
 toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
 
-data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: Label, finals :: [Label], flow :: Flow, vars :: [Var]}
+data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: [Label], finals :: [Label], flow :: Flow, vars :: [Var]}
     deriving Show
 
 data Block = 
@@ -459,7 +459,7 @@ sem_Program_Program procs_ stat_ =
          _statIsvars :: (S.Set Var)
          _lhsOpinfo =
              ({-# LINE 33 "Administration.ag" #-}
-              ProgramInfo _statIblocks _statIinitl (_statIflabels) _statIflow (S.toList _statIsvars)
+              ProgramInfo _statIblocks [_statIinitl] (_statIflabels) _statIflow (S.toList _statIsvars)
               {-# LINE 464 "Administration.hs" #-}
               )
          _statOlabel =

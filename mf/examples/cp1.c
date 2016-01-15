@@ -1,9 +1,9 @@
 begin
-  y := 2; 
+  y := x; 
   z := 1;
-  while y > 0 do {
-
-            y := y - 1;
-
+  while x > 1 do {
+    z := z * x;
+    x := x - 1;
   }
+  x := 0;
 end
