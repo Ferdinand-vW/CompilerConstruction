@@ -361,10 +361,10 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
               _statIblocks :: (M.Map Label Block)
               _statIflabels :: ([Label])
               _statIflow :: Flow
-              _statIflowLabel :: Int
+              _statIflowLabels :: ([Label])
               _statIinitl :: Label
               _statImain :: Stat'
-              _statImaxLabel :: Int
+              _statImaxLabel :: Label
               _statIst :: Stat
               _statIsvars :: (S.Set Var)
               _lhsOmain =
@@ -392,7 +392,7 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
                    M.empty
                    {-# LINE 394 "Administration.hs" #-}
                    )
-              ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
+              ( _statIblocks,_statIflabels,_statIflow,_statIflowLabels,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
                   stat_ _statOlabel _statOprocs
           in  ( _lhsOmain,_lhsOname,_lhsOpmap)))
 -- Proc' -------------------------------------------------------
@@ -451,10 +451,10 @@ sem_Program_Program procs_ stat_ =
          _statIblocks :: (M.Map Label Block)
          _statIflabels :: ([Label])
          _statIflow :: Flow
-         _statIflowLabel :: Int
+         _statIflowLabels :: ([Label])
          _statIinitl :: Label
          _statImain :: Stat'
-         _statImaxLabel :: Int
+         _statImaxLabel :: Label
          _statIst :: Stat
          _statIsvars :: (S.Set Var)
          _lhsOpinfo =
@@ -477,7 +477,7 @@ sem_Program_Program procs_ stat_ =
               snd _procs
               {-# LINE 479 "Administration.hs" #-}
               )
-         ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
+         ( _statIblocks,_statIflabels,_statIflow,_statIflowLabels,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
              stat_ _statOlabel _statOprocs
      in  ( _lhsOpinfo))
 -- Program' ----------------------------------------------------
@@ -530,22 +530,22 @@ sem_Stat (Seq _stat1 _stat2) =
 -- semantic domain
 type T_Stat = Label ->
               (M.Map String Proc') ->
-              ( (M.Map Label Block),([Label]),Flow,Int,Label,Stat',Int,Stat,(S.Set Var))
+              ( (M.Map Label Block),([Label]),Flow,([Label]),Label,Stat',Label,Stat,(S.Set Var))
 data Inh_Stat = Inh_Stat {label_Inh_Stat :: Label,procs_Inh_Stat :: (M.Map String Proc')}
-data Syn_Stat = Syn_Stat {blocks_Syn_Stat :: (M.Map Label Block),flabels_Syn_Stat :: ([Label]),flow_Syn_Stat :: Flow,flowLabel_Syn_Stat :: Int,initl_Syn_Stat :: Label,main_Syn_Stat :: Stat',maxLabel_Syn_Stat :: Int,st_Syn_Stat :: Stat,svars_Syn_Stat :: (S.Set Var)}
+data Syn_Stat = Syn_Stat {blocks_Syn_Stat :: (M.Map Label Block),flabels_Syn_Stat :: ([Label]),flow_Syn_Stat :: Flow,flowLabels_Syn_Stat :: ([Label]),initl_Syn_Stat :: Label,main_Syn_Stat :: Stat',maxLabel_Syn_Stat :: Label,st_Syn_Stat :: Stat,svars_Syn_Stat :: (S.Set Var)}
 wrap_Stat :: T_Stat ->
              Inh_Stat ->
              Syn_Stat
 wrap_Stat sem (Inh_Stat _lhsIlabel _lhsIprocs) =
-    (let ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars) = sem _lhsIlabel _lhsIprocs
-     in  (Syn_Stat _lhsOblocks _lhsOflabels _lhsOflow _lhsOflowLabel _lhsOinitl _lhsOmain _lhsOmaxLabel _lhsOst _lhsOsvars))
+    (let ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars) = sem _lhsIlabel _lhsIprocs
+     in  (Syn_Stat _lhsOblocks _lhsOflabels _lhsOflow _lhsOflowLabels _lhsOinitl _lhsOmain _lhsOmaxLabel _lhsOst _lhsOsvars))
 sem_Stat_Skip :: T_Stat
 sem_Stat_Skip =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOblocks :: (M.Map Label Block)
               _lhsOsvars :: (S.Set Var)
               _lhsOflow :: Flow
@@ -562,9 +562,9 @@ sem_Stat_Skip =
                    _lhsIlabel
                    {-# LINE 564 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 67 "Administration.ag" #-}
-                   _lhsIlabel
+                   [_lhsIlabel]
                    {-# LINE 569 "Administration.hs" #-}
                    )
               _lhsOblocks =
@@ -602,7 +602,7 @@ sem_Stat_Skip =
                    _st
                    {-# LINE 604 "Administration.hs" #-}
                    )
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_IfThenElse :: BExpr ->
                        T_Stat ->
                        T_Stat ->
@@ -611,8 +611,8 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOflow :: Flow
               _stat1Olabel :: Label
               _stat2Olabel :: Label
@@ -626,19 +626,19 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
               _stat1Iblocks :: (M.Map Label Block)
               _stat1Iflabels :: ([Label])
               _stat1Iflow :: Flow
-              _stat1IflowLabel :: Int
+              _stat1IflowLabels :: ([Label])
               _stat1Iinitl :: Label
               _stat1Imain :: Stat'
-              _stat1ImaxLabel :: Int
+              _stat1ImaxLabel :: Label
               _stat1Ist :: Stat
               _stat1Isvars :: (S.Set Var)
               _stat2Iblocks :: (M.Map Label Block)
               _stat2Iflabels :: ([Label])
               _stat2Iflow :: Flow
-              _stat2IflowLabel :: Int
+              _stat2IflowLabels :: ([Label])
               _stat2Iinitl :: Label
               _stat2Imain :: Stat'
-              _stat2ImaxLabel :: Int
+              _stat2ImaxLabel :: Label
               _stat2Ist :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmain =
@@ -651,9 +651,9 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
                    _stat2ImaxLabel
                    {-# LINE 653 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 75 "Administration.ag" #-}
-                   _lhsIlabel
+                   [_label1    ,_label2    ]
                    {-# LINE 658 "Administration.hs" #-}
                    )
               _lhsOflow =
@@ -721,11 +721,11 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
                    _lhsIprocs
                    {-# LINE 723 "Administration.hs" #-}
                    )
-              ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabel,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
+              ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabels,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
                   stat1_ _stat1Olabel _stat1Oprocs
-              ( _stat2Iblocks,_stat2Iflabels,_stat2Iflow,_stat2IflowLabel,_stat2Iinitl,_stat2Imain,_stat2ImaxLabel,_stat2Ist,_stat2Isvars) =
+              ( _stat2Iblocks,_stat2Iflabels,_stat2Iflow,_stat2IflowLabels,_stat2Iinitl,_stat2Imain,_stat2ImaxLabel,_stat2Ist,_stat2Isvars) =
                   stat2_ _stat2Olabel _stat2Oprocs
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_While :: BExpr ->
                   T_Stat ->
                   T_Stat
@@ -733,8 +733,8 @@ sem_Stat_While cond_ stat_ =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOflow :: Flow
               _statOlabel :: Label
               _lhsOblocks :: (M.Map Label Block)
@@ -746,10 +746,10 @@ sem_Stat_While cond_ stat_ =
               _statIblocks :: (M.Map Label Block)
               _statIflabels :: ([Label])
               _statIflow :: Flow
-              _statIflowLabel :: Int
+              _statIflowLabels :: ([Label])
               _statIinitl :: Label
               _statImain :: Stat'
-              _statImaxLabel :: Int
+              _statImaxLabel :: Label
               _statIst :: Stat
               _statIsvars :: (S.Set Var)
               _lhsOmain =
@@ -762,9 +762,9 @@ sem_Stat_While cond_ stat_ =
                    _statImaxLabel
                    {-# LINE 764 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 87 "Administration.ag" #-}
-                   _lhsIlabel
+                   [_lhsIlabel]
                    {-# LINE 769 "Administration.hs" #-}
                    )
               _lhsOflow =
@@ -817,9 +817,9 @@ sem_Stat_While cond_ stat_ =
                    _lhsIprocs
                    {-# LINE 819 "Administration.hs" #-}
                    )
-              ( _statIblocks,_statIflabels,_statIflow,_statIflowLabel,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
+              ( _statIblocks,_statIflabels,_statIflow,_statIflowLabels,_statIinitl,_statImain,_statImaxLabel,_statIst,_statIsvars) =
                   stat_ _statOlabel _statOprocs
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_IAssign :: String ->
                     IExpr ->
                     T_Stat
@@ -827,8 +827,8 @@ sem_Stat_IAssign name_ val_ =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOblocks :: (M.Map Label Block)
               _lhsOsvars :: (S.Set Var)
               _lhsOflow :: Flow
@@ -845,9 +845,9 @@ sem_Stat_IAssign name_ val_ =
                    _lhsIlabel
                    {-# LINE 847 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 97 "Administration.ag" #-}
-                   _lhsIlabel
+                   [_lhsIlabel]
                    {-# LINE 852 "Administration.hs" #-}
                    )
               _lhsOblocks =
@@ -885,7 +885,7 @@ sem_Stat_IAssign name_ val_ =
                    _st
                    {-# LINE 887 "Administration.hs" #-}
                    )
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_BAssign :: String ->
                     BExpr ->
                     T_Stat
@@ -893,8 +893,8 @@ sem_Stat_BAssign name_ val_ =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOblocks :: (M.Map Label Block)
               _lhsOsvars :: (S.Set Var)
               _lhsOflow :: Flow
@@ -911,9 +911,9 @@ sem_Stat_BAssign name_ val_ =
                    _lhsIlabel
                    {-# LINE 913 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 105 "Administration.ag" #-}
-                   _lhsIlabel
+                   [_lhsIlabel]
                    {-# LINE 918 "Administration.hs" #-}
                    )
               _lhsOblocks =
@@ -951,7 +951,7 @@ sem_Stat_BAssign name_ val_ =
                    _st
                    {-# LINE 953 "Administration.hs" #-}
                    )
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 sem_Stat_Seq :: T_Stat ->
                 T_Stat ->
                 T_Stat
@@ -959,8 +959,8 @@ sem_Stat_Seq stat1_ stat2_ =
     (\ _lhsIlabel
        _lhsIprocs ->
          (let _lhsOmain :: Stat'
-              _lhsOmaxLabel :: Int
-              _lhsOflowLabel :: Int
+              _lhsOmaxLabel :: Label
+              _lhsOflowLabels :: ([Label])
               _lhsOflow :: Flow
               _lhsOblocks :: (M.Map Label Block)
               _stat1Olabel :: Label
@@ -974,19 +974,19 @@ sem_Stat_Seq stat1_ stat2_ =
               _stat1Iblocks :: (M.Map Label Block)
               _stat1Iflabels :: ([Label])
               _stat1Iflow :: Flow
-              _stat1IflowLabel :: Int
+              _stat1IflowLabels :: ([Label])
               _stat1Iinitl :: Label
               _stat1Imain :: Stat'
-              _stat1ImaxLabel :: Int
+              _stat1ImaxLabel :: Label
               _stat1Ist :: Stat
               _stat1Isvars :: (S.Set Var)
               _stat2Iblocks :: (M.Map Label Block)
               _stat2Iflabels :: ([Label])
               _stat2Iflow :: Flow
-              _stat2IflowLabel :: Int
+              _stat2IflowLabels :: ([Label])
               _stat2Iinitl :: Label
               _stat2Imain :: Stat'
-              _stat2ImaxLabel :: Int
+              _stat2ImaxLabel :: Label
               _stat2Ist :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmain =
@@ -999,14 +999,14 @@ sem_Stat_Seq stat1_ stat2_ =
                    _stat2ImaxLabel
                    {-# LINE 1001 "Administration.hs" #-}
                    )
-              _lhsOflowLabel =
+              _lhsOflowLabels =
                   ({-# LINE 113 "Administration.ag" #-}
-                   _stat2IflowLabel
+                   _stat2IflowLabels
                    {-# LINE 1006 "Administration.hs" #-}
                    )
               _lhsOflow =
                   ({-# LINE 114 "Administration.ag" #-}
-                   (_stat1IflowLabel,_label2    ) : _stat1Iflow ++ _stat2Iflow
+                   map (\x -> (x,_label2    )) _stat1IflowLabels ++ _stat1Iflow ++ _stat2Iflow
                    {-# LINE 1011 "Administration.hs" #-}
                    )
               _lhsOblocks =
@@ -1064,11 +1064,11 @@ sem_Stat_Seq stat1_ stat2_ =
                    _lhsIprocs
                    {-# LINE 1066 "Administration.hs" #-}
                    )
-              ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabel,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
+              ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabels,_stat1Iinitl,_stat1Imain,_stat1ImaxLabel,_stat1Ist,_stat1Isvars) =
                   stat1_ _stat1Olabel _stat1Oprocs
-              ( _stat2Iblocks,_stat2Iflabels,_stat2Iflow,_stat2IflowLabel,_stat2Iinitl,_stat2Imain,_stat2ImaxLabel,_stat2Ist,_stat2Isvars) =
+              ( _stat2Iblocks,_stat2Iflabels,_stat2Iflow,_stat2IflowLabels,_stat2Iinitl,_stat2Imain,_stat2ImaxLabel,_stat2Ist,_stat2Isvars) =
                   stat2_ _stat2Olabel _stat2Oprocs
-          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabel,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
+          in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOmain,_lhsOmaxLabel,_lhsOst,_lhsOsvars)))
 -- Stat' -------------------------------------------------------
 data Stat' = Skip' (Int)
            | IfThenElse' (Int) (BExpr) (Stat') (Stat')

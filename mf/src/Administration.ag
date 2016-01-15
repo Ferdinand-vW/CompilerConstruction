@@ -40,8 +40,8 @@ attr Stat
     syn main :: Stat'
     syn blocks :: {M.Map Label Block}
     syn st :: self
-    syn maxLabel :: {Int}
-    syn flowLabel :: {Int}
+    syn maxLabel :: {Label}
+    syn flowLabels :: {[Label]}
     syn flow use {++} {[]} :: {Flow}
     inh procs :: {M.Map String Proc'}
     syn svars :: {S.Set Var}
@@ -64,7 +64,7 @@ sem Proc
 sem Stat
     | Skip       lhs.main      = Skip' @lhs.label
                  lhs.maxLabel  = @lhs.label
-                 lhs.flowLabel = @lhs.label
+                 lhs.flowLabels = [@lhs.label]
                  lhs.blocks    = M.singleton @lhs.label B_Skip
                  lhs.svars     = S.empty
                  lhs.flow      = []
@@ -72,7 +72,7 @@ sem Stat
                  lhs.flabels   = [@lhs.label]
     | IfThenElse lhs.main      = IfThenElse' @lhs.label @cond @stat1.main @stat2.main
                  lhs.maxLabel  = @stat2.maxLabel
-                 lhs.flowLabel = @lhs.label
+                 lhs.flowLabels = [@loc.label1,@loc.label2]
                  lhs.flow      = (@lhs.label, @loc.label1) : (@lhs.label, @loc.label2) : @stat1.flow ++ @stat2.flow
                  stat1.label   = @loc.label1
                  loc.label1    = @lhs.label + 1
@@ -84,7 +84,7 @@ sem Stat
                  lhs.flabels   = [@stat1.maxLabel,@stat2.maxLabel]
     | While      lhs.main      = While' @lhs.label @cond @stat.main
                  lhs.maxLabel  = @stat.maxLabel
-                 lhs.flowLabel = @lhs.label
+                 lhs.flowLabels = [@lhs.label]
                  lhs.flow      = (@lhs.label, @loc.label1) : map (\x -> (x,@lhs.label)) @stat.flabels ++ @stat.flow
                  loc.label1    = @lhs.label + 1
                  stat.label    = @loc.label1
@@ -94,7 +94,7 @@ sem Stat
                  lhs.flabels   = [@lhs.label]
     | IAssign    lhs.main      = IAssign' @lhs.label @name @val
                  lhs.maxLabel  = @lhs.label
-                 lhs.flowLabel = @lhs.label
+                 lhs.flowLabels = [@lhs.label]
                  lhs.blocks    = M.singleton @lhs.label $ B_IAssign @name @val
                  lhs.svars     = S.singleton @name
                  lhs.flow      = []
@@ -102,7 +102,7 @@ sem Stat
                  lhs.flabels   = [@lhs.label]
     | BAssign    lhs.main      = BAssign' @lhs.label @name @val
                  lhs.maxLabel  = @lhs.label
-                 lhs.flowLabel = @lhs.label
+                 lhs.flowLabels = [@lhs.label]
                  lhs.blocks    = M.singleton @lhs.label $ B_BAssign @name @val
                  lhs.svars     = S.singleton @name
                  lhs.flow      = []
@@ -110,8 +110,8 @@ sem Stat
                  lhs.flabels   = [@lhs.label]
     | Seq        lhs.main      = Seq' @stat1.main @stat2.main
                  lhs.maxLabel  = @stat2.maxLabel
-                 lhs.flowLabel = @stat2.flowLabel
-                 lhs.flow      = (@stat1.flowLabel,@loc.label2) : @stat1.flow ++ @stat2.flow
+                 lhs.flowLabels = @stat2.flowLabels
+                 lhs.flow      = map (\x -> (x,@loc.label2)) @stat1.flowLabels ++ @stat1.flow ++ @stat2.flow
                  lhs.blocks    = M.union @stat1.blocks @stat2.blocks
                  stat1.label   = @lhs.label
                  loc.label2    = @stat1.maxLabel + 1

@@ -1,11 +1,13 @@
-module LiveVariableAnalysis where
+module LiveVariableAnalysis 
+(slv)
+where
 
 
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Tuple
 
-import Analysis
+import Analysis (analyse, Analysis)
 import MonotoneFramework
 import Administration
 

@@ -1,6 +1,13 @@
 begin
-  x := 5;
-  y := 2; 
-  z := 1;
-  x := z * y;
+  x := 2;
+  y := 4;
+  x := 1;
+  if x > 1
+    then {
+        z := y;
+    }
+    else  {
+        z := x * x;
+    }
+  x := z;
 end

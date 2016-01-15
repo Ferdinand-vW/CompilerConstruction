@@ -2,6 +2,7 @@ module Analysis where
 
 import qualified Data.Map as M
 import qualified Data.List as L
+import qualified Data.Set as S
 import Data.Char
 import Data.Maybe
 
@@ -31,6 +32,8 @@ analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = do
               print $ "state of l':" ++ show (slookup l' arr)
               print $ "transferFunction on l:" ++ show (tf (slookup l bl) (slookup l arr))
               print $ "the lmeet: " ++ show (lmeet (tf (slookup l bl) $ slookup l arr) (slookup l' arr))
+              print $ "kills: " ++ show (kill (slookup l bl))
+              print $ "gens: " ++ show (gen (slookup l bl))
               if not $ lmeet (tf (slookup l bl) $ slookup l arr) (slookup l' arr)
                 --If it is not more precise
                 --Add the above union to the array
@@ -55,3 +58,35 @@ analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = do
 --its a coding error
 slookup :: Ord a => a -> M.Map a b -> b
 slookup l stats = fromJust $ M.lookup l stats
+
+kill :: Block -> S.Set Var
+kill (B_IAssign n _) = S.singleton n
+kill (B_BAssign n _) = S.singleton n
+kill _ = S.empty
+
+gen :: Block -> S.Set Var
+gen (B_IAssign _ iexpr) = genIExpr iexpr
+gen (B_BAssign _ bexpr) = genBExpr bexpr
+gen (B_Cond bexpr) = genBExpr bexpr
+gen _ = S.empty
+
+genIExpr :: IExpr -> S.Set Var
+genIExpr (IConst _) = S.empty
+genIExpr (Var n) = S.singleton n
+genIExpr (Plus e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genIExpr (Minus e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genIExpr (Divide e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genIExpr (Times e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+
+genBExpr :: BExpr -> S.Set Var
+genBExpr (BConst _) = S.empty
+genBExpr (BVar n) = S.singleton n
+genBExpr (LessThan e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genBExpr (GreaterThan e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genBExpr (LessEqual e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genBExpr (GreaterEqual e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genBExpr (IEqual e1 e2) = S.union (genIExpr e1) $ genIExpr e2
+genBExpr (BEqual b1 b2) = S.union (genBExpr b1) $ genBExpr b2
+genBExpr (And b1 b2) = S.union (genBExpr b1) $ genBExpr b2
+genBExpr (Or b1 b2) = S.union (genBExpr b1) $ genBExpr b2
+genBExpr (Not b) = genBExpr b
