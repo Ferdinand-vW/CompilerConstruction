@@ -21,7 +21,13 @@ import Char (ord)
 {-# LINE 1 "templates\\wrappers.hs" #-}
 {-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
-{-# LINE 9 "<command-line>" #-}
+
+
+
+
+
+
+
 {-# LINE 1 "G:\\GitHub\\haskell-platform\\build\\ghc-bindist\\local\\lib/include\\ghcversion.h" #-}
 
 
@@ -40,7 +46,7 @@ import Char (ord)
 
 
 
-{-# LINE 9 "<command-line>" #-}
+{-# LINE 7 "<command-line>" #-}
 {-# LINE 1 "templates\\wrappers.hs" #-}
 -- -----------------------------------------------------------------------------
 -- Alex wrapper code.
@@ -267,7 +273,12 @@ alex_action_38 =  \s -> TInt (read s)
 {-# LINE 1 "templates\\GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
-{-# LINE 8 "<command-line>" #-}
+
+
+
+
+
+
 {-# LINE 1 "G:\\GitHub\\haskell-platform\\build\\ghc-bindist\\local\\lib/include\\ghcversion.h" #-}
 
 
@@ -286,7 +297,7 @@ alex_action_38 =  \s -> TInt (read s)
 
 
 
-{-# LINE 8 "<command-line>" #-}
+{-# LINE 6 "<command-line>" #-}
 {-# LINE 1 "templates\\GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE

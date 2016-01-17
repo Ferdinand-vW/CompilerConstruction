@@ -30,85 +30,98 @@ attr Program
 
 sem Program 
     | Program lhs.pinfo = ProgramInfo @stat.blocks [1 .. @stat.maxLabel] [@stat.initl] (@stat.flabels) @stat.flow (S.toList @stat.svars)
-              stat.label = fst @loc.procs
-              loc.procs = foldProcs @procs
-              stat.procs = snd @loc.procs
+              stat.label = 1--fst @loc.procs
+              loc.procs = []--foldProcs @procs
+              stat.procs = M.empty--snd @loc.procs
 
 attr Stat
     inh label :: {Label}
-    syn main :: Stat'
     syn blocks :: {M.Map Label Block}
-    syn st :: self
     syn maxLabel :: {Label}
     syn flowLabels :: {[Label]}
     syn flow use {++} {[]} :: {Flow}
     inh procs :: {M.Map String Proc'}
-    syn svars :: {S.Set Var}
     syn initl :: {Label}
     syn flabels :: {[Label]}
 
 attr Proc
     inh label :: {Label}
     syn pmap :: {M.Map String Proc}
-    syn main :: {(Int,Proc')}
     syn name :: {String}
 
 sem Proc
-    | Proc lhs.main = (@stat.maxLabel + 1, Proc' @lhs.label (@stat.maxLabel + 1) @name @inp @out @stat.main)
-           lhs.pmap = M.singleton @name (Proc @name @inp @out @stat.st)
+    | Proc lhs.pmap = M.singleton @name (Proc @name @inp @out @stat.slf)
            lhs.name = @name
            stat.label = @lhs.label + 1
            stat.procs = M.empty
 
+attr IExpr BExpr Stat
+    syn svars :: {S.Set Var}
+    syn slf :: self
+
+sem IExpr
+    | IConst    lhs.svars = S.empty
+    | Var       lhs.svars = S.singleton @name
+    | Plus      lhs.svars = S.union @left.svars @right.svars
+    | Minus     lhs.svars = S.union @left.svars @right.svars
+    | Times     lhs.svars = S.union @left.svars @right.svars
+    | Divide    lhs.svars = S.union @left.svars @right.svars
+
+sem BExpr
+    | BConst        lhs.svars = S.empty
+    | BVar          lhs.svars = S.singleton @name
+    | LessThan      lhs.svars = S.union @left.svars @right.svars
+    | GreaterThan   lhs.svars = S.union @left.svars @right.svars
+    | LessEqual     lhs.svars = S.union @left.svars @right.svars
+    | GreaterEqual  lhs.svars = S.union @left.svars @right.svars
+    | IEqual        lhs.svars = S.union @left.svars @right.svars
+    | BEqual        lhs.svars = S.union @left.svars @right.svars
+    | And           lhs.svars = S.union @left.svars @right.svars
+    | Not           lhs.svars = @val.svars
+
 sem Stat
-    | Skip       lhs.main      = Skip' @lhs.label
-                 lhs.maxLabel  = @lhs.label
+    | Skip       lhs.maxLabel  = @lhs.label
                  lhs.flowLabels = [@lhs.label]
                  lhs.blocks    = M.singleton @lhs.label B_Skip
                  lhs.svars     = S.empty
                  lhs.flow      = []
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label]
-    | IfThenElse lhs.main      = IfThenElse' @lhs.label @cond @stat1.main @stat2.main
-                 lhs.maxLabel  = @stat2.maxLabel
+    | IfThenElse lhs.maxLabel  = @stat2.maxLabel
                  lhs.flowLabels = [@loc.label1,@loc.label2]
                  lhs.flow      = (@lhs.label, @loc.label1) : (@lhs.label, @loc.label2) : @stat1.flow ++ @stat2.flow
                  stat1.label   = @loc.label1
                  loc.label1    = @lhs.label + 1
                  loc.label2    = @stat1.maxLabel + 1
                  stat2.label   = @loc.label2
-                 lhs.blocks    = M.union (M.union (M.singleton @lhs.label (B_Cond @cond)) @stat1.blocks) @stat2.blocks
-                 lhs.svars     = S.union @stat1.svars @stat2.svars
+                 lhs.blocks    = M.union (M.union (M.singleton @lhs.label (B_Cond @cond.slf)) @stat1.blocks) @stat2.blocks
+                 lhs.svars     = S.union @cond.svars (S.union @stat1.svars @stat2.svars)
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@stat1.maxLabel,@stat2.maxLabel]
-    | While      lhs.main      = While' @lhs.label @cond @stat.main
-                 lhs.maxLabel  = @stat.maxLabel
+    | While      lhs.maxLabel  = @stat.maxLabel
                  lhs.flowLabels = [@lhs.label]
                  lhs.flow      = (@lhs.label, @loc.label1) : @stat.flow ++ map (\x -> (x,@lhs.label)) @stat.flabels
                  loc.label1    = @lhs.label + 1
                  stat.label    = @loc.label1
-                 lhs.blocks    = M.union (M.singleton @lhs.label (B_Cond @cond)) @stat.blocks
-                 lhs.svars     = @stat.svars
+                 lhs.blocks    = M.union (M.singleton @lhs.label (B_Cond @cond.slf)) @stat.blocks
+                 lhs.svars     = S.union @cond.svars @stat.svars
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label]
-    | IAssign    lhs.main      = IAssign' @lhs.label @name @val
-                 lhs.maxLabel  = @lhs.label
+    | IAssign    lhs.maxLabel  = @lhs.label
                  lhs.flowLabels = [@lhs.label]
-                 lhs.blocks    = M.singleton @lhs.label $ B_IAssign @name @val
-                 lhs.svars     = S.singleton @name
+                 lhs.blocks    = M.singleton @lhs.label $ B_IAssign @name @val.slf
+                 lhs.svars     = S.union (S.singleton @name) @val.svars
                  lhs.flow      = []
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label]
-    | BAssign    lhs.main      = BAssign' @lhs.label @name @val
-                 lhs.maxLabel  = @lhs.label
+    | BAssign    lhs.maxLabel  = @lhs.label
                  lhs.flowLabels = [@lhs.label]
-                 lhs.blocks    = M.singleton @lhs.label $ B_BAssign @name @val
-                 lhs.svars     = S.singleton @name
+                 lhs.blocks    = M.singleton @lhs.label $ B_BAssign @name @val.slf
+                 lhs.svars     = S.union (S.singleton @name) @val.svars
                  lhs.flow      = []
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label]
-    | Seq        lhs.main      = Seq' @stat1.main @stat2.main
-                 lhs.maxLabel  = @stat2.maxLabel
+    | Seq        lhs.maxLabel  = @stat2.maxLabel
                  lhs.flowLabels = @stat2.flowLabels
                  lhs.flow      = @stat1.flow ++ map (\x -> (x,@loc.label2)) @stat1.flowLabels ++ @stat2.flow
                  lhs.blocks    = M.union @stat1.blocks @stat2.blocks
@@ -121,14 +134,14 @@ sem Stat
 
 {
 
-foldProcs :: Procs -> (Int, M.Map String Proc')
-foldProcs procs = foldr (\x y -> 
-                let (l,proc') = wrapproc x (fst y)
-                in (l + 1,M.insert (getName proc') proc' $ snd y)) (1,M.empty) procs
+--foldProcs :: Procs -> (Int, M.Map String Proc')
+--foldProcs procs = foldr (\x y -> 
+                --let (l,proc') = wrapproc x (fst y)
+                --in (l + 1,M.insert (getName proc') proc' $ snd y)) (1,M.empty) procs
 
 getName :: Proc' -> String
 getName (Proc' _ _ name _ _ _) = name
 
-wrapproc :: Proc -> Int -> (Int, Proc')
-wrapproc proc label = main_Syn_Proc $ wrap_Proc (sem_Proc proc) (Inh_Proc label)
+--wrapproc :: Proc -> Int -> (Int, Proc')
+--wrapproc proc label = main_Syn_Proc $ wrap_Proc (sem_Proc proc) (Inh_Proc label)
 }

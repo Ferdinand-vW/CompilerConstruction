@@ -20,11 +20,11 @@ data Proc'
 
 data Stat
   | Skip
-  | IfThenElse    cond  :: {BExpr}      stat1  :: Stat      stat2 :: Stat
-  | While         cond  :: {BExpr}      stat   :: Stat
+  | IfThenElse    cond  :: BExpr      stat1  :: Stat      stat2 :: Stat
+  | While         cond  :: BExpr      stat   :: Stat
   --| Call          name  :: String     params :: {Exprs}    out :: String
-  | IAssign       name  :: String     val    :: {IExpr}
-  | BAssign       name  :: String     val    :: {BExpr}
+  | IAssign       name  :: String     val    :: IExpr
+  | BAssign       name  :: String     val    :: BExpr
   | Seq           stat1 :: Stat       stat2  :: Stat
   --| Malloc        name  :: String     size   :: {IExpr}
   --| Free          ptr   :: {IExpr}
