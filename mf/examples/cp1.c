@@ -1,6 +1,8 @@
 begin
-  x := 2;
-  x := x - 1;
-  x := 1;
-
+  y := 2; 
+  z := 1;
+  while x > 0 do {
+    z := z * y;
+    x := x - 1;
+  }
 end
