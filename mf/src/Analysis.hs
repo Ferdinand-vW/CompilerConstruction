@@ -9,13 +9,14 @@ import Data.Maybe
 import MonotoneFramework
 import Administration
 
+
 --First element is the context
 --second element is the effect on the context (transferfunction)
 type Analysis a = M.Map Label (a,a)
 
 --Analyse a Program (M.Map Label Stat') using a MonotoneFramework
 --Return a Analysis that currently only works for ConstantPropagation
-analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis a)
+analyse :: (Show a) => Framework a -> M.Map Label Block -> IO (Analysis a)
 analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = do
                                                               anl <- loop fl array'
                                                               return $ finalize anl

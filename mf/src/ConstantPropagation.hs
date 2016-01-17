@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleInstances, IncoherentInstances, TypeSynonymInstances, UndecidableInstances #-}
 module ConstantPropagation
 (
 cp
@@ -10,34 +9,16 @@ import qualified Data.Map as M
 import Analysis
 import MonotoneFramework
 import Administration
+import PpAnalyse
 
 
-data Lattice a = Top | Bottom | Value a deriving (Eq)
+--Latttice is declared in the ppAnalyse. I think it is better to add all the types in a seperate file
+--data Lattice a = Top | Bottom | Value a deriving Eq
+
+
+
 --data ProgramI = ProgramInfo {initl :: Label, finals :: [Label], flow' :: [(Label,Label)], blcks :: M.Map Label Stat', vrs :: [Var]}
 
-instance Show (M.Map Var (Lattice Int)) where
-    show xs = brackets $ M.foldrWithKey (\v l b -> v ++ " => " ++ show l ++ ',' : b) "" xs
-
-
-instance Show (Analysis (M.Map Var (Lattice Int))) where
-    show xs =  M.foldrWithKey (\k (l,r) b -> show k ++ show l ++ " => " ++ show r ++ newLine ++ b ) "" xs
-
-
-instance Show a => Show (Analysis a) where
-    show xs =  M.foldrWithKey (\k (l,r) b -> show k ++ show l ++ " => " ++ show r ++ newLine ++ b ) "" xs
-
-
-instance Show (Lattice Int) where 
-    show Top = "T"
-    show Bottom = "_"
-    show (Value a) = show a
-
-
-brackets :: String -> String
-brackets s = "{" ++ s ++ "}"
-
-newLine :: String
-newLine = "\n"
 
 cp :: ProgramInfo -> IO (Analysis (M.Map Var (Lattice Int)))
 cp p = let join = joinOp

@@ -24,19 +24,19 @@ import PpAnalyse
 ghci> run slv "fib"
 
 --}
-data Lattice a = Top | Bottom | Value a deriving (Eq)
-run :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
+--data Lattice a = Top | Bottom | Value a deriving (E/q)
+run :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
 run = runAnalysis'
 
 -- run some analysis by passing an analysis function and a 'show' function to display the result
-runAnalysis' :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
+runAnalysis' :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
   putStrLn "OUTPUT:"
   an <- analyze p
   putStrLn $ show $ p
   putStrLn "Analysis:"
-  putStrLn $ show $ an
+  putStrLn $ view $ an
   putStrLn "G'bye"
 
 -- parse program

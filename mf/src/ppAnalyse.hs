@@ -1,13 +1,18 @@
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+
 module PpAnalyse where
 
 import Administration
+import Analysis (analyse, Analysis)
+
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 instance Show ProgramInfo where
-    show (ProgramInfo b l i fi fl v) = "Block: "  ++ newLine ++ toBlock b ++ newLine
-                                    ++ "Flow: "   ++ listOf ',' fl        ++ newLine
+    show (ProgramInfo b l i fi fl v) = "Block:  " ++ newLine ++ toBlock b ++ newLine
+                                    ++ "Flow:   " ++ listOf ',' fl        ++ newLine
                                     ++ "Labels: " ++ listOf ',' l         ++ newLine
-                                    ++ "Init: "   ++ listOf ',' i         ++ newLine
+                                    ++ "Init:   " ++ listOf ',' i         ++ newLine
                                     ++ "Finals: " ++ listOf ',' fi        ++ newLine
 
 instance Show Block where
@@ -18,16 +23,8 @@ instance Show Block where
 
 
 toBlock :: M.Map Label Block -> String
-toBlock xs = M.foldrWithKey (\k a b -> show a ++ " Label:" ++ show k ++ newLine ++ b) "" xs
+toBlock xs = M.foldrWithKey (\k a b -> "Label " ++ show k  ++ ": " ++ show a ++ newLine ++ b) "" xs
 
-
-listOf :: (Show a) => Char -> [a] -> String
-listOf c []     = brackets ""
-listOf c [x]    = brackets $ show x
-listOf c xs     = brackets $ foldr (\a b -> show a ++ c : b) "" xs
-
-brackets :: String -> String
-brackets s = "{" ++ s ++ "}" 
 
 instance Show BExpr where
     show (BConst         v) = show v
@@ -52,9 +49,48 @@ instance Show IExpr where
     show (Divide l r) = show l ++ " / " ++ show r
     show (Deref    p) = show p
 
+--Added the view class to show all the analysis in a correct form. 
+class View a where
+  view :: a -> String
 
-ppAnalyse :: Show a => M.Map Label a -> String
-ppAnalyse = undefined
+------View of Live Variables analysis
+instance View (S.Set Var) where
+    view xs = brackets $ S.foldr (\a b -> show a ++ ", " ++ b) "" xs
 
+
+instance View (Analysis (S.Set Var)) where
+    view xs =  M.foldrWithKey (\k (l,r) b -> show k ++  "Entry:" ++ view r ++ newLine ++ "Exit:" ++ view l ++ newLine ++ b ) "" xs
+
+
+------View of Constant Propoagation  analysis
+instance View (M.Map Var (Lattice Int)) where
+    view xs = brackets $ M.foldrWithKey (\v l b -> v ++ " => " ++ show l ++ ',' : b) "" xs
+
+
+instance View (Analysis (M.Map Var (Lattice Int))) where
+    view xs =  M.foldrWithKey (\k (l,r) b -> show k ++ view l ++ " => " ++ view r ++ newLine ++ b ) "" xs
+
+
+
+instance Show (Lattice Int) where 
+    show Top = "T"
+    show Bottom = "_"
+    show (Value a) = show a
+
+
+--This data is used in the ConstantPropagation.
+data Lattice a = Top | Bottom | Value a deriving Eq
+
+
+--helpers
 newLine :: String
 newLine = "\n"
+
+
+listOf :: (Show a) => Char -> [a] -> String
+listOf c []     = brackets ""
+listOf c [x]    = brackets $ show x
+listOf c xs     = brackets $ foldr (\a b -> show a ++ c : b) "" xs
+
+brackets :: String -> String
+brackets s = "{" ++ s ++ "}" 

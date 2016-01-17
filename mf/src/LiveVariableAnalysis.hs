@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances, IncoherentInstances, TypeSynonymInstances, UndecidableInstances #-}
-
 module LiveVariableAnalysis 
 (slv)
 where
@@ -12,6 +10,7 @@ import Data.Tuple
 import Analysis (analyse, Analysis)
 import MonotoneFramework
 import Administration
+import PpAnalyse
 
 slv :: ProgramInfo -> IO (Analysis (S.Set Var))
 slv p = let join = S.union
@@ -30,22 +29,10 @@ transferFunction bl set = if kill bl `S.isSubsetOf` set
                                 else set
 
 
-instance Show (S.Set Var) where
-    show xs = brackets $ S.foldr (\a b -> show a ++ ", " ++ b) "" xs
-
-
-instance Show (Analysis (S.Set Var)) where
-    show xs =  M.foldrWithKey (\k (l,r) b -> "Kill:" ++ show k ++ show l ++ " Gen:" ++ show r ++ newLine ++ b ) "" xs
-
 
 --instance Show a => Show (Analysis a) where
 --    show xs = "Not sure."
 
-brackets :: String -> String
-brackets s = "{" ++ s ++ "}"
-
-newLine :: String
-newLine = "\n"
 
 
 kill :: Block -> S.Set Var
