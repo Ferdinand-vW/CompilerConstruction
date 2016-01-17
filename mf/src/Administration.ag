@@ -12,14 +12,13 @@ import qualified Data.Set as S
 toProgramInfo :: Program -> ProgramInfo
 toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
 
-data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, init :: [Label], finals :: [Label], flow :: Flow, vars :: [Var]}
-    deriving Show
+data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, labels :: [Label] , init :: [Label], finals :: [Label], flow :: Flow, vars :: [Var]}
 
 data Block = 
     B_IAssign {name :: String, valI :: IExpr} |
     B_BAssign {name :: String, valB :: BExpr} |
     B_Cond {cond :: BExpr} |
-    B_Skip deriving Show
+    B_Skip
 
 type Label = Int
 type Flow = [(Int, Int)]
@@ -30,7 +29,7 @@ attr Program
      syn pinfo :: ProgramInfo
 
 sem Program 
-    | Program lhs.pinfo = ProgramInfo @stat.blocks [@stat.initl] (@stat.flabels) @stat.flow (S.toList @stat.svars)
+    | Program lhs.pinfo = ProgramInfo @stat.blocks [1 .. @stat.maxLabel] [@stat.initl] (@stat.flabels) @stat.flow (S.toList @stat.svars)
               stat.label = fst @loc.procs
               loc.procs = foldProcs @procs
               stat.procs = snd @loc.procs
@@ -85,7 +84,7 @@ sem Stat
     | While      lhs.main      = While' @lhs.label @cond @stat.main
                  lhs.maxLabel  = @stat.maxLabel
                  lhs.flowLabels = [@lhs.label]
-                 lhs.flow      = (@lhs.label, @loc.label1) : map (\x -> (x,@lhs.label)) @stat.flabels ++ @stat.flow
+                 lhs.flow      = (@lhs.label, @loc.label1) : @stat.flow ++ map (\x -> (x,@lhs.label)) @stat.flabels
                  loc.label1    = @lhs.label + 1
                  stat.label    = @loc.label1
                  lhs.blocks    = M.union (M.singleton @lhs.label (B_Cond @cond)) @stat.blocks
@@ -111,7 +110,7 @@ sem Stat
     | Seq        lhs.main      = Seq' @stat1.main @stat2.main
                  lhs.maxLabel  = @stat2.maxLabel
                  lhs.flowLabels = @stat2.flowLabels
-                 lhs.flow      = map (\x -> (x,@loc.label2)) @stat1.flowLabels ++ @stat1.flow ++ @stat2.flow
+                 lhs.flow      = @stat1.flow ++ map (\x -> (x,@loc.label2)) @stat1.flowLabels ++ @stat2.flow
                  lhs.blocks    = M.union @stat1.blocks @stat2.blocks
                  stat1.label   = @lhs.label
                  loc.label2    = @stat1.maxLabel + 1

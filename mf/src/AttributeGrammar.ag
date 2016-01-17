@@ -7,20 +7,16 @@
 data Program
   | Program   procs :: Procs
               stat  :: Stat
-  deriving Program : Show
 
 data Program'
   | Program'  procs :: Procs'
               stat :: Stat'
-  deriving Program' : Show
 
 data Proc
   | Proc          name :: String  inp :: {[String]}  out :: String   stat :: Stat
-deriving Proc : Show
 
 data Proc'
   | Proc'         labelEntry :: Int  labelReturn :: Int    name :: String  inp :: {[String]}  out :: String   stat :: Stat'
-deriving Proc' : Show
 
 data Stat
   | Skip
@@ -35,7 +31,6 @@ data Stat
   --| RefAssign     ptr   :: {IExpr}    val    :: {IExpr}
   --| Continue
   --| Break
-deriving Stat : Show
 
 data Stat'
   | Skip'          label :: Int
@@ -50,7 +45,6 @@ data Stat'
   | RefAssign'     label :: Int        ptr   :: IExpr      val :: IExpr
   | Continue'      label :: Int
   | Break'         label :: Int
-deriving Stat' : Show
 
 data IExpr 
   | IConst        val  :: Int
@@ -60,7 +54,7 @@ data IExpr
   | Times         left :: IExpr       right :: IExpr
   | Divide        left :: IExpr       right :: IExpr
   | Deref         ptr  :: IExpr
-deriving IExpr : Eq, Show
+deriving IExpr : Eq
 
 data BExpr
   | BConst        val  :: Bool
@@ -74,12 +68,12 @@ data BExpr
   | And           left :: BExpr       right :: BExpr
   | Or            left :: BExpr       right :: BExpr
   | Not           val  :: BExpr
-deriving BExpr : Eq, Show
+deriving BExpr : Eq
 
 
 data Expr | B BExpr
           | I IExpr
-deriving Expr : Eq, Show
+deriving Expr : Eq
 
 data Code | CBExpr   BExpr
           | CIExpr   IExpr

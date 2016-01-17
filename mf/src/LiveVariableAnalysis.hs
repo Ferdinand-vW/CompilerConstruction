@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances, IncoherentInstances, TypeSynonymInstances, UndecidableInstances #-}
+
 module LiveVariableAnalysis 
 (slv)
 where
@@ -26,6 +28,25 @@ transferFunction :: Block -> S.Set Var -> S.Set Var
 transferFunction bl set = if kill bl `S.isSubsetOf` set
                                 then S.union (S.difference set (kill bl)) (gen bl)
                                 else set
+
+
+instance Show (S.Set Var) where
+    show xs = brackets $ S.foldr (\a b -> show a ++ ", " ++ b) "" xs
+
+
+instance Show (Analysis (S.Set Var)) where
+    show xs =  M.foldrWithKey (\k (l,r) b -> "Kill:" ++ show k ++ show l ++ " Gen:" ++ show r ++ newLine ++ b ) "" xs
+
+
+--instance Show a => Show (Analysis a) where
+--    show xs = "Not sure."
+
+brackets :: String -> String
+brackets s = "{" ++ s ++ "}"
+
+newLine :: String
+newLine = "\n"
+
 
 kill :: Block -> S.Set Var
 kill (B_IAssign n _) = S.singleton n
