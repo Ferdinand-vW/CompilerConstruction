@@ -4,8 +4,9 @@ import Administration
 import qualified Data.Map as M
 
 instance Show ProgramInfo where
-    show (ProgramInfo b l i fi fl v) = "Block: "  ++ newLine ++ toBlock b ++ newLine
+    show (ProgramInfo b l i fi fl ifl v) = "Block: "  ++ newLine ++ toBlock b ++ newLine
                                     ++ "Flow: "   ++ listOf ',' fl        ++ newLine
+                                    ++ "InterFlow: " ++ listOf ',' ifl    ++ newLine
                                     ++ "Labels: " ++ listOf ',' l         ++ newLine
                                     ++ "Init: "   ++ listOf ',' i         ++ newLine
                                     ++ "Finals: " ++ listOf ',' fi        ++ newLine

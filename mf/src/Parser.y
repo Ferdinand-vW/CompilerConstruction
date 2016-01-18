@@ -89,7 +89,7 @@ Stat0 : skip ";"                         { Skip }
       | ident ":=" AExpr ";"             { IAssign $1 $3 }
       | ident ":=" BExpr ";"             { BAssign $1 $3 }
      -- | "*" AExpr0 ":=" AExpr0 ";"       { RefAssign $2 $4 }
-      --| call ident "(" CallArgs "," ident ")" ";"  { Call $2 $4 $6 }
+      | call ident "(" CallArgs "," ident ")" ";"  { Call $2 $4 $6 }
       --| malloc "(" ident "," AExpr ")" ";"      { Malloc $3 $5 }
       --| free "(" AExpr0 ")" ";"          { Free $3 }
       | "(" Stats ")"                    { $2 }
