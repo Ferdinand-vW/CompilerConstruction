@@ -55,11 +55,40 @@ class View a where
 
 ------View of Live Variables analysis
 instance View (S.Set Var) where
-    view xs = brackets $ S.foldr (\a b -> show a ++ ", " ++ b) "" xs
+    view xs = brackets $ S.foldr (\a b -> show a ++ "," ++ b) "" xs
+
 
 
 instance View (Analysis (S.Set Var)) where
-    view xs =  M.foldrWithKey (\k (l,r) b -> show k ++  "Entry:" ++ view r ++ newLine ++ "Exit:" ++ view l ++ newLine ++ b ) "" xs
+    view xs = let s = maxSizeVar xs
+              in header s "Entry" "Exit" ++
+                 M.foldrWithKey (\k v b -> (row k v s ++ b)) "" xs
+
+
+maxSizeVar :: Analysis (S.Set Var) -> (Int, Int)
+maxSizeVar xs = (maximum lm,maximum rm)
+            where (lm,rm) = unzip $ M.foldr (\(lv,rv) b -> (sizeVar lv,sizeVar rv) : b) [] $ xs
+
+header :: (Int,Int) -> String -> String -> String
+header (ls,rs) lv rv = "|" ++ replicate 5 ' ' ++ "|"
+                    ++ column (2 + ls - length lv) lv
+                    ++ column (2 + rs - length rv) rv
+                    ++ newLine
+ 
+row :: Int -> (S.Set Var,  S.Set Var) -> (Int,Int) -> String
+row l (lv,rv) (lm,rm) = "|" 
+                 ++ column 4 (show l) 
+                 ++ column (lm - sizeVar lv) (view lv)
+                 ++ column (rm - sizeVar rv) (view rv) 
+                 ++ newLine
+
+column :: Int -> String -> String
+column s w = w ++ replicate s ' ' ++ "|"
+
+sizeVar :: S.Set Var -> Int
+sizeVar xs = (S.size xs * 3) + (S.foldr (\a b -> length a + b ) 0 xs)
+
+
 
 
 ------View of Constant Propoagation  analysis
