@@ -1120,12 +1120,7 @@ parseError (x:xs) = error ("Parse error: " ++ show xs)
 {-# LINE 1 "templates\\GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
-
-
-
-
-
-
+{-# LINE 8 "<command-line>" #-}
 {-# LINE 1 "G:\\GitHub\\haskell-platform\\build\\ghc-bindist\\local\\lib/include\\ghcversion.h" #-}
 
 
@@ -1144,7 +1139,7 @@ parseError (x:xs) = error ("Parse error: " ++ show xs)
 
 
 
-{-# LINE 6 "<command-line>" #-}
+{-# LINE 8 "<command-line>" #-}
 {-# LINE 1 "templates\\GenericTemplate.hs" #-}
 -- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp 
 

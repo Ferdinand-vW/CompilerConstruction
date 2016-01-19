@@ -42,7 +42,7 @@ instance Show BExpr where
 
 instance Show IExpr where
     show (IConst   v) = show v
-    show (Var n)      = show n
+    show (Var n)      = n
     show (Plus   l r) = show l ++ " + " ++ show r
     show (Minus  l r) = show l ++ " - " ++ show r
     show (Times  l r) = show l ++ " * " ++ show r
