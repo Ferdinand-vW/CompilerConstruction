@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances, IncoherentInstances, TypeSynonymInstances, UndecidableInstances #-}
-
 module LiveVariableAnalysis 
 (slv)
 where
@@ -19,34 +17,16 @@ slv p = let join = S.union
             lmeet = S.isSubsetOf
             tfunc = transferFunction
             flw = map swap (Administration.flow p)
+            ifl = [] --we don't have a slv instance for embellished monotoneframework
             eLabels = finals p
             eValue = S.fromList (vars p)
-            mframe = MonotoneFramework join btm lmeet tfunc flw eLabels eValue
+            mframe = MonotoneFramework join btm lmeet tfunc flw ifl eLabels eValue
         in analyse mframe (blocks p)
 
-transferFunction :: Block -> S.Set Var -> S.Set Var
-transferFunction bl set = if kill bl `S.isSubsetOf` set
+transferFunction :: Block -> Label -> S.Set Var -> S.Set Var
+transferFunction bl _ set = if kill bl `S.isSubsetOf` set
                                 then S.union (S.difference set (kill bl)) (gen bl)
                                 else set
-
-
-instance Show (S.Set Var) where
-    show xs = brackets $ S.foldr (\a b -> show a ++ ", " ++ b) "" xs
-
-
-instance Show (Analysis (S.Set Var)) where
-    show xs =  M.foldrWithKey (\k (l,r) b -> "Kill:" ++ show k ++ show l ++ " Gen:" ++ show r ++ newLine ++ b ) "" xs
-
-
---instance Show a => Show (Analysis a) where
---    show xs = "Not sure."
-
-brackets :: String -> String
-brackets s = "{" ++ s ++ "}"
-
-newLine :: String
-newLine = "\n"
-
 
 kill :: Block -> S.Set Var
 kill (B_IAssign n _) = S.singleton n

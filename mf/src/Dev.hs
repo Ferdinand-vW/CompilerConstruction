@@ -13,6 +13,7 @@ import Parser
 import Analysis
 import ConstantPropagation
 import LiveVariableAnalysis
+import EmbellishedConstantPropagation
 
 -- To make it all compile for the moment:
 
@@ -23,7 +24,7 @@ import LiveVariableAnalysis
 ghci> run slv "fib"
 
 --}
-data Lattice a = Top | Bottom | Value a deriving (Eq)
+
 run :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
 run = runAnalysis'
 

@@ -21,7 +21,7 @@ data Block =
     B_BAssign {name :: String, valB :: BExpr} |
     B_Cond {cond :: BExpr} |
     B_Skip |
-    B_CallEntry {name :: String, params :: Exprs} |
+    B_CallEntry {name :: String, params :: Exprs, pArgs :: [Var], pOut :: Var} |
     B_CallExit  {name :: String, out :: String} |
     B_ProcEntry |
     B_ProcExit
@@ -37,20 +37,24 @@ attr Program
      syn pinfo :: ProgramInfo
 
 sem Program 
-    | Program lhs.pinfo = ProgramInfo @loc.blocks [1 .. @stat.maxLabel] [@stat.initl] (@stat.flabels) @loc.flow @loc.interflow (S.toList @stat.svars)
+    | Program lhs.pinfo = ProgramInfo @loc.blocks [1 .. @stat.maxLabel] [@stat.initl] (@stat.flabels) @loc.flow @loc.interflow (S.toList @loc.svars)
               loc.blocks = M.union @procs.blocks @stat.blocks
               loc.flow   = @procs.flow ++ @stat.flow
               loc.interflow = @procs.interflow ++ @stat.interflow
+              loc.svars = S.union @procs.svars @stat.svars
               procs.label = 1
               stat.label = @procs.maxLabel + 1
               procs.prcs = M.empty
               stat.prcs = @procs.pmap
+              procs.prgs = M.empty
+              stat.prgs = @procs.pargs
 
 attr Procs Proc Stat
     inh label :: {Label}
     syn maxLabel :: {Label}
     syn blocks :: {M.Map Label Block}
     inh prcs :: {M.Map String (Label,Label)}
+    inh prgs :: {M.Map String ([Var],Var)}
     syn flow use {++} {[]} :: {Flow}
     syn interflow use {++} {[]} :: {InterFlow}
 
@@ -61,6 +65,7 @@ attr Stat
 
 attr Procs Proc
     syn pmap :: {M.Map String (Label,Label)}
+    syn pargs :: {M.Map String ([Var],Var)}
 
 sem Procs
     | Cons hd.label = @lhs.label
@@ -70,13 +75,19 @@ sem Procs
            lhs.pmap     = M.union @hd.pmap @tl.pmap
            hd.prcs      = @lhs.prcs
            tl.prcs      = @hd.pmap
+           lhs.pargs    = M.union @hd.pargs @tl.pargs
+           hd.prgs     = @lhs.prgs
+           tl.prgs      = @hd.pargs
            lhs.flow     = @hd.flow ++ @tl.flow
            lhs.interflow = @hd.interflow ++ @tl.interflow
+           lhs.svars    = S.union @hd.svars @tl.svars
     | Nil  lhs.maxLabel = @lhs.label - 1
            lhs.blocks   = M.empty
            lhs.pmap     = M.empty
+           lhs.pargs    = M.empty
            lhs.flow     = []
            lhs.interflow = []
+           lhs.svars    = S.empty
 
 sem Proc
     | Proc stat.label = @lhs.label + 1
@@ -85,11 +96,15 @@ sem Proc
            loc.pmap     = M.singleton @name (@lhs.label,@stat.maxLabel + 1)
            lhs.pmap     = @loc.pmap
            stat.prcs    = @loc.pmap
+           loc.prgs    = M.singleton @name (@inp,@out)
+           lhs.pargs    = @loc.prgs
+           stat.prgs   = @loc.prgs
            lhs.flow     = [(@lhs.label,@lhs.label + 1)] ++ @stat.flow ++ map (\x -> (x,@stat.maxLabel + 1)) @stat.flabels
            lhs.interflow = @stat.interflow
+           lhs.svars    = S.union (S.union (foldr (\x y -> S.insert x y) S.empty @inp) (S.singleton @out)) @stat.svars
 
 
-attr Exprs Expr IExpr BExpr Stat
+attr Procs Proc Exprs Expr IExpr BExpr Stat
     syn svars :: {S.Set Var}
     syn slf :: self
 
@@ -116,6 +131,8 @@ sem Stat
                  lhs.flabels   = [@stat1.maxLabel,@stat2.maxLabel]
                  stat1.prcs    = @lhs.prcs
                  stat2.prcs    = @lhs.prcs
+                 stat1.prgs   = @lhs.prgs
+                 stat2.prgs   = @lhs.prgs
     | While      lhs.maxLabel  = @stat.maxLabel
                  lhs.flowLabels = [@lhs.label]
                  lhs.flow      = (@lhs.label, @loc.label1) : @stat.flow ++ map (\x -> (x,@lhs.label)) @stat.flabels
@@ -127,6 +144,7 @@ sem Stat
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label]
                  stat.prcs     = @lhs.prcs
+                 stat.prgs    = @lhs.prgs
     | IAssign    lhs.maxLabel  = @lhs.label
                  lhs.flowLabels = [@lhs.label]
                  lhs.blocks    = M.singleton @lhs.label $ B_IAssign @name @val.slf
@@ -156,14 +174,20 @@ sem Stat
                  lhs.flabels   = @stat2.flabels
                  stat1.prcs    = @lhs.prcs
                  stat2.prcs    = @lhs.prcs
+                 stat1.prgs   = @lhs.prgs
+                 stat2.prgs   = @lhs.prgs
     | Call       lhs.maxLabel  = @lhs.label + 1
                  lhs.flowLabels = [@lhs.label + 1]
-                 lhs.flow      = [(@lhs.label , fst $ fromJust $ M.lookup @name @lhs.prcs), (snd $ fromJust $ M.lookup @name @lhs.prcs,@lhs.label + 1)]
-                 lhs.interflow = [(@lhs.label,fst $ fromJust $ M.lookup @name @lhs.prcs,snd $ fromJust $ M.lookup @name @lhs.prcs,@lhs.label + 1)]
-                 lhs.blocks    = M.union (M.singleton @lhs.label (B_CallEntry @name @params.slf)) (M.singleton (@lhs.label + 1) (B_CallExit @name @out))
+                 lhs.flow      = [(@lhs.label , @loc.pInLabel), (@loc.pOutLabel,@lhs.label + 1)]
+                 lhs.interflow = [(@lhs.label,@loc.pInLabel,@loc.pOutLabel,@lhs.label + 1)]
+                 lhs.blocks    = M.union (M.singleton @lhs.label (B_CallEntry @name @params.slf @loc.pargs @loc.pout)) (M.singleton (@lhs.label + 1) (B_CallExit @name @out))
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label + 1]
                  lhs.svars     = S.union @params.svars (S.singleton @out)
+                 loc.pInLabel  = fst $ fromJust $ M.lookup @name @lhs.prcs
+                 loc.pOutLabel = snd $ fromJust $ M.lookup @name @lhs.prcs
+                 loc.pargs     = fst $ fromJust $ M.lookup @name @lhs.prgs
+                 loc.pout      = snd $ fromJust $ M.lookup @name @lhs.prgs
 
 sem Exprs
     | Cons      lhs.svars = S.union @hd.svars @tl.svars
