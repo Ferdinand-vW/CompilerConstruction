@@ -4,9 +4,9 @@ begin
             v := u + 1;
         }
         else {
-            call fib(z-1, u, v);
-            call fib(z-2, v, v);
+            call fib (z - 1,u + 1,v);
         }
     end
-    call fib(x, 0, y);
+    call fib(2, 0, y);
+    y := y + 1;
 end

@@ -38,7 +38,7 @@ data Block =
     B_Cond {cond :: BExpr} |
     B_Skip |
     B_CallEntry {name :: String, params :: Exprs, pArgs :: [Var], pOut :: Var} |
-    B_CallExit  {name :: String, out :: String} |
+    B_CallExit  {name :: String, pArgs :: [Var], pOut :: String, cOut :: String} |
     B_ProcEntry |
     B_ProcExit
     deriving Show
@@ -901,7 +901,7 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
                    )
               _lhsOblocks =
                   ({-# LINE 95 "Administration.ag" #-}
-                   M.union (M.union (M.singleton _lhsIlabel B_ProcEntry) (M.singleton _statImaxLabel B_ProcExit)) _statIblocks
+                   M.union (M.union (M.singleton _lhsIlabel B_ProcEntry) (M.singleton (_statImaxLabel + 1) B_ProcExit)) _statIblocks
                    {-# LINE 906 "Administration.hs" #-}
                    )
               _pmap =
@@ -1704,7 +1704,7 @@ sem_Stat_Call name_ params_ out_ =
                    )
               _lhsOblocks =
                   ({-# LINE 183 "Administration.ag" #-}
-                   M.union (M.singleton _lhsIlabel (B_CallEntry name_ _paramsIslf _pargs     _pout    )) (M.singleton (_lhsIlabel + 1) (B_CallExit name_ out_))
+                   M.union (M.singleton _lhsIlabel (B_CallEntry name_ _paramsIslf _pargs     _pout    )) (M.singleton (_lhsIlabel + 1) (B_CallExit name_ _pargs     _pout     out_))
                    {-# LINE 1709 "Administration.hs" #-}
                    )
               _lhsOinitl =

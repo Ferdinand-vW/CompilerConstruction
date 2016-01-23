@@ -32,11 +32,11 @@ run = runAnalysis'
 runAnalysis' :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
-  putStrLn "OUTPUT:"
-  --an <- analyze p
   putStrLn $ show $ p
+  putStrLn "OUTPUT:"
+  an <- analyze p
   putStrLn "Analysis:"
-  --putStrLn $ show $ an
+  mapM_ (\(k,(a,b)) -> putStrLn (show k) >> putStrLn ("Entry: " ++ show a) >> putStrLn ("Exit: " ++ show b) >> putStrLn "") (M.toList an)
   putStrLn "G'bye"
 
 -- parse program

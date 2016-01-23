@@ -23,8 +23,8 @@ slv p = let join = S.union
             mframe = MonotoneFramework join btm lmeet tfunc flw ifl eLabels eValue
         in analyse mframe (blocks p)
 
-transferFunction :: Block -> Label -> S.Set Var -> S.Set Var
-transferFunction bl _ set = if kill bl `S.isSubsetOf` set
+transferFunction :: M.Map Label (S.Set Var) -> Block -> Label -> S.Set Var -> S.Set Var
+transferFunction _ bl _ set = if kill bl `S.isSubsetOf` set
                                 then S.union (S.difference set (kill bl)) (gen bl)
                                 else set
 

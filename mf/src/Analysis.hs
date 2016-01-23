@@ -16,9 +16,11 @@ type Analysis a = M.Map Label (a,a)
 --Analyse a Program (M.Map Label Stat') using a MonotoneFramework
 --Return a Analysis that currently only works for ConstantPropagation
 analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis a)
-analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = do
-                                                              anl <- loop fl array'
-                                                              return $ finalize anl
+analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = 
+        do
+          print $ "Initiat state: " ++ show array'
+          anl <- loop fl array'
+          return $ finalize anl
   where array = foldr (\x y -> M.insert x btm y) M.empty (M.keys bl) --Create an empty Map for each Label
         array' = foldr (\x y -> M.adjust (\_ -> ev) x y) array el --Insert the extreme value into the extreme label
         loop [] arr = return arr
@@ -30,12 +32,12 @@ analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = do
               print $ "others:" ++ show xs
               print $ "state of l:" ++ show (slookup l arr)
               print $ "state of l':" ++ show (slookup l' arr)
-              print $ "transferFunction on l:" ++ show (tf (slookup l bl) l (slookup l arr))
-              print $ "the lmeet: " ++ show (lmeet (tf (slookup l bl) l $ slookup l arr) (slookup l' arr))
-              if not $ lmeet (tf (slookup l bl) l $ slookup l arr) (slookup l' arr)
+              print $ "transferFunction on l:" ++ show transfer
+              print $ "the lmeet: " ++ show (lmeet transfer (slookup l' arr))
+              if not $ lmeet transfer (slookup l' arr)
                 --If it is not more precise
                 --Add the above union to the array
-                then let arr' = M.adjust (\x -> join x (tf (slookup l bl) l (slookup l arr))) l' arr
+                then let arr' = M.adjust (\x -> join x transfer) l' arr
                          w = updateWorkSet l' xs fl --Then add all Tuples in the Flow that start with label l' to the current workset
                       in
                       do
@@ -45,12 +47,14 @@ analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = do
                 else do
                   print "-----------------------------------------------------------------------------"
                   loop xs arr --recurse
+            where
+              transfer = tf arr (slookup l bl) l (slookup l arr)
         updateWorkSet :: Eq a => a -> [(a,b)] -> [(a,b)] -> [(a,b)]
         updateWorkSet l w [] = w
         updateWorkSet l w (x:xs)
           | l == fst x = updateWorkSet l (x : w) xs
           | otherwise  = updateWorkSet l w xs
-        finalize arr = M.mapWithKey (\k a -> (a, tf (slookup k bl) k a)) arr
+        finalize arr = M.mapWithKey (\k a -> (a, tf arr (slookup k bl) k a)) arr
 
 --We can assume that a Label always exists in a Map, otherwise
 --its a coding error

@@ -3,7 +3,7 @@ module MonotoneFramework where
 import qualified Data.Map as M
 import Administration
 
-type TransferFunction a = Block -> Label -> a -> a
+type TransferFunction a = M.Map Label a -> Block -> Label -> a -> a
 
 data Framework a =
     MonotoneFramework 

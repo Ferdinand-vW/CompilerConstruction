@@ -60,9 +60,9 @@ lMeet _ _ = False
 
 --We do not care what the previous value was here so we forget it
 --Just parse the expression, obviously only works for IAssign right now
-transferFunction :: Block -> Label -> Lattice Int -> Lattice Int
-transferFunction (B_IAssign var expr) _ st = M.adjust (\_ -> parseExp expr st) var st
-transferFunction _ _ st = st
+transferFunction :: M.Map Label (Lattice Int) -> Block -> Label -> Lattice Int -> Lattice Int
+transferFunction _ (B_IAssign var expr) _ st = M.adjust (\_ -> parseExp expr st) var st
+transferFunction _ _ _ st = st
 
 parseExp :: IExpr -> M.Map Var (LatticeVal Int) -> LatticeVal Int
 parseExp (IConst x) _ = Value x

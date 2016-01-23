@@ -22,7 +22,7 @@ data Block =
     B_Cond {cond :: BExpr} |
     B_Skip |
     B_CallEntry {name :: String, params :: Exprs, pArgs :: [Var], pOut :: Var} |
-    B_CallExit  {name :: String, out :: String} |
+    B_CallExit  {name :: String, pArgs :: [Var], pOut :: String, cOut :: String} |
     B_ProcEntry |
     B_ProcExit
     deriving Show
@@ -92,7 +92,7 @@ sem Procs
 sem Proc
     | Proc stat.label = @lhs.label + 1
            lhs.maxLabel = @stat.maxLabel + 1
-           lhs.blocks   = M.union (M.union (M.singleton @lhs.label B_ProcEntry) (M.singleton @stat.maxLabel B_ProcExit)) @stat.blocks
+           lhs.blocks   = M.union (M.union (M.singleton @lhs.label B_ProcEntry) (M.singleton (@stat.maxLabel + 1) B_ProcExit)) @stat.blocks
            loc.pmap     = M.singleton @name (@lhs.label,@stat.maxLabel + 1)
            lhs.pmap     = @loc.pmap
            stat.prcs    = @loc.pmap
@@ -180,7 +180,7 @@ sem Stat
                  lhs.flowLabels = [@lhs.label + 1]
                  lhs.flow      = [(@lhs.label , @loc.pInLabel), (@loc.pOutLabel,@lhs.label + 1)]
                  lhs.interflow = [(@lhs.label,@loc.pInLabel,@loc.pOutLabel,@lhs.label + 1)]
-                 lhs.blocks    = M.union (M.singleton @lhs.label (B_CallEntry @name @params.slf @loc.pargs @loc.pout)) (M.singleton (@lhs.label + 1) (B_CallExit @name @out))
+                 lhs.blocks    = M.union (M.singleton @lhs.label (B_CallEntry @name @params.slf @loc.pargs @loc.pout)) (M.singleton (@lhs.label + 1) (B_CallExit @name @loc.pargs @loc.pout @out))
                  lhs.initl     = @lhs.label
                  lhs.flabels   = [@lhs.label + 1]
                  lhs.svars     = S.union @params.svars (S.singleton @out)
