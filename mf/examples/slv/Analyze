@@ -1,0 +1,52 @@
+(2,1)
+true
+In de transformatie van 2 naar 1. Dit is deadcode, alle berekeningen die hier worden gedaan, kunnen weggehaald worden, aangezien dit in latere code wordt overschreven.
+
+(3,2)
+true
+In de transformatie van 3 naar 2. Dit is deadcode, alle berekeningen die hier worden gedaan, kunnen weggehaald worden, aangezien dit in latere code wordt overschreven.
+
+(4,3)
+true
+In de transformatie van 4 naar 3. Dit is deadcode, alle berekeningen die hier worden gedaan, kunnen weggehaald worden, aangezien dit in latere code wordt overschreven.
+
+(5,4)
+false
+In de transformatie van 5 naar 4. Voor deze stap wordt een i gegenereerd voor de if, en vervolgens wordt deze weer gekilled.
+
+(4,3)
+true
+In de transformatie  van 4 naar 3. In deze stap krijgt een i een waarde, vervolgens wordt deze i gekilled. 
+
+(6,5)
+true
+In de transformatie van label 6 naar 5.Er wordt op dit moment niks meer genereerd, omdat deze waardes op een later al opnieuw zijn berekend, dus kan dat hier gezien worden als deadcode. 
+
+(7,6)
+true
+In de transformatie van 7 naar 6. Er wordt op dit moment niks meer genereerd, omdat deze waardes op een later al opnieuw zijn berekend, dus kan dat hier gezien worden als deadcode. 
+
+
+(5,7)
+false
+In de transformatie van 5 naar 7. In dit geval is de i afhankelijk van de vorige waardes en zal er een i moeten bestaan, dus weer wordt genereerd. Ook zal deze weer worden gekilled, aangezien je hem bij 7 weer verhoogt.
+
+(7,6)
+true
+In de transformatie 7 naar 6 is een i=i + 1. In dit geval wordt er een i genereerd en meteen weer gekilled.
+
+(6,5)
+false
+Deze transformatie gaat van label 6 naar 5. Je ziet bij deze stap dat hij de j + i wilt generen. In dit geval is de j niet belangrijk en zal je er alleen een i worden genereerd, want op dit moment weet je al de exit node van j en is alles wat aan j wordt gegeven niet relevant.
+
+(5,7)
+true
+Deze transformatie gaat van label 5 naar 7. Je ziet dat tijdens deze een i genereert wordt en gekild wordt. Dit komt doordat je (i + 1), er een i moet zijn dat informatie bevond om zo'n actie uit te voeren. Vervolgens kan je de i gelijk verwijderen.
+
+(5,4)
+true
+In deze transformatie ga je van label 5 naar 4. Je zal een i killen en een i geneneren, want na de 2 kan je hem verwijderen.
+
+(8,5)
+true
+Ik begin van boven naar boven, omdat dit algoritme opdeze manier werkt. Bij de eerste transformation van label 8 nar 5, zullen eerst alle variablen bekend, maar vervolgens na de transformatie, wil je alleen nog variable i bewaren, omdat deze afhankelijk van elkaar is. 
