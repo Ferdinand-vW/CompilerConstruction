@@ -1213,6 +1213,9 @@ parseError (x:xs) = error ("Parse error: " ++ show xs)
 {-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
 {-# LINE 8 "<command-line>" #-}
+<<<<<<< HEAD
+{-# LINE 1 "G:\\GitHub\\haskell-platform\\build\\ghc-bindist\\local\\lib/include\\ghcversion.h" #-}
+=======
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 
 # 17 "/usr/include/stdc-predef.h" 3 4
@@ -1260,6 +1263,7 @@ parseError (x:xs) = error ("Parse error: " ++ show xs)
 
 {-# LINE 8 "<command-line>" #-}
 {-# LINE 1 "/opt/ghc/7.10.3/lib/ghc-7.10.3/include/ghcversion.h" #-}
+>>>>>>> Embellished_MF
 
 
 
@@ -1278,7 +1282,11 @@ parseError (x:xs) = error ("Parse error: " ++ show xs)
 
 
 {-# LINE 8 "<command-line>" #-}
+<<<<<<< HEAD
+{-# LINE 1 "templates\\GenericTemplate.hs" #-}
+=======
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
+>>>>>>> Embellished_MF
 -- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp 
 
 {-# LINE 13 "templates/GenericTemplate.hs" #-}

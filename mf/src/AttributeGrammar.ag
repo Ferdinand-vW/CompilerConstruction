@@ -7,6 +7,7 @@
 data Program
   | Program   procs :: Procs
               stat  :: Stat
+deriving Program : Show
 
 data Program'
   | Program'  procs :: Procs'
@@ -14,6 +15,7 @@ data Program'
 
 data Proc
   | Proc          name :: String  inp :: {[String]}  out :: String   stat :: Stat
+deriving Proc : Show
 
 data Proc'
   | Proc'         labelEntry :: Int  labelReturn :: Int    name :: String  inp :: {[String]}  out :: String   stat :: Stat'
@@ -22,7 +24,7 @@ data Stat
   | Skip
   | IfThenElse    cond  :: BExpr      stat1  :: Stat      stat2 :: Stat
   | While         cond  :: BExpr      stat   :: Stat
-  --| Call          name  :: String     params :: {Exprs}    out :: String
+  | Call          name  :: String     params :: Exprs    out :: String
   | IAssign       name  :: String     val    :: IExpr
   | BAssign       name  :: String     val    :: BExpr
   | Seq           stat1 :: Stat       stat2  :: Stat
@@ -31,6 +33,7 @@ data Stat
   --| RefAssign     ptr   :: {IExpr}    val    :: {IExpr}
   --| Continue
   --| Break
+deriving Stat : Show
 
 data Stat'
   | Skip'          label :: Int
@@ -55,6 +58,7 @@ data IExpr
   | Divide        left :: IExpr       right :: IExpr
   | Deref         ptr  :: IExpr
 deriving IExpr : Eq
+deriving IExpr : Show
 
 data BExpr
   | BConst        val  :: Bool
@@ -69,19 +73,25 @@ data BExpr
   | Or            left :: BExpr       right :: BExpr
   | Not           val  :: BExpr
 deriving BExpr : Eq
+deriving BExpr : Show
 
 
-data Expr | B BExpr
-          | I IExpr
+data Expr 
+  | B expr :: BExpr
+  | I expr :: IExpr
 deriving Expr : Eq
+deriving Expr : Show
 
 data Code | CBExpr   BExpr
           | CIExpr   IExpr
           | CStat    Stat'
           | CProc    Proc'
           | CProgram Program'
-{
+
 type Procs = [Proc]
-type Procs' = [Proc']
 type Exprs = [Expr]
+{
+
+type Procs' = [Proc']
+
 }

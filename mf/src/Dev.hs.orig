@@ -1,20 +1,19 @@
+
 module Dev where
 
 import qualified Data.Map as M
 import qualified Data.List as L
-<<<<<<< HEAD
 import Data.Char
 import Data.Maybe
 
-import AttributeGrammar
-=======
-import All
->>>>>>> be5343416ac9155f74b280da00a75233d96f3798
+import Administration
 import Lexer
 import Main
 import Parser
 import Analysis
 import ConstantPropagation
+import LiveVariableAnalysis
+import EmbellishedConstantPropagation
 
 -- To make it all compile for the moment:
 
@@ -25,16 +24,28 @@ import ConstantPropagation
 ghci> run slv "fib"
 
 --}
+<<<<<<< HEAD
+--data Lattice a = Top | Bottom | Value a deriving (E/q)
+run :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
+=======
 
-run :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
+run :: (Eq a, Show a) => (ProgramInfo -> IO (Analysis a)) -> String -> IO ()
+>>>>>>> Embellished_MF
 run = runAnalysis'
 
 -- run some analysis by passing an analysis function and a 'show' function to display the result
-runAnalysis' :: (Eq a, Show a) => (Program' -> Analysis a) -> String -> IO ()
+runAnalysis' :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
+  putStrLn $ show $ p
   putStrLn "OUTPUT:"
-  putStrLn (show p)
+  an <- analyze p
+  putStrLn "Analysis:"
+<<<<<<< HEAD
+  putStrLn $ view $ an
+=======
+  mapM_ (\(k,(a,b)) -> putStrLn (show k) >> putStrLn ("Entry: " ++ show a) >> putStrLn ("Exit: " ++ show b) >> putStrLn "") (M.toList an)
+>>>>>>> Embellished_MF
   putStrLn "G'bye"
 
 -- parse program
@@ -43,9 +54,5 @@ parse :: String -> IO ProgramInfo
 parse programName = do
   let fileName = "../examples/"++programName++".c"
   content <- readFile fileName
-  return $ to $ happy . alex $ content
-
-
-
-
-
+  putStrLn $ show $ happy . alex $ content
+  return . toProgramInfo . happy . alex $ content

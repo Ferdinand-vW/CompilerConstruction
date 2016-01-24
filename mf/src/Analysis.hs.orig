@@ -17,12 +17,19 @@ type Analysis a = M.Map Label (a,a)
 
 --Analyse a Program (M.Map Label Stat') using a MonotoneFramework
 --Return a Analysis that currently only works for ConstantPropagation
+<<<<<<< HEAD
 analyse :: (Show a) => Framework a -> M.Map Label Block -> IO (Analysis a)
+analyse (MonotoneFramework join btm lmeet tf fl el ev) bl = do
+                                                              anl <- loop fl array'
+                                                              return $ finalize anl
+=======
+analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis a)
 analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = 
         do
           writeFile "output.txt" $ "Initiat state: " ++ show array'
           anl <- loop fl array'
           return $ finalize anl
+>>>>>>> Embellished_MF
   where array = foldr (\x y -> M.insert x btm y) M.empty (M.keys bl) --Create an empty Map for each Label
         array' = foldr (\x y -> M.adjust (\_ -> ev) x y) array el --Insert the extreme value into the extreme label
         loop [] arr = return arr

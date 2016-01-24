@@ -1,0 +1,18 @@
+begin
+<<<<<<< HEAD
+    proc fib(val z, u, res v) is
+        if z < 3 then {
+            v := u + 1;
+        }
+        else {
+            call fib (z - 1,u + 1,v);
+        }
+    end
+=======
+a := 4;
+b := 10;
+product := 50;
+product := product * a;
+b := 15;
+end
+>>>>>>> Embellished_MF
