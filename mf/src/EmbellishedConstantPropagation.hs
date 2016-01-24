@@ -20,12 +20,13 @@ ecp :: Int -> ProgramInfo -> IO (Analysis (ContextLattice Int))
 ecp k p = 
         let join = joinContext
             lm = contextMeet
+            btm = M.singleton [] M.empty
             tfunc = embTransferFunction k ifl
             fl = Administration.flow p
             ifl = Administration.interflow p
             extrL = Administration.init p
             extrV = M.singleton [] (foldr (\x y -> M.insert x Top y) M.empty (vars p))
-            mframe = MonotoneFramework join M.empty lm tfunc fl ifl extrL extrV
+            mframe = MonotoneFramework join btm lm tfunc fl ifl extrL extrV
         in  analyse mframe (blocks p)
 
 joinContext :: ContextLattice Int -> ContextLattice Int -> ContextLattice Int
@@ -38,14 +39,16 @@ contextMeet cl1 cl2
 
 embTransferFunction :: Int -> InterFlow -> M.Map Label (ContextLattice Int) -> Block -> Label -> ContextLattice Int -> ContextLattice Int
 embTransferFunction k _ _ b@(B_CallEntry name prms args out) l clat = updateCallStack k b l clat
-embTransferFunction k iflow arr b@(B_CallExit _ _ _ _) l clat = returnTransfer arr iflow b l clat
+embTransferFunction k iflow arr b@(B_CallExit _ _ _ _) l clat = returnTransfer k arr iflow b l clat
 embTransferFunction k _ _ block l clat = M.map (transferFunction block) clat
 
 updateCallStack :: Int -> Block -> Label -> ContextLattice Int -> ContextLattice Int
 updateCallStack k block l clat = 
     let clatList = M.toList clat
         emptyContext = ([],M.empty)
-        contextList = emptyContext : (map addLabel clatList)
+        contextList = if k <= 0
+                        then clatList
+                        else emptyContext : (map addLabel clatList)
         mdup = findDupContext contextList --filter (\(xs,latt) -> not $ M.null latt) 
 
     in case mdup of
@@ -71,8 +74,8 @@ updateCallStack k block l clat =
           mergeContexts [] = M.empty
           mergeContexts ((_,x):xs) = transferFunction block x `joinOp` mergeContexts xs
 
-returnTransfer :: M.Map Label (ContextLattice Int) -> InterFlow -> Block -> Label -> ContextLattice Int -> ContextLattice Int
-returnTransfer arr iflow (B_CallExit _ pargs pout cout) l retCtx =
+returnTransfer :: Int -> M.Map Label (ContextLattice Int) -> InterFlow -> Block -> Label -> ContextLattice Int -> ContextLattice Int
+returnTransfer k arr iflow (B_CallExit _ pargs pout cout) l retCtx =
     let callLabel = case getCallLabel iflow l of
                       Nothing -> error "calllabel nothing"
                       Just cl -> cl
@@ -82,13 +85,15 @@ returnTransfer arr iflow (B_CallExit _ pargs pout cout) l retCtx =
         retCtxList = removeContexts retCtx callLabel --Remove any contexts that do not start with the CallLabel
                                                      --At the same time for any contexts that do start with the CallLabel
                                                      --throw the CallLabel away from the context
-    in M.intersectionWith mergeLattice callCtx (M.fromList retCtxList) --Only store contexts that reside in both the call
+    in M.intersectionWith (\x y -> mergeLattice x y callCtx (M.fromList retCtxList)) callCtx (M.fromList retCtxList) --Only store contexts that reside in both the call
                                                                        --and return context. At the same time merge the lattices
                                                                        --of two the same contexts, while taking care of unshadowing
                                                                        --and updating the return value of the procedure
   where 
-    removeContexts ctx l = ([], M.empty) : [(tail x, latt) | (x,latt) <- M.toList ctx , length x > 0, head x == l]
-    mergeLattice callLat retLat 
+    removeContexts ctx l = if k <= 0
+                            then M.toList ctx
+                            else ([], M.empty) : [(tail x, latt) | (x,latt) <- M.toList ctx , length x > 0, head x == l]
+    mergeLattice callLat retLat callctx retctx
           | M.null callLat = M.empty
           | otherwise = M.mapWithKey 
                 (\k retVal -> let callVal = case M.lookup k callLat of

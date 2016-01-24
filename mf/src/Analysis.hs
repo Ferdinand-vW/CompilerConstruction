@@ -5,6 +5,7 @@ import qualified Data.List as L
 import qualified Data.Set as S
 import Data.Char
 import Data.Maybe
+import System.IO
 
 import MonotoneFramework
 import Administration
@@ -18,7 +19,7 @@ type Analysis a = M.Map Label (a,a)
 analyse :: Show a => Framework a -> M.Map Label Block -> IO (Analysis a)
 analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl = 
         do
-          print $ "Initiat state: " ++ show array'
+          writeFile "output.txt" $ "Initiat state: " ++ show array'
           anl <- loop fl array'
           return $ finalize anl
   where array = foldr (\x y -> M.insert x btm y) M.empty (M.keys bl) --Create an empty Map for each Label
@@ -28,12 +29,14 @@ analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl =
           --We lookup the block for label l and it's current state of the variables
           --Then this is passed to the transfer function, which result is used to check if it is not more precise
           --than the state of label l'
-              print $ "Current transfer:" ++ show (l,l')
-              print $ "others:" ++ show xs
-              print $ "state of l:" ++ show (slookup l arr)
-              print $ "state of l':" ++ show (slookup l' arr)
-              print $ "transferFunction on l:" ++ show transfer
-              print $ "the lmeet: " ++ show (lmeet transfer (slookup l' arr))
+              appendFile "output.txt" $ "\n"
+              appendFile "output.txt" $ show arr ++ "\n"
+              appendFile "output.txt" $ "Current transfer:" ++ show (l,l') ++ "\n"
+              appendFile "output.txt" $ "others:" ++ show xs ++ "\n"
+              appendFile "output.txt" $ "state of l:" ++ show (slookup l arr) ++ "\n"
+              appendFile "output.txt" $ "state of l':" ++ show (slookup l' arr) ++ "\n"
+              appendFile "output.txt" $ "transferFunction on l:" ++ show transfer ++ "\n"
+              appendFile "output.txt" $ "the lmeet: " ++ show (lmeet transfer (slookup l' arr)) ++ "\n"
               if not $ lmeet transfer (slookup l' arr)
                 --If it is not more precise
                 --Add the above union to the array
@@ -41,11 +44,11 @@ analyse (MonotoneFramework join btm lmeet tf fl ifl el ev) bl =
                          w = updateWorkSet l' xs fl --Then add all Tuples in the Flow that start with label l' to the current workset
                       in
                       do
-                        print $ "New state l':" ++ show (slookup l' arr')
-                        print "-----------------------------------------------------------------------------"
+                        appendFile "output.txt" $ "New state l':" ++ show (slookup l' arr') ++ "\n"
+                        appendFile "output.txt" $ "-----------------------------------------------------------------------------"  ++ "\n"
                         loop w arr' --recurse
                 else do
-                  print "-----------------------------------------------------------------------------"
+                  appendFile "output.txt" $ "-----------------------------------------------------------------------------"  ++ "\n"
                   loop xs arr --recurse
             where
               transfer = tf arr (slookup l bl) l (slookup l arr)
