@@ -7,11 +7,10 @@ import Data.List
 
 import View.View
 import View.PpHelper
-import ConstantPropagation
+import Monotone.ConstantPropagation
 
 instance View (LatticeVal Int) where 
     view Top = "T"
-    view Bottom = "_"
     view (Value a) = show a
 
 instance View (Lattice Int) where

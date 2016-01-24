@@ -10,11 +10,11 @@ import Administration
 import Lexer
 import Main
 import Parser
-import Analysis
 
-import ConstantPropagation (cp)
-import LiveVariableAnalysis (slv)
-import EmbellishedConstantPropagation (ecp)
+import Monotone.Analysis
+import Monotone.ConstantPropagation (cp)
+import Monotone.LiveVariableAnalysis (slv)
+import Monotone.EmbellishedConstantPropagation (ecp)
 
 import View.View
 import View.PpAnalysis
@@ -39,7 +39,6 @@ run = runAnalysis'
 runAnalysis' :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
-  putStrLn $ view $ p
   putStrLn "OUTPUT:"
   an <- analyze p
   putStrLn "Analysis:"

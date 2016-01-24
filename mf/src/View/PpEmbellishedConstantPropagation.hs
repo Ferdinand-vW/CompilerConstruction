@@ -5,7 +5,7 @@ module View.PpEmbellishedConstantPropagation where
 import qualified Data.Map as M
 import Data.List
 
-import EmbellishedConstantPropagation
+import Monotone.EmbellishedConstantPropagation
 import View.View
 import View.PpHelper
 import View.PpConstantPropagation
