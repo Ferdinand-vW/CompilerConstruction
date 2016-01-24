@@ -37,9 +37,6 @@ cp -> constant propagation analysis
 slv -> strong live variable analysis
 ecp -> Embellished Constant Propagation analysis.
 
-We have
-- intraprocedural
-- 
 
 For example you could run something like this:
 run slv "slv/slv1"
