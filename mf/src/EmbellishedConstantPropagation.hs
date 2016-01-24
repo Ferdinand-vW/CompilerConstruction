@@ -1,6 +1,8 @@
 module EmbellishedConstantPropagation
 (
-ecp
+ecp,
+ContextLattice(..),
+Context(..)
 )
 where
 
@@ -38,8 +40,8 @@ contextMeet cl1 cl2
       | otherwise = foldr (\(l1,l2) y -> setMeet l1 l2 && y) True (zip (M.elems cl1) (M.elems cl2))
 
 embTransferFunction :: Int -> InterFlow -> M.Map Label (ContextLattice Int) -> Block -> Label -> ContextLattice Int -> ContextLattice Int
-embTransferFunction k _ _ b@(B_CallEntry name prms args out) l clat = updateCallStack k b l clat
-embTransferFunction k iflow arr b@(B_CallExit _ _ _ _) l clat = returnTransfer k arr iflow b l clat
+embTransferFunction k _ _ b@(B_CallEntry _ _ _ _ _) l clat = updateCallStack k b l clat
+embTransferFunction k iflow arr b@(B_CallExit _ _ _ _ _) l clat = returnTransfer k arr iflow b l clat
 embTransferFunction k _ _ block l clat = M.map (transferFunction block) clat
 
 updateCallStack :: Int -> Block -> Label -> ContextLattice Int -> ContextLattice Int
@@ -75,7 +77,7 @@ updateCallStack k block l clat =
           mergeContexts ((_,x):xs) = transferFunction block x `joinOp` mergeContexts xs
 
 returnTransfer :: Int -> M.Map Label (ContextLattice Int) -> InterFlow -> Block -> Label -> ContextLattice Int -> ContextLattice Int
-returnTransfer k arr iflow (B_CallExit _ pargs pout cout) l retCtx =
+returnTransfer k arr iflow (B_CallExit _ _ cout pargs pout) l retCtx =
     let callLabel = case getCallLabel iflow l of
                       Nothing -> error "calllabel nothing"
                       Just cl -> cl
@@ -118,10 +120,10 @@ getCallLabel ((c,_,_,r):xs) l
 --Just parse the expression, obviously only works for IAssign right now
 transferFunction :: Block -> Lattice Int -> Lattice Int
 transferFunction (B_IAssign var expr) st = M.adjust (\_ -> parseExp expr st) var st
-transferFunction (B_CallEntry name prms args out) st = transferCall st prms args out
-transferFunction (B_ProcEntry ) st = st
+transferFunction (B_CallEntry name prms _ args out) st = transferCall st prms args out
+transferFunction (B_ProcEntry _ _ _) st = st
 transferFunction (B_ProcExit) st = st
-transferFunction (B_CallExit _ _ _ _) st = error "call exit error"
+transferFunction (B_CallExit _ _ _ _ _) st = error "call exit error"
 transferFunction _ st = st
 
 

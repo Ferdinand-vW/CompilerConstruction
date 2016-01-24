@@ -11,9 +11,16 @@ import Lexer
 import Main
 import Parser
 import Analysis
-import ConstantPropagation
-import LiveVariableAnalysis
-import EmbellishedConstantPropagation
+
+import ConstantPropagation (cp)
+import LiveVariableAnalysis (slv)
+import EmbellishedConstantPropagation (ecp)
+
+import View.View
+import View.PpAnalysis
+import View.PpAdministration
+import View.PpConstantPropagation
+import View.PpEmbellishedConstantPropagation
 
 -- To make it all compile for the moment:
 
@@ -32,7 +39,7 @@ run = runAnalysis'
 runAnalysis' :: (Eq a, Show a, View a) => (ProgramInfo -> IO a) -> String -> IO ()
 runAnalysis' analyze programName = do
   p <- parse programName
-  putStrLn $ show $ p
+  putStrLn $ view $ p
   putStrLn "OUTPUT:"
   an <- analyze p
   putStrLn "Analysis:"
@@ -45,5 +52,4 @@ parse :: String -> IO ProgramInfo
 parse programName = do
   let fileName = "../examples/"++programName++".c"
   content <- readFile fileName
-  putStrLn $ show $ happy . alex $ content
   return . toProgramInfo . happy . alex $ content

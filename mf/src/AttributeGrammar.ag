@@ -15,7 +15,7 @@ data Program'
 
 data Proc
   | Proc          name :: String  inp :: {[String]}  out :: String   stat :: Stat
-deriving Proc : Show
+  deriving Proc : Show
 
 data Proc'
   | Proc'         labelEntry :: Int  labelReturn :: Int    name :: String  inp :: {[String]}  out :: String   stat :: Stat'
@@ -33,7 +33,7 @@ data Stat
   --| RefAssign     ptr   :: {IExpr}    val    :: {IExpr}
   --| Continue
   --| Break
-deriving Stat : Show
+  deriving Stat : Show
 
 data Stat'
   | Skip'          label :: Int

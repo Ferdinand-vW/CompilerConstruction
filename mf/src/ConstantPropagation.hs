@@ -13,7 +13,6 @@ import qualified Data.Map as M
 import Analysis
 import MonotoneFramework
 import Administration
-import PpAnalyse
 
 
 data LatticeVal a = Top | Bottom | Value a deriving (Show,Eq)
@@ -83,4 +82,3 @@ llookup :: Var -> M.Map Var (LatticeVal Int) -> LatticeVal Int
 llookup x st = case M.lookup x st of
                 Nothing -> Top
                 Just a -> a
-

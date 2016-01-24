@@ -30,16 +30,16 @@ toProgramInfo :: Program -> ProgramInfo
 toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (Inh_Program)
 
 data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, labels :: [Label] , init :: [Label], finals :: [Label], 
-                                flow :: Flow, interflow :: InterFlow, vars :: [Var]} deriving (Show)
+                                flow :: Flow, interflow :: InterFlow, vars :: [Var]}
 
 data Block = 
     B_IAssign {name :: String, valI :: IExpr} |
     B_BAssign {name :: String, valB :: BExpr} |
     B_Cond {cond :: BExpr} |
     B_Skip |
-    B_CallEntry {name :: String, params :: Exprs, pArgs :: [Var], pOut :: Var} |
-    B_CallExit  {name :: String, pArgs :: [Var], pOut :: String, cOut :: String} |
-    B_ProcEntry |
+    B_CallEntry {name :: String, params :: Exprs, cOut :: String, pArgs :: [Var], pOut :: Var} |
+    B_CallExit  {name :: String, params :: Exprs, cOut :: String, pArgs :: [Var], pOut :: Var} |
+    B_ProcEntry {name :: String, args :: [Var], out :: Var} |
     B_ProcExit
     deriving Show
 
@@ -49,7 +49,7 @@ type InterFlow = [(Int,Int,Int,Int)]
 type Var = String
 {-# LINE 51 "Administration.hs" #-}
 
-{-# LINE 220 "Administration.ag" #-}
+{-# LINE 223 "Administration.ag" #-}
 
 
 --foldProcs :: Procs -> (Int, M.Map String Proc')
@@ -117,17 +117,17 @@ sem_BExpr_BConst val_ =
     (let _lhsOsvars :: (S.Set Var)
          _lhsOslf :: BExpr
          _lhsOsvars =
-             ({-# LINE 209 "Administration.ag" #-}
+             ({-# LINE 212 "Administration.ag" #-}
               S.empty
               {-# LINE 123 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               BConst val_
               {-# LINE 128 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 133 "Administration.hs" #-}
               )
@@ -138,17 +138,17 @@ sem_BExpr_BVar name_ =
     (let _lhsOsvars :: (S.Set Var)
          _lhsOslf :: BExpr
          _lhsOsvars =
-             ({-# LINE 210 "Administration.ag" #-}
+             ({-# LINE 213 "Administration.ag" #-}
               S.singleton name_
               {-# LINE 144 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               BVar name_
               {-# LINE 149 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 154 "Administration.hs" #-}
               )
@@ -164,17 +164,17 @@ sem_BExpr_LessThan left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 211 "Administration.ag" #-}
+             ({-# LINE 214 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 170 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               LessThan _leftIslf _rightIslf
               {-# LINE 175 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 180 "Administration.hs" #-}
               )
@@ -194,17 +194,17 @@ sem_BExpr_GreaterThan left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 212 "Administration.ag" #-}
+             ({-# LINE 215 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 200 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               GreaterThan _leftIslf _rightIslf
               {-# LINE 205 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 210 "Administration.hs" #-}
               )
@@ -224,17 +224,17 @@ sem_BExpr_LessEqual left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 213 "Administration.ag" #-}
+             ({-# LINE 216 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 230 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               LessEqual _leftIslf _rightIslf
               {-# LINE 235 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 240 "Administration.hs" #-}
               )
@@ -254,17 +254,17 @@ sem_BExpr_GreaterEqual left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 214 "Administration.ag" #-}
+             ({-# LINE 217 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 260 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               GreaterEqual _leftIslf _rightIslf
               {-# LINE 265 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 270 "Administration.hs" #-}
               )
@@ -284,17 +284,17 @@ sem_BExpr_IEqual left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 215 "Administration.ag" #-}
+             ({-# LINE 218 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 290 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               IEqual _leftIslf _rightIslf
               {-# LINE 295 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 300 "Administration.hs" #-}
               )
@@ -314,17 +314,17 @@ sem_BExpr_BEqual left_ right_ =
          _rightIslf :: BExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 216 "Administration.ag" #-}
+             ({-# LINE 219 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 320 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               BEqual _leftIslf _rightIslf
               {-# LINE 325 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 330 "Administration.hs" #-}
               )
@@ -344,17 +344,17 @@ sem_BExpr_And left_ right_ =
          _rightIslf :: BExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 217 "Administration.ag" #-}
+             ({-# LINE 220 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 350 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               And _leftIslf _rightIslf
               {-# LINE 355 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 360 "Administration.hs" #-}
               )
@@ -374,17 +374,17 @@ sem_BExpr_Or left_ right_ =
          _rightIslf :: BExpr
          _rightIsvars :: (S.Set Var)
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Or _leftIslf _rightIslf
               {-# LINE 380 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 385 "Administration.hs" #-}
               )
          _lhsOsvars =
-             ({-# LINE 108 "Administration.ag" #-}
+             ({-# LINE 109 "Administration.ag" #-}
               _rightIsvars
               {-# LINE 390 "Administration.hs" #-}
               )
@@ -401,17 +401,17 @@ sem_BExpr_Not val_ =
          _valIslf :: BExpr
          _valIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 218 "Administration.ag" #-}
+             ({-# LINE 221 "Administration.ag" #-}
               _valIsvars
               {-# LINE 407 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Not _valIslf
               {-# LINE 412 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 417 "Administration.hs" #-}
               )
@@ -507,17 +507,17 @@ sem_Expr_B expr_ =
          _exprIslf :: BExpr
          _exprIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 197 "Administration.ag" #-}
+             ({-# LINE 200 "Administration.ag" #-}
               _exprIsvars
               {-# LINE 513 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               B _exprIslf
               {-# LINE 518 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 523 "Administration.hs" #-}
               )
@@ -532,17 +532,17 @@ sem_Expr_I expr_ =
          _exprIslf :: IExpr
          _exprIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 198 "Administration.ag" #-}
+             ({-# LINE 201 "Administration.ag" #-}
               _exprIsvars
               {-# LINE 538 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               I _exprIslf
               {-# LINE 543 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 548 "Administration.hs" #-}
               )
@@ -577,17 +577,17 @@ sem_Exprs_Cons hd_ tl_ =
          _tlIslf :: Exprs
          _tlIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 193 "Administration.ag" #-}
+             ({-# LINE 196 "Administration.ag" #-}
               S.union _hdIsvars _tlIsvars
               {-# LINE 583 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               (:) _hdIslf _tlIslf
               {-# LINE 588 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 593 "Administration.hs" #-}
               )
@@ -601,17 +601,17 @@ sem_Exprs_Nil =
     (let _lhsOsvars :: (S.Set Var)
          _lhsOslf :: Exprs
          _lhsOsvars =
-             ({-# LINE 194 "Administration.ag" #-}
+             ({-# LINE 197 "Administration.ag" #-}
               S.empty
               {-# LINE 607 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               []
               {-# LINE 612 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 617 "Administration.hs" #-}
               )
@@ -658,17 +658,17 @@ sem_IExpr_IConst val_ =
     (let _lhsOsvars :: (S.Set Var)
          _lhsOslf :: IExpr
          _lhsOsvars =
-             ({-# LINE 201 "Administration.ag" #-}
+             ({-# LINE 204 "Administration.ag" #-}
               S.empty
               {-# LINE 664 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               IConst val_
               {-# LINE 669 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 674 "Administration.hs" #-}
               )
@@ -679,17 +679,17 @@ sem_IExpr_Var name_ =
     (let _lhsOsvars :: (S.Set Var)
          _lhsOslf :: IExpr
          _lhsOsvars =
-             ({-# LINE 202 "Administration.ag" #-}
+             ({-# LINE 205 "Administration.ag" #-}
               S.singleton name_
               {-# LINE 685 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Var name_
               {-# LINE 690 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 695 "Administration.hs" #-}
               )
@@ -705,17 +705,17 @@ sem_IExpr_Plus left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 203 "Administration.ag" #-}
+             ({-# LINE 206 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 711 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Plus _leftIslf _rightIslf
               {-# LINE 716 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 721 "Administration.hs" #-}
               )
@@ -735,17 +735,17 @@ sem_IExpr_Minus left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 204 "Administration.ag" #-}
+             ({-# LINE 207 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 741 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Minus _leftIslf _rightIslf
               {-# LINE 746 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 751 "Administration.hs" #-}
               )
@@ -765,17 +765,17 @@ sem_IExpr_Times left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 205 "Administration.ag" #-}
+             ({-# LINE 208 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 771 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Times _leftIslf _rightIslf
               {-# LINE 776 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 781 "Administration.hs" #-}
               )
@@ -795,17 +795,17 @@ sem_IExpr_Divide left_ right_ =
          _rightIslf :: IExpr
          _rightIsvars :: (S.Set Var)
          _lhsOsvars =
-             ({-# LINE 206 "Administration.ag" #-}
+             ({-# LINE 209 "Administration.ag" #-}
               S.union _leftIsvars _rightIsvars
               {-# LINE 801 "Administration.hs" #-}
               )
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Divide _leftIslf _rightIslf
               {-# LINE 806 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 811 "Administration.hs" #-}
               )
@@ -822,17 +822,17 @@ sem_IExpr_Deref ptr_ =
          _ptrIslf :: IExpr
          _ptrIsvars :: (S.Set Var)
          _slf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               Deref _ptrIslf
               {-# LINE 828 "Administration.hs" #-}
               )
          _lhsOslf =
-             ({-# LINE 109 "Administration.ag" #-}
+             ({-# LINE 110 "Administration.ag" #-}
               _slf
               {-# LINE 833 "Administration.hs" #-}
               )
          _lhsOsvars =
-             ({-# LINE 108 "Administration.ag" #-}
+             ({-# LINE 109 "Administration.ag" #-}
               _ptrIsvars
               {-# LINE 838 "Administration.hs" #-}
               )
@@ -901,63 +901,68 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
                    )
               _lhsOblocks =
                   ({-# LINE 95 "Administration.ag" #-}
-                   M.union (M.union (M.singleton _lhsIlabel B_ProcEntry) (M.singleton (_statImaxLabel + 1) B_ProcExit)) _statIblocks
+                   M.union (M.union (M.singleton _lhsIlabel _block    ) (M.singleton (_statImaxLabel + 1) B_ProcExit)) _statIblocks
                    {-# LINE 906 "Administration.hs" #-}
                    )
-              _pmap =
+              _block =
                   ({-# LINE 96 "Administration.ag" #-}
-                   M.union (M.singleton name_ (_lhsIlabel,_statImaxLabel + 1)) _lhsIprcs
+                   B_ProcEntry name_ inp_ out_
                    {-# LINE 911 "Administration.hs" #-}
                    )
-              _lhsOpmap =
+              _pmap =
                   ({-# LINE 97 "Administration.ag" #-}
-                   _pmap
+                   M.union (M.singleton name_ (_lhsIlabel,_statImaxLabel + 1)) _lhsIprcs
                    {-# LINE 916 "Administration.hs" #-}
                    )
-              _statOprcs =
+              _lhsOpmap =
                   ({-# LINE 98 "Administration.ag" #-}
                    _pmap
                    {-# LINE 921 "Administration.hs" #-}
                    )
-              _prgs =
+              _statOprcs =
                   ({-# LINE 99 "Administration.ag" #-}
-                   M.union (M.singleton name_ (inp_,out_)) _lhsIprgs
+                   _pmap
                    {-# LINE 926 "Administration.hs" #-}
                    )
-              _lhsOpargs =
+              _prgs =
                   ({-# LINE 100 "Administration.ag" #-}
-                   _prgs
+                   M.union (M.singleton name_ (inp_,out_)) _lhsIprgs
                    {-# LINE 931 "Administration.hs" #-}
                    )
-              _statOprgs =
+              _lhsOpargs =
                   ({-# LINE 101 "Administration.ag" #-}
                    _prgs
                    {-# LINE 936 "Administration.hs" #-}
                    )
-              _lhsOflow =
+              _statOprgs =
                   ({-# LINE 102 "Administration.ag" #-}
-                   [(_lhsIlabel,_lhsIlabel + 1)] ++ _statIflow ++ map (\x -> (x,_statImaxLabel + 1)) _statIflabels
+                   _prgs
                    {-# LINE 941 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
+              _lhsOflow =
                   ({-# LINE 103 "Administration.ag" #-}
-                   _statIinterflow
+                   [(_lhsIlabel,_lhsIlabel + 1)] ++ _statIflow ++ map (\x -> (x,_statImaxLabel + 1)) _statIflabels
                    {-# LINE 946 "Administration.hs" #-}
                    )
-              _lhsOsvars =
+              _lhsOinterflow =
                   ({-# LINE 104 "Administration.ag" #-}
-                   S.union (S.union (foldr (\x y -> S.insert x y) S.empty inp_) (S.singleton out_)) _statIsvars
+                   _statIinterflow
                    {-# LINE 951 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   Proc name_ inp_ out_ _statIslf
+              _lhsOsvars =
+                  ({-# LINE 105 "Administration.ag" #-}
+                   S.union (S.union (foldr (\x y -> S.insert x y) S.empty inp_) (S.singleton out_)) _statIsvars
                    {-# LINE 956 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   Proc name_ inp_ out_ _statIslf
                    {-# LINE 961 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 966 "Administration.hs" #-}
                    )
               ( _statIblocks,_statIflabels,_statIflow,_statIflowLabels,_statIinitl,_statIinterflow,_statImaxLabel,_statIslf,_statIsvars) =
                   stat_ _statOlabel _statOprcs _statOprgs
@@ -1049,77 +1054,77 @@ sem_Procs_Cons hd_ tl_ =
               _hdOlabel =
                   ({-# LINE 71 "Administration.ag" #-}
                    _lhsIlabel
-                   {-# LINE 1053 "Administration.hs" #-}
+                   {-# LINE 1058 "Administration.hs" #-}
                    )
               _tlOlabel =
                   ({-# LINE 72 "Administration.ag" #-}
                    _hdImaxLabel + 1
-                   {-# LINE 1058 "Administration.hs" #-}
+                   {-# LINE 1063 "Administration.hs" #-}
                    )
               _lhsOmaxLabel =
                   ({-# LINE 73 "Administration.ag" #-}
                    _tlImaxLabel
-                   {-# LINE 1063 "Administration.hs" #-}
+                   {-# LINE 1068 "Administration.hs" #-}
                    )
               _lhsOblocks =
                   ({-# LINE 74 "Administration.ag" #-}
                    M.union _hdIblocks _tlIblocks
-                   {-# LINE 1068 "Administration.hs" #-}
+                   {-# LINE 1073 "Administration.hs" #-}
                    )
               _lhsOpmap =
                   ({-# LINE 75 "Administration.ag" #-}
                    M.union _hdIpmap _tlIpmap
-                   {-# LINE 1073 "Administration.hs" #-}
+                   {-# LINE 1078 "Administration.hs" #-}
                    )
               _hdOprcs =
                   ({-# LINE 76 "Administration.ag" #-}
                    _lhsIprcs
-                   {-# LINE 1078 "Administration.hs" #-}
+                   {-# LINE 1083 "Administration.hs" #-}
                    )
               _tlOprcs =
                   ({-# LINE 77 "Administration.ag" #-}
                    _hdIpmap
-                   {-# LINE 1083 "Administration.hs" #-}
+                   {-# LINE 1088 "Administration.hs" #-}
                    )
               _lhsOpargs =
                   ({-# LINE 78 "Administration.ag" #-}
                    M.union _hdIpargs _tlIpargs
-                   {-# LINE 1088 "Administration.hs" #-}
+                   {-# LINE 1093 "Administration.hs" #-}
                    )
               _hdOprgs =
                   ({-# LINE 79 "Administration.ag" #-}
                    _lhsIprgs
-                   {-# LINE 1093 "Administration.hs" #-}
+                   {-# LINE 1098 "Administration.hs" #-}
                    )
               _tlOprgs =
                   ({-# LINE 80 "Administration.ag" #-}
                    _hdIpargs
-                   {-# LINE 1098 "Administration.hs" #-}
+                   {-# LINE 1103 "Administration.hs" #-}
                    )
               _lhsOflow =
                   ({-# LINE 81 "Administration.ag" #-}
                    _hdIflow ++ _tlIflow
-                   {-# LINE 1103 "Administration.hs" #-}
+                   {-# LINE 1108 "Administration.hs" #-}
                    )
               _lhsOinterflow =
                   ({-# LINE 82 "Administration.ag" #-}
                    _hdIinterflow ++ _tlIinterflow
-                   {-# LINE 1108 "Administration.hs" #-}
+                   {-# LINE 1113 "Administration.hs" #-}
                    )
               _lhsOsvars =
                   ({-# LINE 83 "Administration.ag" #-}
                    S.union _hdIsvars _tlIsvars
-                   {-# LINE 1113 "Administration.hs" #-}
-                   )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   (:) _hdIslf _tlIslf
                    {-# LINE 1118 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   (:) _hdIslf _tlIslf
                    {-# LINE 1123 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1128 "Administration.hs" #-}
                    )
               ( _hdIblocks,_hdIflow,_hdIinterflow,_hdImaxLabel,_hdIpargs,_hdIpmap,_hdIslf,_hdIsvars) =
                   hd_ _hdOlabel _hdOprcs _hdOprgs
@@ -1142,47 +1147,47 @@ sem_Procs_Nil =
               _lhsOmaxLabel =
                   ({-# LINE 84 "Administration.ag" #-}
                    _lhsIlabel - 1
-                   {-# LINE 1146 "Administration.hs" #-}
+                   {-# LINE 1151 "Administration.hs" #-}
                    )
               _lhsOblocks =
                   ({-# LINE 85 "Administration.ag" #-}
                    M.empty
-                   {-# LINE 1151 "Administration.hs" #-}
+                   {-# LINE 1156 "Administration.hs" #-}
                    )
               _lhsOpmap =
                   ({-# LINE 86 "Administration.ag" #-}
                    M.empty
-                   {-# LINE 1156 "Administration.hs" #-}
+                   {-# LINE 1161 "Administration.hs" #-}
                    )
               _lhsOpargs =
                   ({-# LINE 87 "Administration.ag" #-}
                    M.empty
-                   {-# LINE 1161 "Administration.hs" #-}
+                   {-# LINE 1166 "Administration.hs" #-}
                    )
               _lhsOflow =
                   ({-# LINE 88 "Administration.ag" #-}
                    []
-                   {-# LINE 1166 "Administration.hs" #-}
+                   {-# LINE 1171 "Administration.hs" #-}
                    )
               _lhsOinterflow =
                   ({-# LINE 89 "Administration.ag" #-}
                    []
-                   {-# LINE 1171 "Administration.hs" #-}
+                   {-# LINE 1176 "Administration.hs" #-}
                    )
               _lhsOsvars =
                   ({-# LINE 90 "Administration.ag" #-}
                    S.empty
-                   {-# LINE 1176 "Administration.hs" #-}
-                   )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   []
                    {-# LINE 1181 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   []
                    {-# LINE 1186 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1191 "Administration.hs" #-}
                    )
           in  ( _lhsOblocks,_lhsOflow,_lhsOinterflow,_lhsOmaxLabel,_lhsOpargs,_lhsOpmap,_lhsOslf,_lhsOsvars)))
 -- Program -----------------------------------------------------
@@ -1234,57 +1239,57 @@ sem_Program_Program procs_ stat_ =
          _lhsOpinfo =
              ({-# LINE 40 "Administration.ag" #-}
               ProgramInfo _blocks     [1 .. _statImaxLabel] [_statIinitl] (_statIflabels) _flow     _interflow     (S.toList _svars    )
-              {-# LINE 1238 "Administration.hs" #-}
+              {-# LINE 1243 "Administration.hs" #-}
               )
          _blocks =
              ({-# LINE 41 "Administration.ag" #-}
               M.union _procsIblocks _statIblocks
-              {-# LINE 1243 "Administration.hs" #-}
+              {-# LINE 1248 "Administration.hs" #-}
               )
          _flow =
              ({-# LINE 42 "Administration.ag" #-}
               _procsIflow ++ _statIflow
-              {-# LINE 1248 "Administration.hs" #-}
+              {-# LINE 1253 "Administration.hs" #-}
               )
          _interflow =
              ({-# LINE 43 "Administration.ag" #-}
               _procsIinterflow ++ _statIinterflow
-              {-# LINE 1253 "Administration.hs" #-}
+              {-# LINE 1258 "Administration.hs" #-}
               )
          _svars =
              ({-# LINE 44 "Administration.ag" #-}
               S.union _procsIsvars _statIsvars
-              {-# LINE 1258 "Administration.hs" #-}
+              {-# LINE 1263 "Administration.hs" #-}
               )
          _procsOlabel =
              ({-# LINE 45 "Administration.ag" #-}
               1
-              {-# LINE 1263 "Administration.hs" #-}
+              {-# LINE 1268 "Administration.hs" #-}
               )
          _statOlabel =
              ({-# LINE 46 "Administration.ag" #-}
               _procsImaxLabel + 1
-              {-# LINE 1268 "Administration.hs" #-}
+              {-# LINE 1273 "Administration.hs" #-}
               )
          _procsOprcs =
              ({-# LINE 47 "Administration.ag" #-}
               M.empty
-              {-# LINE 1273 "Administration.hs" #-}
+              {-# LINE 1278 "Administration.hs" #-}
               )
          _statOprcs =
              ({-# LINE 48 "Administration.ag" #-}
               _procsIpmap
-              {-# LINE 1278 "Administration.hs" #-}
+              {-# LINE 1283 "Administration.hs" #-}
               )
          _procsOprgs =
              ({-# LINE 49 "Administration.ag" #-}
               M.empty
-              {-# LINE 1283 "Administration.hs" #-}
+              {-# LINE 1288 "Administration.hs" #-}
               )
          _statOprgs =
              ({-# LINE 50 "Administration.ag" #-}
               _procsIpargs
-              {-# LINE 1288 "Administration.hs" #-}
+              {-# LINE 1293 "Administration.hs" #-}
               )
          ( _procsIblocks,_procsIflow,_procsIinterflow,_procsImaxLabel,_procsIpargs,_procsIpmap,_procsIslf,_procsIsvars) =
              procs_ _procsOlabel _procsOprcs _procsOprgs
@@ -1368,54 +1373,54 @@ sem_Stat_Skip =
               _lhsOflabels :: ([Label])
               _lhsOslf :: Stat
               _lhsOmaxLabel =
-                  ({-# LINE 112 "Administration.ag" #-}
-                   _lhsIlabel
-                   {-# LINE 1374 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 113 "Administration.ag" #-}
-                   [_lhsIlabel]
+                   _lhsIlabel
                    {-# LINE 1379 "Administration.hs" #-}
                    )
-              _lhsOblocks =
+              _lhsOflowLabels =
                   ({-# LINE 114 "Administration.ag" #-}
-                   M.singleton _lhsIlabel B_Skip
+                   [_lhsIlabel]
                    {-# LINE 1384 "Administration.hs" #-}
                    )
-              _lhsOsvars =
+              _lhsOblocks =
                   ({-# LINE 115 "Administration.ag" #-}
-                   S.empty
+                   M.singleton _lhsIlabel B_Skip
                    {-# LINE 1389 "Administration.hs" #-}
                    )
-              _lhsOflow =
+              _lhsOsvars =
                   ({-# LINE 116 "Administration.ag" #-}
-                   []
+                   S.empty
                    {-# LINE 1394 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
+              _lhsOflow =
                   ({-# LINE 117 "Administration.ag" #-}
                    []
                    {-# LINE 1399 "Administration.hs" #-}
                    )
-              _lhsOinitl =
+              _lhsOinterflow =
                   ({-# LINE 118 "Administration.ag" #-}
-                   _lhsIlabel
+                   []
                    {-# LINE 1404 "Administration.hs" #-}
                    )
-              _lhsOflabels =
+              _lhsOinitl =
                   ({-# LINE 119 "Administration.ag" #-}
-                   [_lhsIlabel]
+                   _lhsIlabel
                    {-# LINE 1409 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   Skip
+              _lhsOflabels =
+                  ({-# LINE 120 "Administration.ag" #-}
+                   [_lhsIlabel]
                    {-# LINE 1414 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   Skip
                    {-# LINE 1419 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1424 "Administration.hs" #-}
                    )
           in  ( _lhsOblocks,_lhsOflabels,_lhsOflow,_lhsOflowLabels,_lhsOinitl,_lhsOinterflow,_lhsOmaxLabel,_lhsOslf,_lhsOsvars)))
 sem_Stat_IfThenElse :: T_BExpr ->
@@ -1462,94 +1467,94 @@ sem_Stat_IfThenElse cond_ stat1_ stat2_ =
               _stat2Islf :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 120 "Administration.ag" #-}
-                   _stat2ImaxLabel
-                   {-# LINE 1468 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 121 "Administration.ag" #-}
-                   [_label1    ,_label2    ]
+                   _stat2ImaxLabel
                    {-# LINE 1473 "Administration.hs" #-}
                    )
-              _lhsOflow =
+              _lhsOflowLabels =
                   ({-# LINE 122 "Administration.ag" #-}
-                   (_lhsIlabel, _label1    ) : (_lhsIlabel, _label2    ) : _stat1Iflow ++ _stat2Iflow
+                   [_label1    ,_label2    ]
                    {-# LINE 1478 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
+              _lhsOflow =
                   ({-# LINE 123 "Administration.ag" #-}
-                   _stat1Iinterflow ++ _stat2Iinterflow
+                   (_lhsIlabel, _label1    ) : (_lhsIlabel, _label2    ) : _stat1Iflow ++ _stat2Iflow
                    {-# LINE 1483 "Administration.hs" #-}
                    )
-              _stat1Olabel =
+              _lhsOinterflow =
                   ({-# LINE 124 "Administration.ag" #-}
-                   _label1
+                   _stat1Iinterflow ++ _stat2Iinterflow
                    {-# LINE 1488 "Administration.hs" #-}
                    )
-              _label1 =
+              _stat1Olabel =
                   ({-# LINE 125 "Administration.ag" #-}
-                   _lhsIlabel + 1
+                   _label1
                    {-# LINE 1493 "Administration.hs" #-}
                    )
-              _label2 =
+              _label1 =
                   ({-# LINE 126 "Administration.ag" #-}
-                   _stat1ImaxLabel + 1
+                   _lhsIlabel + 1
                    {-# LINE 1498 "Administration.hs" #-}
                    )
-              _stat2Olabel =
+              _label2 =
                   ({-# LINE 127 "Administration.ag" #-}
-                   _label2
+                   _stat1ImaxLabel + 1
                    {-# LINE 1503 "Administration.hs" #-}
                    )
-              _lhsOblocks =
+              _stat2Olabel =
                   ({-# LINE 128 "Administration.ag" #-}
-                   M.union (M.union (M.singleton _lhsIlabel (B_Cond _condIslf)) _stat1Iblocks) _stat2Iblocks
+                   _label2
                    {-# LINE 1508 "Administration.hs" #-}
                    )
-              _lhsOsvars =
+              _lhsOblocks =
                   ({-# LINE 129 "Administration.ag" #-}
-                   S.union _condIsvars (S.union _stat1Isvars _stat2Isvars)
+                   M.union (M.union (M.singleton _lhsIlabel (B_Cond _condIslf)) _stat1Iblocks) _stat2Iblocks
                    {-# LINE 1513 "Administration.hs" #-}
                    )
-              _lhsOinitl =
+              _lhsOsvars =
                   ({-# LINE 130 "Administration.ag" #-}
-                   _lhsIlabel
+                   S.union _condIsvars (S.union _stat1Isvars _stat2Isvars)
                    {-# LINE 1518 "Administration.hs" #-}
                    )
-              _lhsOflabels =
+              _lhsOinitl =
                   ({-# LINE 131 "Administration.ag" #-}
-                   [_stat1ImaxLabel,_stat2ImaxLabel]
+                   _lhsIlabel
                    {-# LINE 1523 "Administration.hs" #-}
                    )
-              _stat1Oprcs =
+              _lhsOflabels =
                   ({-# LINE 132 "Administration.ag" #-}
-                   _lhsIprcs
+                   [_stat1ImaxLabel,_stat2ImaxLabel]
                    {-# LINE 1528 "Administration.hs" #-}
                    )
-              _stat2Oprcs =
+              _stat1Oprcs =
                   ({-# LINE 133 "Administration.ag" #-}
                    _lhsIprcs
                    {-# LINE 1533 "Administration.hs" #-}
                    )
-              _stat1Oprgs =
+              _stat2Oprcs =
                   ({-# LINE 134 "Administration.ag" #-}
-                   _lhsIprgs
+                   _lhsIprcs
                    {-# LINE 1538 "Administration.hs" #-}
                    )
-              _stat2Oprgs =
+              _stat1Oprgs =
                   ({-# LINE 135 "Administration.ag" #-}
                    _lhsIprgs
                    {-# LINE 1543 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   IfThenElse _condIslf _stat1Islf _stat2Islf
+              _stat2Oprgs =
+                  ({-# LINE 136 "Administration.ag" #-}
+                   _lhsIprgs
                    {-# LINE 1548 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   IfThenElse _condIslf _stat1Islf _stat2Islf
                    {-# LINE 1553 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1558 "Administration.hs" #-}
                    )
               ( _condIslf,_condIsvars) =
                   cond_
@@ -1589,74 +1594,74 @@ sem_Stat_While cond_ stat_ =
               _statIslf :: Stat
               _statIsvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 136 "Administration.ag" #-}
-                   _statImaxLabel
-                   {-# LINE 1595 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 137 "Administration.ag" #-}
-                   [_lhsIlabel]
+                   _statImaxLabel
                    {-# LINE 1600 "Administration.hs" #-}
                    )
-              _lhsOflow =
+              _lhsOflowLabels =
                   ({-# LINE 138 "Administration.ag" #-}
-                   (_lhsIlabel, _label1    ) : _statIflow ++ map (\x -> (x,_lhsIlabel)) _statIflabels
+                   [_lhsIlabel]
                    {-# LINE 1605 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
+              _lhsOflow =
                   ({-# LINE 139 "Administration.ag" #-}
-                   _statIinterflow
+                   (_lhsIlabel, _label1    ) : _statIflow ++ map (\x -> (x,_lhsIlabel)) _statIflabels
                    {-# LINE 1610 "Administration.hs" #-}
                    )
-              _label1 =
+              _lhsOinterflow =
                   ({-# LINE 140 "Administration.ag" #-}
-                   _lhsIlabel + 1
+                   _statIinterflow
                    {-# LINE 1615 "Administration.hs" #-}
                    )
-              _statOlabel =
+              _label1 =
                   ({-# LINE 141 "Administration.ag" #-}
-                   _label1
+                   _lhsIlabel + 1
                    {-# LINE 1620 "Administration.hs" #-}
                    )
-              _lhsOblocks =
+              _statOlabel =
                   ({-# LINE 142 "Administration.ag" #-}
-                   M.union (M.singleton _lhsIlabel (B_Cond _condIslf)) _statIblocks
+                   _label1
                    {-# LINE 1625 "Administration.hs" #-}
                    )
-              _lhsOsvars =
+              _lhsOblocks =
                   ({-# LINE 143 "Administration.ag" #-}
-                   S.union _condIsvars _statIsvars
+                   M.union (M.singleton _lhsIlabel (B_Cond _condIslf)) _statIblocks
                    {-# LINE 1630 "Administration.hs" #-}
                    )
-              _lhsOinitl =
+              _lhsOsvars =
                   ({-# LINE 144 "Administration.ag" #-}
-                   _lhsIlabel
+                   S.union _condIsvars _statIsvars
                    {-# LINE 1635 "Administration.hs" #-}
                    )
-              _lhsOflabels =
+              _lhsOinitl =
                   ({-# LINE 145 "Administration.ag" #-}
-                   [_lhsIlabel]
+                   _lhsIlabel
                    {-# LINE 1640 "Administration.hs" #-}
                    )
-              _statOprcs =
+              _lhsOflabels =
                   ({-# LINE 146 "Administration.ag" #-}
-                   _lhsIprcs
+                   [_lhsIlabel]
                    {-# LINE 1645 "Administration.hs" #-}
                    )
-              _statOprgs =
+              _statOprcs =
                   ({-# LINE 147 "Administration.ag" #-}
-                   _lhsIprgs
+                   _lhsIprcs
                    {-# LINE 1650 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   While _condIslf _statIslf
+              _statOprgs =
+                  ({-# LINE 148 "Administration.ag" #-}
+                   _lhsIprgs
                    {-# LINE 1655 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   While _condIslf _statIslf
                    {-# LINE 1660 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1665 "Administration.hs" #-}
                    )
               ( _condIslf,_condIsvars) =
                   cond_
@@ -1683,74 +1688,84 @@ sem_Stat_Call name_ params_ out_ =
               _paramsIslf :: Exprs
               _paramsIsvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 179 "Administration.ag" #-}
-                   _lhsIlabel + 1
-                   {-# LINE 1689 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 180 "Administration.ag" #-}
-                   [_lhsIlabel + 1]
+                   _lhsIlabel + 1
                    {-# LINE 1694 "Administration.hs" #-}
                    )
-              _lhsOflow =
+              _lhsOflowLabels =
                   ({-# LINE 181 "Administration.ag" #-}
-                   [(_lhsIlabel , _pInLabel    ), (_pOutLabel    ,_lhsIlabel + 1)]
+                   [_lhsIlabel + 1]
                    {-# LINE 1699 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
+              _lhsOflow =
                   ({-# LINE 182 "Administration.ag" #-}
-                   [(_lhsIlabel,_pInLabel    ,_pOutLabel    ,_lhsIlabel + 1)]
+                   [(_lhsIlabel , _pInLabel    ), (_pOutLabel    ,_lhsIlabel + 1)]
                    {-# LINE 1704 "Administration.hs" #-}
                    )
-              _lhsOblocks =
+              _lhsOinterflow =
                   ({-# LINE 183 "Administration.ag" #-}
-                   M.union (M.singleton _lhsIlabel (B_CallEntry name_ _paramsIslf _pargs     _pout    )) (M.singleton (_lhsIlabel + 1) (B_CallExit name_ _pargs     _pout     out_))
+                   [(_lhsIlabel,_pInLabel    ,_pOutLabel    ,_lhsIlabel + 1)]
                    {-# LINE 1709 "Administration.hs" #-}
                    )
-              _lhsOinitl =
+              _lhsOblocks =
                   ({-# LINE 184 "Administration.ag" #-}
-                   _lhsIlabel
+                   M.union (M.singleton _lhsIlabel _entry    ) (M.singleton (_lhsIlabel + 1) _exit    )
                    {-# LINE 1714 "Administration.hs" #-}
                    )
-              _lhsOflabels =
+              _lhsOinitl =
                   ({-# LINE 185 "Administration.ag" #-}
-                   [_lhsIlabel + 1]
+                   _lhsIlabel
                    {-# LINE 1719 "Administration.hs" #-}
                    )
-              _lhsOsvars =
+              _lhsOflabels =
                   ({-# LINE 186 "Administration.ag" #-}
-                   S.union _paramsIsvars (S.singleton out_)
+                   [_lhsIlabel + 1]
                    {-# LINE 1724 "Administration.hs" #-}
                    )
-              _pInLabel =
+              _lhsOsvars =
                   ({-# LINE 187 "Administration.ag" #-}
-                   fst $ fromJust $ M.lookup name_ _lhsIprcs
+                   S.union _paramsIsvars (S.singleton out_)
                    {-# LINE 1729 "Administration.hs" #-}
                    )
-              _pOutLabel =
+              _entry =
                   ({-# LINE 188 "Administration.ag" #-}
-                   snd $ fromJust $ M.lookup name_ _lhsIprcs
+                   B_CallEntry name_ _paramsIslf out_ _pargs     _pout
                    {-# LINE 1734 "Administration.hs" #-}
                    )
-              _pargs =
+              _exit =
                   ({-# LINE 189 "Administration.ag" #-}
-                   fst $ fromJust $ M.lookup name_ _lhsIprgs
+                   B_CallExit name_ _paramsIslf out_ _pargs     _pout
                    {-# LINE 1739 "Administration.hs" #-}
                    )
-              _pout =
+              _pInLabel =
                   ({-# LINE 190 "Administration.ag" #-}
-                   snd $ fromJust $ M.lookup name_ _lhsIprgs
+                   fst $ fromJust $ M.lookup name_ _lhsIprcs
                    {-# LINE 1744 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   Call name_ _paramsIslf out_
+              _pOutLabel =
+                  ({-# LINE 191 "Administration.ag" #-}
+                   snd $ fromJust $ M.lookup name_ _lhsIprcs
                    {-# LINE 1749 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _pargs =
+                  ({-# LINE 192 "Administration.ag" #-}
+                   fst $ fromJust $ M.lookup name_ _lhsIprgs
                    {-# LINE 1754 "Administration.hs" #-}
+                   )
+              _pout =
+                  ({-# LINE 193 "Administration.ag" #-}
+                   snd $ fromJust $ M.lookup name_ _lhsIprgs
+                   {-# LINE 1759 "Administration.hs" #-}
+                   )
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   Call name_ _paramsIslf out_
+                   {-# LINE 1764 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1769 "Administration.hs" #-}
                    )
               ( _paramsIslf,_paramsIsvars) =
                   params_
@@ -1774,54 +1789,54 @@ sem_Stat_IAssign name_ val_ =
               _valIslf :: IExpr
               _valIsvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 148 "Administration.ag" #-}
-                   _lhsIlabel
-                   {-# LINE 1780 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 149 "Administration.ag" #-}
-                   [_lhsIlabel]
-                   {-# LINE 1785 "Administration.hs" #-}
-                   )
-              _lhsOblocks =
-                  ({-# LINE 150 "Administration.ag" #-}
-                   M.singleton _lhsIlabel $ B_IAssign name_ _valIslf
-                   {-# LINE 1790 "Administration.hs" #-}
-                   )
-              _lhsOsvars =
-                  ({-# LINE 151 "Administration.ag" #-}
-                   S.union (S.singleton name_) _valIsvars
+                   _lhsIlabel
                    {-# LINE 1795 "Administration.hs" #-}
                    )
-              _lhsOflow =
-                  ({-# LINE 152 "Administration.ag" #-}
-                   []
+              _lhsOflowLabels =
+                  ({-# LINE 150 "Administration.ag" #-}
+                   [_lhsIlabel]
                    {-# LINE 1800 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
-                  ({-# LINE 153 "Administration.ag" #-}
-                   []
+              _lhsOblocks =
+                  ({-# LINE 151 "Administration.ag" #-}
+                   M.singleton _lhsIlabel $ B_IAssign name_ _valIslf
                    {-# LINE 1805 "Administration.hs" #-}
                    )
-              _lhsOinitl =
-                  ({-# LINE 154 "Administration.ag" #-}
-                   _lhsIlabel
+              _lhsOsvars =
+                  ({-# LINE 152 "Administration.ag" #-}
+                   S.union (S.singleton name_) _valIsvars
                    {-# LINE 1810 "Administration.hs" #-}
                    )
-              _lhsOflabels =
-                  ({-# LINE 155 "Administration.ag" #-}
-                   [_lhsIlabel]
+              _lhsOflow =
+                  ({-# LINE 153 "Administration.ag" #-}
+                   []
                    {-# LINE 1815 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   IAssign name_ _valIslf
+              _lhsOinterflow =
+                  ({-# LINE 154 "Administration.ag" #-}
+                   []
                    {-# LINE 1820 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _lhsOinitl =
+                  ({-# LINE 155 "Administration.ag" #-}
+                   _lhsIlabel
                    {-# LINE 1825 "Administration.hs" #-}
+                   )
+              _lhsOflabels =
+                  ({-# LINE 156 "Administration.ag" #-}
+                   [_lhsIlabel]
+                   {-# LINE 1830 "Administration.hs" #-}
+                   )
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   IAssign name_ _valIslf
+                   {-# LINE 1835 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1840 "Administration.hs" #-}
                    )
               ( _valIslf,_valIsvars) =
                   val_
@@ -1845,54 +1860,54 @@ sem_Stat_BAssign name_ val_ =
               _valIslf :: BExpr
               _valIsvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 156 "Administration.ag" #-}
-                   _lhsIlabel
-                   {-# LINE 1851 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 157 "Administration.ag" #-}
-                   [_lhsIlabel]
-                   {-# LINE 1856 "Administration.hs" #-}
-                   )
-              _lhsOblocks =
-                  ({-# LINE 158 "Administration.ag" #-}
-                   M.singleton _lhsIlabel $ B_BAssign name_ _valIslf
-                   {-# LINE 1861 "Administration.hs" #-}
-                   )
-              _lhsOsvars =
-                  ({-# LINE 159 "Administration.ag" #-}
-                   S.union (S.singleton name_) _valIsvars
+                   _lhsIlabel
                    {-# LINE 1866 "Administration.hs" #-}
                    )
-              _lhsOflow =
-                  ({-# LINE 160 "Administration.ag" #-}
-                   []
+              _lhsOflowLabels =
+                  ({-# LINE 158 "Administration.ag" #-}
+                   [_lhsIlabel]
                    {-# LINE 1871 "Administration.hs" #-}
                    )
-              _lhsOinterflow =
-                  ({-# LINE 161 "Administration.ag" #-}
-                   []
+              _lhsOblocks =
+                  ({-# LINE 159 "Administration.ag" #-}
+                   M.singleton _lhsIlabel $ B_BAssign name_ _valIslf
                    {-# LINE 1876 "Administration.hs" #-}
                    )
-              _lhsOinitl =
-                  ({-# LINE 162 "Administration.ag" #-}
-                   _lhsIlabel
+              _lhsOsvars =
+                  ({-# LINE 160 "Administration.ag" #-}
+                   S.union (S.singleton name_) _valIsvars
                    {-# LINE 1881 "Administration.hs" #-}
                    )
-              _lhsOflabels =
-                  ({-# LINE 163 "Administration.ag" #-}
-                   [_lhsIlabel]
+              _lhsOflow =
+                  ({-# LINE 161 "Administration.ag" #-}
+                   []
                    {-# LINE 1886 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   BAssign name_ _valIslf
+              _lhsOinterflow =
+                  ({-# LINE 162 "Administration.ag" #-}
+                   []
                    {-# LINE 1891 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _lhsOinitl =
+                  ({-# LINE 163 "Administration.ag" #-}
+                   _lhsIlabel
                    {-# LINE 1896 "Administration.hs" #-}
+                   )
+              _lhsOflabels =
+                  ({-# LINE 164 "Administration.ag" #-}
+                   [_lhsIlabel]
+                   {-# LINE 1901 "Administration.hs" #-}
+                   )
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   BAssign name_ _valIslf
+                   {-# LINE 1906 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 1911 "Administration.hs" #-}
                    )
               ( _valIslf,_valIsvars) =
                   val_
@@ -1938,89 +1953,89 @@ sem_Stat_Seq stat1_ stat2_ =
               _stat2Islf :: Stat
               _stat2Isvars :: (S.Set Var)
               _lhsOmaxLabel =
-                  ({-# LINE 164 "Administration.ag" #-}
-                   _stat2ImaxLabel
-                   {-# LINE 1944 "Administration.hs" #-}
-                   )
-              _lhsOflowLabels =
                   ({-# LINE 165 "Administration.ag" #-}
-                   _stat2IflowLabels
-                   {-# LINE 1949 "Administration.hs" #-}
-                   )
-              _lhsOflow =
-                  ({-# LINE 166 "Administration.ag" #-}
-                   _stat1Iflow ++ map (\x -> (x,_label2    )) _stat1IflowLabels ++ _stat2Iflow
-                   {-# LINE 1954 "Administration.hs" #-}
-                   )
-              _lhsOinterflow =
-                  ({-# LINE 167 "Administration.ag" #-}
-                   _stat1Iinterflow ++ _stat2Iinterflow
+                   _stat2ImaxLabel
                    {-# LINE 1959 "Administration.hs" #-}
                    )
-              _lhsOblocks =
-                  ({-# LINE 168 "Administration.ag" #-}
-                   M.union _stat1Iblocks _stat2Iblocks
+              _lhsOflowLabels =
+                  ({-# LINE 166 "Administration.ag" #-}
+                   _stat2IflowLabels
                    {-# LINE 1964 "Administration.hs" #-}
                    )
-              _stat1Olabel =
-                  ({-# LINE 169 "Administration.ag" #-}
-                   _lhsIlabel
+              _lhsOflow =
+                  ({-# LINE 167 "Administration.ag" #-}
+                   _stat1Iflow ++ map (\x -> (x,_label2    )) _stat1IflowLabels ++ _stat2Iflow
                    {-# LINE 1969 "Administration.hs" #-}
                    )
-              _label2 =
-                  ({-# LINE 170 "Administration.ag" #-}
-                   _stat1ImaxLabel + 1
+              _lhsOinterflow =
+                  ({-# LINE 168 "Administration.ag" #-}
+                   _stat1Iinterflow ++ _stat2Iinterflow
                    {-# LINE 1974 "Administration.hs" #-}
                    )
-              _stat2Olabel =
-                  ({-# LINE 171 "Administration.ag" #-}
-                   _label2
+              _lhsOblocks =
+                  ({-# LINE 169 "Administration.ag" #-}
+                   M.union _stat1Iblocks _stat2Iblocks
                    {-# LINE 1979 "Administration.hs" #-}
                    )
-              _lhsOsvars =
-                  ({-# LINE 172 "Administration.ag" #-}
-                   S.union _stat1Isvars _stat2Isvars
+              _stat1Olabel =
+                  ({-# LINE 170 "Administration.ag" #-}
+                   _lhsIlabel
                    {-# LINE 1984 "Administration.hs" #-}
                    )
-              _lhsOinitl =
-                  ({-# LINE 173 "Administration.ag" #-}
-                   _lhsIlabel
+              _label2 =
+                  ({-# LINE 171 "Administration.ag" #-}
+                   _stat1ImaxLabel + 1
                    {-# LINE 1989 "Administration.hs" #-}
                    )
-              _lhsOflabels =
-                  ({-# LINE 174 "Administration.ag" #-}
-                   _stat2Iflabels
+              _stat2Olabel =
+                  ({-# LINE 172 "Administration.ag" #-}
+                   _label2
                    {-# LINE 1994 "Administration.hs" #-}
                    )
-              _stat1Oprcs =
-                  ({-# LINE 175 "Administration.ag" #-}
-                   _lhsIprcs
+              _lhsOsvars =
+                  ({-# LINE 173 "Administration.ag" #-}
+                   S.union _stat1Isvars _stat2Isvars
                    {-# LINE 1999 "Administration.hs" #-}
                    )
-              _stat2Oprcs =
-                  ({-# LINE 176 "Administration.ag" #-}
-                   _lhsIprcs
+              _lhsOinitl =
+                  ({-# LINE 174 "Administration.ag" #-}
+                   _lhsIlabel
                    {-# LINE 2004 "Administration.hs" #-}
                    )
-              _stat1Oprgs =
-                  ({-# LINE 177 "Administration.ag" #-}
-                   _lhsIprgs
+              _lhsOflabels =
+                  ({-# LINE 175 "Administration.ag" #-}
+                   _stat2Iflabels
                    {-# LINE 2009 "Administration.hs" #-}
                    )
-              _stat2Oprgs =
-                  ({-# LINE 178 "Administration.ag" #-}
-                   _lhsIprgs
+              _stat1Oprcs =
+                  ({-# LINE 176 "Administration.ag" #-}
+                   _lhsIprcs
                    {-# LINE 2014 "Administration.hs" #-}
                    )
-              _slf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   Seq _stat1Islf _stat2Islf
+              _stat2Oprcs =
+                  ({-# LINE 177 "Administration.ag" #-}
+                   _lhsIprcs
                    {-# LINE 2019 "Administration.hs" #-}
                    )
-              _lhsOslf =
-                  ({-# LINE 109 "Administration.ag" #-}
-                   _slf
+              _stat1Oprgs =
+                  ({-# LINE 178 "Administration.ag" #-}
+                   _lhsIprgs
                    {-# LINE 2024 "Administration.hs" #-}
+                   )
+              _stat2Oprgs =
+                  ({-# LINE 179 "Administration.ag" #-}
+                   _lhsIprgs
+                   {-# LINE 2029 "Administration.hs" #-}
+                   )
+              _slf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   Seq _stat1Islf _stat2Islf
+                   {-# LINE 2034 "Administration.hs" #-}
+                   )
+              _lhsOslf =
+                  ({-# LINE 110 "Administration.ag" #-}
+                   _slf
+                   {-# LINE 2039 "Administration.hs" #-}
                    )
               ( _stat1Iblocks,_stat1Iflabels,_stat1Iflow,_stat1IflowLabels,_stat1Iinitl,_stat1Iinterflow,_stat1ImaxLabel,_stat1Islf,_stat1Isvars) =
                   stat1_ _stat1Olabel _stat1Oprcs _stat1Oprgs

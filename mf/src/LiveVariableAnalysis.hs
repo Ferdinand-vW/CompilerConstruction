@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+
 module LiveVariableAnalysis 
 (slv)
 where
@@ -10,7 +12,6 @@ import Data.Tuple
 import Analysis (analyse, Analysis)
 import MonotoneFramework
 import Administration
-import PpAnalyse
 
 slv :: ProgramInfo -> IO (Analysis (S.Set Var))
 slv p = let join = S.union
