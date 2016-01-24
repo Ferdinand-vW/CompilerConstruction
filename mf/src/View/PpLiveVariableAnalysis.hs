@@ -2,24 +2,19 @@
 
 module View.PpLiveVariableAnalysis where
 
+import qualified Data.Set as S
+import qualified Data.Map as M
+import Data.List
 
-import Data.Set as S
-import Data.Map as M
-
-
+import Administration
+import Monotone.Analysis
 import View.View
 import View.PpHelper
-import Monotone.LiveVariableAnalysis
-import Monotone.Analysis
-import Administration
 
 instance View (S.Set Var) where
-    view xs = brackets $ S.foldr (\a b -> show a ++ "," ++ b) "" xs
+    view xs = brackets $ intercalate "," (S.toList xs)
 
-instance View (Analysis (S.Set Var)) where
-    view xs = let s = maxSizeVar xs
-              in header s "Entry" "Exit" ++
-                 M.foldrWithKey (\k v b -> (row k v s ++ b)) "" xs
+
 
 header :: (Int,Int) -> String -> String -> String
 header (ls,rs) lv rv = "|" ++ replicate 5 ' ' ++ "|"
