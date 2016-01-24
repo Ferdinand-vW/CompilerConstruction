@@ -1,121 +1,28 @@
-Initiat state: fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList []),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList []),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
+Initiat state: fromList [(1,fromList []),(2,fromList []),(3,fromList ["i","j"])]
+fromList [(1,fromList []),(2,fromList []),(3,fromList ["i","j"])]
 Current transfer:(2,1)
-others:[(3,2),(4,3),(5,4),(6,5),(7,6),(5,7),(8,5)]
+others:[(3,2)]
 state of l:fromList []
 state of l':fromList []
 transferFunction on l:fromList []
 the lmeet: True
 -----------------------------------------------------------------------------
 
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList []),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
+fromList [(1,fromList []),(2,fromList []),(3,fromList ["i","j"])]
 Current transfer:(3,2)
-others:[(4,3),(5,4),(6,5),(7,6),(5,7),(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList []
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList []),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(4,3)
-others:[(5,4),(6,5),(7,6),(5,7),(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList []
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList []),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(5,4)
-others:[(6,5),(7,6),(5,7),(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList ["i"]
-the lmeet: False
-New state l':fromList ["i"]
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(4,3)
-others:[(6,5),(7,6),(5,7),(8,5)]
-state of l:fromList ["i"]
-state of l':fromList []
-transferFunction on l:fromList []
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(6,5)
-others:[(7,6),(5,7),(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList []
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(7,6)
-others:[(5,7),(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList []
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList []),(7,fromList []),(8,fromList ["i","j"])]
-Current transfer:(5,7)
-others:[(8,5)]
-state of l:fromList []
-state of l':fromList []
-transferFunction on l:fromList ["i"]
-the lmeet: False
-New state l':fromList ["i"]
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList []),(7,fromList ["i"]),(8,fromList ["i","j"])]
-Current transfer:(7,6)
-others:[(8,5)]
-state of l:fromList ["i"]
-state of l':fromList []
-transferFunction on l:fromList ["i"]
-the lmeet: False
-New state l':fromList ["i"]
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList []),(6,fromList ["i"]),(7,fromList ["i"]),(8,fromList ["i","j"])]
-Current transfer:(6,5)
-others:[(8,5)]
-state of l:fromList ["i"]
-state of l':fromList []
-transferFunction on l:fromList ["i"]
-the lmeet: False
-New state l':fromList ["i"]
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList ["i"]),(6,fromList ["i"]),(7,fromList ["i"]),(8,fromList ["i","j"])]
-Current transfer:(5,7)
-others:[(5,4),(8,5)]
-state of l:fromList ["i"]
-state of l':fromList ["i"]
-transferFunction on l:fromList ["i"]
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList ["i"]),(6,fromList ["i"]),(7,fromList ["i"]),(8,fromList ["i","j"])]
-Current transfer:(5,4)
-others:[(8,5)]
-state of l:fromList ["i"]
-state of l':fromList ["i"]
-transferFunction on l:fromList ["i"]
-the lmeet: True
------------------------------------------------------------------------------
-
-fromList [(1,fromList []),(2,fromList []),(3,fromList []),(4,fromList ["i"]),(5,fromList ["i"]),(6,fromList ["i"]),(7,fromList ["i"]),(8,fromList ["i","j"])]
-Current transfer:(8,5)
 others:[]
 state of l:fromList ["i","j"]
-state of l':fromList ["i"]
-transferFunction on l:fromList ["i"]
+state of l':fromList []
+transferFunction on l:fromList ["j"]
+the lmeet: False
+New state l':fromList ["j"]
+-----------------------------------------------------------------------------
+
+fromList [(1,fromList []),(2,fromList ["j"]),(3,fromList ["i","j"])]
+Current transfer:(2,1)
+others:[]
+state of l:fromList ["j"]
+state of l':fromList []
+transferFunction on l:fromList []
 the lmeet: True
 -----------------------------------------------------------------------------
