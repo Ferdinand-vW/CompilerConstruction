@@ -2,6 +2,17 @@
 
 module View.PpLiveVariableAnalysis where
 
+
+import Data.Set as S
+import Data.Map as M
+
+
+import View.View
+import View.PpHelper
+import Monotone.LiveVariableAnalysis
+import Monotone.Analysis
+import Administration
+
 instance View (S.Set Var) where
     view xs = brackets $ S.foldr (\a b -> show a ++ "," ++ b) "" xs
 
