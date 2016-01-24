@@ -28,18 +28,20 @@ Monotome.LiveVariableAnalysis -> In this module you canfind the implementation o
 Monotome.MonotoneFramework -> In this module are the datatypes of the monotome framework and the transform function.
 
 
-
-
 Exercise 5.
-In the "example" directory we added several examples, which you can run in the program to analyse the examples. It is also possible to make your own examples.
-To run the examples you can use the function "run", which needs 2 parameters. The first parameters is the analyse function and the second parameters is the location to the file.
+In the "example" directory we added several examples, which you can run in the program to analysis the examples. It is also possible to make your own examples.
+To run the examples you can use the function "run", which needs 2 parameters. The first parameters is the analysis function and the second parameters is the location to the file.
 
 We have the following analyse function:
-cp -> constant propagation analyse
-slv -> strong live variable analyse
-ecp -> Embellished Constant Propagation analyse.
+cp -> constant propagation analysis
+slv -> strong live variable analysis
+ecp -> Embellished Constant Propagation analysis.
+
+We have
+- intraprocedural
+- 
 
 For example you could run something like this:
 run slv "slv/slv1"
 run cp "slv/cp1"
-run (ecp 2) "example6"
+run (ecp 2) "examples6"
