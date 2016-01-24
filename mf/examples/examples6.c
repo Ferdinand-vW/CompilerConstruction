@@ -1,14 +1,10 @@
 begin
-    proc passed(val z, res v) is
-        if z >= 6 then {
-            v := 1;
-        }else {
-            v := 0;
-        }
+    proc square(val z, res v) is
+        v := z * z;
     end
-    proc cco(val z, res v) is
-        call passed(z, v);
+    proc doublesquare(val z, res v) is
+        call square(z, v);
+        call square(v,v);
     end
-    call cco(7,y);
-    y := y + 1;
+    call doublesquare(7,y);
 end

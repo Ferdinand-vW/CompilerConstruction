@@ -43,8 +43,9 @@ runAnalysis' analyze programName = do
   p <- parse programName
   putStrLn "OUTPUT:"
   an <- analyze p
+  putStrLn $ view p
   putStrLn "Analysis:"
-  putStrLn $ view $ an
+  putStrLn $ view an
   putStrLn "G'bye"
 
 -- parse program
