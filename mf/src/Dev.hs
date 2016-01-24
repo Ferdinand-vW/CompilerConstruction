@@ -22,6 +22,7 @@ import View.PpAdministration
 import View.PpLiveVariableAnalysis
 import View.PpConstantPropagation
 import View.PpEmbellishedConstantPropagation
+import View.PpLiveVariableAnalysis
 
 -- To make it all compile for the moment:
 
