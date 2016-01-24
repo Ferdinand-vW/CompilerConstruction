@@ -45,8 +45,8 @@ updateCallStack :: Int -> Block -> Label -> ContextLattice Int -> ContextLattice
 updateCallStack k block l clat = 
     let clatList = M.toList clat
         emptyContext = ([],M.empty)
-        contextList = emptyContext : filter (\(xs,latt) -> not $ M.null latt) (map addLabel clatList)
-        mdup = findDupContext contextList
+        contextList = emptyContext : (map addLabel clatList)
+        mdup = findDupContext contextList --filter (\(xs,latt) -> not $ M.null latt) 
 
     in case mdup of
         Nothing -> M.fromList $ map (\(cxt,latt) -> (cxt, transferFunction block latt)) contextList
@@ -88,7 +88,9 @@ returnTransfer arr iflow (B_CallExit _ pargs pout cout) l retCtx =
                                                                        --and updating the return value of the procedure
   where 
     removeContexts ctx l = ([], M.empty) : [(tail x, latt) | (x,latt) <- M.toList ctx , length x > 0, head x == l]
-    mergeLattice callLat retLat = M.mapWithKey 
+    mergeLattice callLat retLat 
+          | M.null callLat = M.empty
+          | otherwise = M.mapWithKey 
                 (\k retVal -> let callVal = case M.lookup k callLat of
                                               Nothing -> error $ show callLat ++ "   " ++ show retLat
                                               Just val -> val

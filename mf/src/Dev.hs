@@ -45,4 +45,5 @@ parse :: String -> IO ProgramInfo
 parse programName = do
   let fileName = "../examples/"++programName++".c"
   content <- readFile fileName
+  putStrLn $ show $ happy . alex $ content
   return . toProgramInfo . happy . alex $ content

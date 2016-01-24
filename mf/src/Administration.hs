@@ -906,7 +906,7 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
                    )
               _pmap =
                   ({-# LINE 96 "Administration.ag" #-}
-                   M.singleton name_ (_lhsIlabel,_statImaxLabel + 1)
+                   M.union (M.singleton name_ (_lhsIlabel,_statImaxLabel + 1)) _lhsIprcs
                    {-# LINE 911 "Administration.hs" #-}
                    )
               _lhsOpmap =
@@ -921,7 +921,7 @@ sem_Proc_Proc name_ inp_ out_ stat_ =
                    )
               _prgs =
                   ({-# LINE 99 "Administration.ag" #-}
-                   M.singleton name_ (inp_,out_)
+                   M.union (M.singleton name_ (inp_,out_)) _lhsIprgs
                    {-# LINE 926 "Administration.hs" #-}
                    )
               _lhsOpargs =
@@ -1058,7 +1058,7 @@ sem_Procs_Cons hd_ tl_ =
                    )
               _lhsOmaxLabel =
                   ({-# LINE 73 "Administration.ag" #-}
-                   _hdImaxLabel
+                   _tlImaxLabel
                    {-# LINE 1063 "Administration.hs" #-}
                    )
               _lhsOblocks =

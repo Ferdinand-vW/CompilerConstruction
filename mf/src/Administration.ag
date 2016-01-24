@@ -70,13 +70,13 @@ attr Procs Proc
 sem Procs
     | Cons hd.label = @lhs.label
            tl.label = @hd.maxLabel + 1
-           lhs.maxLabel = @hd.maxLabel
+           lhs.maxLabel = @tl.maxLabel
            lhs.blocks   = M.union @hd.blocks @tl.blocks
            lhs.pmap     = M.union @hd.pmap @tl.pmap
            hd.prcs      = @lhs.prcs
            tl.prcs      = @hd.pmap
            lhs.pargs    = M.union @hd.pargs @tl.pargs
-           hd.prgs     = @lhs.prgs
+           hd.prgs      = @lhs.prgs
            tl.prgs      = @hd.pargs
            lhs.flow     = @hd.flow ++ @tl.flow
            lhs.interflow = @hd.interflow ++ @tl.interflow
@@ -93,10 +93,10 @@ sem Proc
     | Proc stat.label = @lhs.label + 1
            lhs.maxLabel = @stat.maxLabel + 1
            lhs.blocks   = M.union (M.union (M.singleton @lhs.label B_ProcEntry) (M.singleton (@stat.maxLabel + 1) B_ProcExit)) @stat.blocks
-           loc.pmap     = M.singleton @name (@lhs.label,@stat.maxLabel + 1)
+           loc.pmap     = M.union (M.singleton @name (@lhs.label,@stat.maxLabel + 1)) @lhs.prcs
            lhs.pmap     = @loc.pmap
            stat.prcs    = @loc.pmap
-           loc.prgs    = M.singleton @name (@inp,@out)
+           loc.prgs    = M.union (M.singleton @name (@inp,@out)) @lhs.prgs
            lhs.pargs    = @loc.prgs
            stat.prgs   = @loc.prgs
            lhs.flow     = [(@lhs.label,@lhs.label + 1)] ++ @stat.flow ++ map (\x -> (x,@stat.maxLabel + 1)) @stat.flabels
