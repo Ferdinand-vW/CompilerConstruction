@@ -8,7 +8,7 @@ import View.PpHelper
 import Administration
 
 instance View ProgramInfo where
-    view (ProgramInfo b l i fi fl ifl vars) = 
+    view (ProgramInfo b l i fi fl ifl vars _) = 
                                        "Block:     " ++ newLine ++ toBlock b ++ newLine
                                     ++ "Flow:      " ++ listOf "," fl        ++ newLine
                                     ++ "InterFlow: " ++ listOf "," ifl       ++ newLine

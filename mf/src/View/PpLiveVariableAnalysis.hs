@@ -12,30 +12,17 @@ import View.View
 import View.PpHelper
 
 instance View (S.Set Var) where
-    view xs = brackets $ intercalate "," (S.toList xs)
+    view xs = intercalate "," (S.toList xs)
 
-
-
-header :: (Int,Int) -> String -> String -> String
-header (ls,rs) lv rv = "|" ++ replicate 5 ' ' ++ "|"
-                    ++ column (1 + rs - length rv) lv
-                    ++ column (3 + ls - length lv) rv
-                    ++ newLine
- 
-row :: Int -> (S.Set Var,  S.Set Var) -> (Int,Int) -> String
-row l (lv,rv) (lm,rm) = "|" 
-                 ++ column 4 (show l)
-                 ++ column (rm - sizeVar rv) (view rv)
-                 ++ column (lm - sizeVar lv) (view lv)
-                 ++ newLine
-
-column :: Int -> String -> String
-column s w = w ++ replicate s ' ' ++ "|"
-
-
-maxSizeVar :: Analysis (S.Set Var) -> (Int, Int)
-maxSizeVar xs = (maximum lm,maximum rm)
-            where (lm,rm) = unzip $ M.foldr (\(lv,rv) b -> (sizeVar lv,sizeVar rv) : b) [] $ xs
-
-sizeVar :: S.Set Var -> Int
-sizeVar xs = (S.size xs * 3) + (S.foldr (\a b -> length a + b ) 0 xs)
+instance View (Analysis (S.Set Var)) where
+    view xs = header ++ M.foldrWithKey (\k (l,r) b -> show k ++ " " ++ 
+                                                brackets (view r ++ spaces r) 
+                                                ++ " <= " ++ 
+                                                brackets (view l ++ spaces l) 
+                                            ++ newLine ++ b ) "" xs
+        where maxSize      = maximum $ map varLength $ map (S.toList . fst) (M.elems xs)
+              varLength :: [String] -> Int
+              varLength vars = (max 0 $ length vars - 1) + foldr (\x y -> length x + y) 0 vars
+              numSpaces  n = maxSize - (varLength n)
+              spaces set   = replicate (numSpaces (S.toList set)) ' '
+              header       = "  Entry" ++ replicate (numSpaces []) ' ' ++ " " ++ "Exit\n"

@@ -1,7 +1,7 @@
 begin
     proc fib(val z, u, res v) is
         if z < 3 then {
-            v := 1;
+            v := u + 1;
         }
         else {
             call fib (z - 1,u,v);

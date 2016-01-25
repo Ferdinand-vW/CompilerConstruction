@@ -30,7 +30,7 @@ toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (
 
 --Holds all info about the Program
 data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, labels :: [Label] , init :: [Label], 
-                                finals :: [Label], flow :: Flow, interflow :: InterFlow, vars :: [Var]}
+                                finals :: [Label], flow :: Flow, interflow :: InterFlow, vars :: [Var], statVars :: [Var]}
 
 --Block for each assignment, expression.
 data Block = 
@@ -1234,7 +1234,7 @@ sem_Program_Program procs_ stat_ =
          _lhsOpinfo =
              ({-# LINE 41 "Administration.ag" #-}
               ProgramInfo _blocks     [1 .. _statImaxLabel] [_statIinitLabel]
-                         (_statIfinLabels) _flow     _interflow     (S.toList _svars    )
+                         (_statIfinLabels) _flow     _interflow     (S.toList _svars    ) (S.toList _statIsvars)
               {-# LINE 1239 "Administration.hs" #-}
               )
          _blocks =

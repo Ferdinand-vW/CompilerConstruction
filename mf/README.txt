@@ -14,7 +14,7 @@ To build the package it is necessary to to follow these instructions:
 - ./build.sh
 - Code should now have been compiled and be loaded into ghci
 
-
+Modules:
 
 View
 View.PpAdministration -> In this module you can find the implementation of the administration output
@@ -32,6 +32,8 @@ Monotome.EmbellishedConstantPropagation -> In this module you find the implement
 Monotome.LiveVariableAnalysis -> In this module you canfind the implementation of live varibales Analysis.
 Monotome.MonotoneFramework -> In this module are the datatypes of the monotome framework and the transfer function.
 
+Administration -> Contains generated AG code. Administration is used to gather info about the Program.
+
 In the "example" directory we added several examples, which you can run in the program to analysis the examples. It is also possible to make your own examples.
 To run the examples you can use the function "run", which needs 2 parameters. The first parameters is the analysis function and the second parameter is the location to the file.
 
@@ -46,4 +48,4 @@ ecp -> Embellished Constant Propagation analysis.
 For example you could run something like this:
 run slv "slv/slv1"
 run cp "slv/cp1"
-run (ecp 2) "cp/doublesquare" --2 here is the k value for the maximum call stack length
+run (ecp 2) "cp/doublesquare" --2 here is the k value

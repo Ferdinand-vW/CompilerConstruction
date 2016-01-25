@@ -20,7 +20,7 @@ import Monotone.MonotoneFramework
 data LatticeVal a = Top | Value a deriving (Show,Eq)
 type Lattice a = M.Map Var (LatticeVal a)
 
-cp :: ProgramInfo -> IO (Analysis (Lattice Int))
+cp :: ProgramInfo -> Analysis (Lattice Int)
 cp p = let join = joinOp
            lm = setMeet
            tfunc = transferFunction

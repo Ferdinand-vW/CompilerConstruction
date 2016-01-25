@@ -15,8 +15,7 @@ instance View (LatticeVal Int) where
     view (Value a) = show a
 
 instance View (Lattice Int) where
-    view xs = brackets $ intercalate "," $ map (\(k,l) -> k ++ " => " ++ view l) (M.toList xs)
+    view xs = brackets $ intercalate "," $ map (\(k,l) -> k ++ " -> " ++ view l) (M.toList xs)
 
-
-instance (View a) => View (Analysis a) where
+instance View (Analysis (Lattice Int)) where
     view xs =  M.foldrWithKey (\k (l,r) b -> show k ++ view l ++ " => " ++ view r ++ newLine ++ b ) "" xs

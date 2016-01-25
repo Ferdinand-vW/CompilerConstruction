@@ -18,7 +18,7 @@ import Monotone.ConstantPropagation
 type Context = [Label]
 type ContextLattice a = M.Map Context (Lattice a)
 
-ecp :: Int -> ProgramInfo -> IO (Analysis (ContextLattice Int))
+ecp :: Int -> ProgramInfo -> Analysis (ContextLattice Int)
 ecp k p = 
         let join = joinContext
             lm = contextMeet

@@ -13,7 +13,7 @@ import Administration
 import Monotone.Analysis (analyse, Analysis)
 import Monotone.MonotoneFramework
 
-slv :: ProgramInfo -> IO (Analysis (S.Set Var))
+slv :: ProgramInfo -> Analysis (S.Set Var)
 slv p = let join = S.union
             btm  = S.empty
             lmeet = S.isSubsetOf
@@ -21,7 +21,7 @@ slv p = let join = S.union
             flw = map swap (Administration.flow p)
             ifl = [] --we don't have a slv instance for embellished monotoneframework
             eLabels = finals p
-            eValue = S.fromList (vars p)
+            eValue = S.fromList (statVars p)
             mframe = MonotoneFramework join btm lmeet tfunc flw ifl eLabels eValue
         in analyse mframe (blocks p)
 
@@ -46,7 +46,6 @@ gen (B_IAssign _ iexpr) = genIExpr iexpr
 gen (B_BAssign _ bexpr) = genBExpr bexpr
 gen (B_Cond bexpr)      = genBExpr bexpr
 gen _                   = S.empty
-
 
 genIExpr :: IExpr -> S.Set Var
 genIExpr (IConst _)     = S.empty

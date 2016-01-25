@@ -14,7 +14,7 @@ toProgramInfo program = pinfo_Syn_Program $ wrap_Program (sem_Program program) (
 
 --Holds all info about the Program
 data ProgramInfo = ProgramInfo {blocks :: M.Map Label Block, labels :: [Label] , init :: [Label], 
-                                finals :: [Label], flow :: Flow, interflow :: InterFlow, vars :: [Var]}
+                                finals :: [Label], flow :: Flow, interflow :: InterFlow, vars :: [Var], statVars :: [Var]}
 
 --Block for each assignment, expression.
 data Block = 
@@ -39,7 +39,7 @@ attr Program
 
 sem Program 
     | Program lhs.pinfo = ProgramInfo @loc.blocks [1 .. @stat.maxLabel] [@stat.initLabel] 
-                                     (@stat.finLabels) @loc.flow @loc.interflow (S.toList @loc.svars)
+                                     (@stat.finLabels) @loc.flow @loc.interflow (S.toList @loc.svars) (S.toList @stat.svars)
               --Take information from both the procedures and the stat and join these
               loc.blocks    = M.union @procs.blocks @stat.blocks
               loc.flow      = @procs.flow ++ @stat.flow
